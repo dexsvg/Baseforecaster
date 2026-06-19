@@ -10,21 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const luckBar = document.getElementById('luck-bar');
     const seedAnchor = document.getElementById('seed-anchor');
 
-    // Inisialisasi Web3Modal Standalone (Gratis & Mendukung Semua Wallet Utama)
-    // Menggunakan ProjectID publik demo gratis. Untuk produksi jangka panjang, kamu bisa buat ProjectID sendiri di cloud.walletconnect.com
-    const projectId = '8e6b5ffdcbc9794bf9f448ea2361483b'; 
-    
-    const web3Modal = new window.Web3ModalStandalone.Web3Modal({
-        projectId: projectId,
-        walletConnectVersion: 2,
-        standaloneChains: ['eip155:8453'], // Fokus utama ke Base Network (Chain ID: 8453)
-        themeMode: 'dark',
-        themeVariables: {
-            '--w3m-accent-color': '#0052FF', // Warna biru khas Base
-            '--w3m-background-color': '#0f172a'
-        }
-    });
-
     const fates = [
         { status: "The Chad Base Whale", emoji: "🐋👑" },
         { status: "Paper Hands Martyr", emoji: "🧻💀" },
@@ -43,57 +28,50 @@ document.addEventListener('DOMContentLoaded', () => {
         "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap memecoin multipliers this week."
     ];
 
-    // Cek jika browser internal dApp sudah menyuntikkan ethereum (In-app browser mode)
-    async function checkInAppWallet() {
-        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
-        if (injectedProvider && injectedProvider.selectedAddress) {
-            handleWalletConnected(injectedProvider.selectedAddress);
-            return true;
-        }
-        return false;
-    }
-
     async function handleConnect() {
-        // 1. Jika dibuka di dalam DApp Browser OKX/MetaMask, langsung gas tanpa pop-up modal
+        // 1. Cek apakah dibuka di dalam Browser Dompet Crypto (OKX / MetaMask / dll)
         const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
+
         if (injectedProvider) {
             try {
+                connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Connecting...`;
+                
                 const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
-                handleWalletConnected(accounts[0]);
-                return;
-            } catch (e) {
-                console.log("Injected connect bypassed, trying modal...");
-            }
-        }
+                const walletAddress = accounts[0];
 
-        // 2. Jika dibuka di Google Chrome biasa, picu Web3Modal (Deep Link Modus)
-        try {
-            // Membuka jendela pilihan wallet bergaya UI keren
-            const session = await web3Modal.openModal();
+                if (!walletAddress) throw new Error("No accounts found.");
+
+                // Update UI jika sukses konek di dalam dompet
+                walletSection.innerHTML = `
+                    <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
+                        <span>Connected: ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}</span>
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    </div>
+                `;
+
+                generatePrediction(walletAddress);
+
+            } catch (error) {
+                console.error(error);
+                alert('Gagal koneksi: ' + (error.message || 'User menolak koneksi.'));
+                connectBtn.innerHTML = `<span>🔮</span> Connect Wallet (Base Network)`;
+            }
+        } else {
+            // 2. JIKA DIBUKA DI CHROME/SAFARI BIASA -> PAKSA DEEP LINK KE OKX WALLET
+            // Ini akan otomatis melontarkan user masuk ke aplikasi OKX dan membuka dApp kamu di sana!
+            const dAppUrl = "baseforecaster.vercel.app"; 
+            const okxDeepLink = `okx://wallet/dapp/details?dappUrl=${encodeURIComponent("https://" + dAppUrl)}`;
             
-            // Menggunakan provider WalletConnect secara dinamis
-            if (session) {
-                // Catatan: Karena ini interaksi berbasis deep-link gratis client-side, 
-                // Kita memicu deteksi address setelah persetujuan handshaking modal selesai
-                alert("Hubungkan akun Anda pada aplikasi dompet yang terbuka!");
-            }
-        } catch (error) {
-            // Mengakomodasi pembacaan jika modal menghasilkan callback URI sukses
-            console.error(error);
-        }
-    }
+            // Lemparkan user ke aplikasi OKX Wallet
+            window.location.href = okxDeepLink;
 
-    // Pendengar Event WalletConnect untuk menangkap alamat
-    // Agar kompatibel dengan browser biasa, kita juga membuat sistem simulasi pengisian manual instan 
-    // jika user ingin buru-buru meramal tanpa mengorbankan keamanan tanda tangan kontrak
-    function handleWalletConnected(walletAddress) {
-        walletSection.innerHTML = `
-            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
-                <span>Connected: ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}</span>
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            </div>
-        `;
-        generatePrediction(walletAddress);
+            // Cadangan jika user tidak punya OKX Wallet, beri tahu setelah 2 detik
+            setTimeout(() => {
+                if (confirm("Gagal membuka OKX Wallet otomatis. Apakah kamu ingin membuka lewat MetaMask?")) {
+                    window.location.href = `https://metamask.app.link/dapp/${dAppUrl}`;
+                }
+            }, 2000);
+        }
     }
 
     function generatePrediction(address) {
@@ -118,9 +96,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 
-    // Jalankan pengecekan otomatis saat web dimuat
-    checkInAppWallet();
-
     connectBtn.addEventListener('click', handleConnect);
 });
-                                        
