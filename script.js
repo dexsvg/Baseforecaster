@@ -10,31 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const luckBar = document.getElementById('luck-bar');
     const seedAnchor = document.getElementById('seed-anchor');
 
-    // 1. Konfigurasi Jaringan Base Mainnet & Project ID WalletConnect Global
-    const projectId = '8e6b5ffdcbc9794bf9f448ea2361483b'; 
-    const baseNetwork = {
-        chainId: 8453,
-        name: 'Base',
-        currency: 'ETH',
-        explorerUrl: 'https://basescan.org',
-        rpcUrl: 'https://mainnet.base.org'
-    };
-
-    const metadata = {
-        name: 'Base Forecaster',
-        description: "Your Wallet's Hexadecimal Destiny",
-        url: window.location.origin,
-        icons: ['https://avatars.githubusercontent.com/u/37784886']
-    };
-
-    // 2. Inisialisasi Web3Modal Universal (Mendukung All Wallets + Deep Link)
-    const modal = window.Web3ModalEthers5.createWeb3Modal({
-        ethersConfig: window.Web3ModalEthers5.defaultConfig({ metadata }),
-        chains: [baseNetwork],
-        projectId,
-        themeMode: 'dark'
-    });
-
     const fates = [
         { status: "The Chad Base Whale", emoji: "🐋👑" },
         { status: "Paper Hands Martyr", emoji: "🧻💀" },
@@ -53,21 +28,61 @@ document.addEventListener('DOMContentLoaded', () => {
         "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap memecoin multipliers this week."
     ];
 
-    // Fungsi utama mendeteksi status wallet aktif
-    function checkWalletState() {
-        const address = modal.getAddress();
-        const isConnected = modal.getIsConnected();
-
-        if (isConnected && address) {
-            // Mengubah tampilan area tombol ketika wallet terhubung
-            walletSection.innerHTML = `
-                <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
-                    <span>Connected: ${address.slice(0, 6)}...${address.slice(-4)}</span>
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                </div>
-            `;
-            generatePrediction(address);
+    async function connectWallet() {
+        // A. JALUR INTERNAL: Jika dibuka di dApp Browser OKX / MetaMask / Coinbase Wallet
+        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
+        
+        if (injectedProvider) {
+            try {
+                connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Injected Connecting...`;
+                const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts[0]) {
+                    handleWalletConnected(accounts[0]);
+                    return;
+                }
+            } catch (error) {
+                console.log("Injected provider bypassed or rejected, using WalletConnect...");
+            }
         }
+
+        // B. JALUR UNIVERSAL: Jika dibuka di Google Chrome biasa / Safari HP
+        try {
+            connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Opening Modal...`;
+            
+            // Menginisialisasi Web3Provider WalletConnect independen
+            const provider = new window.WalletConnectProvider.default({
+                rpc: {
+                    8453: "https://mainnet.base.org" // RPC Base Network
+                },
+                chainId: 8453,
+                qrcodeModalOptions: {
+                    mobileLinks: ["okx", "metamask", "coinbase", "trust"] // Memprioritaskan pop-up dompet utama di HP
+                }
+            });
+
+            // Memicu jendela QR Code & Deep Link modal universal
+            await provider.enable();
+
+            // Ambil address wallet setelah user menyetujui koneksi di aplikasi dompetnya
+            if (provider.accounts && provider.accounts[0]) {
+                handleWalletConnected(provider.accounts[0]);
+            }
+
+        } catch (error) {
+            console.error("User closed modal or connection failed:", error);
+            alert("Connection cancelled.");
+            connectBtn.innerHTML = `<span>🔮</span> Connect Wallet`;
+        }
+    }
+
+    function handleWalletConnected(address) {
+        walletSection.innerHTML = `
+            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
+                <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            </div>
+        `;
+        generatePrediction(address);
     }
 
     function generatePrediction(address) {
@@ -92,33 +107,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 
-    // Eksekusi ketika user menekan tombol Connect Wallet
-    connectBtn.addEventListener('click', async () => {
-        try {
-            // Membuka UI Modal resmi WalletConnect universal secara instan
-            await modal.open();
-        } catch (error) {
-            console.error("Modal gagal dibuka:", error);
-        }
-    });
-
-    // Berlangganan (Subscribe) perubahan status akun Web3Modal
-    modal.subscribeProvider(({ provider, providerType, address, chainId, isConnected }) => {
-        if (isConnected && address) {
-            handleWalletConnected(address);
-        }
-    });
-
-    function handleWalletConnected(address) {
-        walletSection.innerHTML = `
-            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
-                <span>Connected: ${address.slice(0, 6)}...${address.slice(-4)}</span>
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            </div>
-        `;
-        generatePrediction(address);
-    }
-
-    // Jalankan pengecekan awal barangkali wallet sudah terhubung sebelumnya
-    setTimeout(checkWalletState, 1000);
+    connectBtn.addEventListener('click', connectWallet);
 });
