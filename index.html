@@ -6,10 +6,13 @@
     <title>Base Forecaster - Your Wallet's Destiny</title>
     
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
+    <link class="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
+    
+    <script src="https://unpkg.com/@web3modal/standalone@2.4.3/dist/index.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 </head>
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 relative overflow-x-hidden">
 
@@ -26,12 +29,12 @@
         </div>
 
         <p class="text-slate-400 text-xs mb-6 italic px-2 leading-relaxed">
-            "Forget technical analysis. Stop staring at the charts. The true fate of your portfolio isn’t in the candles—it’s written in your wallet address. Base Forecaster hashes your hexadecimal identity into chaotic, 100% unique, and slightly unhinged destiny readings. Are you destined for generational wealth, or is a dusting attack waiting in your shadows? Connect your wallet and let the Base chain speak your truth."
+            "Forget technical analysis. Stop staring at the charts. The true fate of your portfolio isn’t in the candles—it’s written in your wallet address. Base Forecaster hashes your hexadecimal identity into chaotic, 100% unique, and slightly unhinged destiny readings. Connect your wallet and let the Base chain speak your truth."
         </p>
 
         <div id="wallet-section">
             <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-md">
-                <span>🔮</span> Connect Wallet (Base Network)
+                <span>🔌</span> Connect Wallet
             </button>
         </div>
 
@@ -65,9 +68,10 @@
     </div>
 
     <footer class="mt-8 text-[10px] text-slate-600 font-mono">
-        Built on Base • 100% Unique Address Logic
+        Built on Base • 100% Mobile Deep-Link Support
     </footer>
 
     <script src="script.js"></script>
 </body>
 </html>
+                        
