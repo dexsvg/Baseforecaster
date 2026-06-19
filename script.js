@@ -29,19 +29,22 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     async function connectWallet() {
-        // Mengecek ketersediaan wallet (window.ethereum)
-        if (window.ethereum) {
-            try {
-                connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Connecting...`;
-                
-                // Menggunakan Ethers.js v6 BrowserProvider untuk inisialisasi awal
-                const provider = new ethers.BrowserProvider(window.ethereum);
-                
-                // Meminta dompet membuka pop-up persetujuan koneksi akun
-                const signer = await provider.getSigner();
-                const walletAddress = await signer.getAddress();
+        // Deteksi provider bawaan browser crypto (OKX/MetaMask)
+        const provider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
 
-                // Ubah tampilan tombol menjadi status wallet terhubung
+        if (provider) {
+            try {
+                connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Connecting Native...`;
+                
+                // Memanggil request akun secara native (Murni RPC JavaScript tanpa library external)
+                const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                const walletAddress = accounts[0];
+
+                if (!walletAddress) {
+                    throw new Error("No accounts found.");
+                }
+
+                // Perbarui Tampilan Tombol
                 walletSection.innerHTML = `
                     <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
                         <span>Connected: ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}</span>
@@ -49,17 +52,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
 
-                // Jalankan kalkulasi ramalan unik berbasis teks wallet
+                // Tampilkan Ramalan
                 generatePrediction(walletAddress);
 
             } catch (error) {
                 console.error(error);
-                alert('Connection rejected or failed. Reason: ' + (error.message || error));
+                alert('Opps! Gagal koneksi: ' + (error.message || JSON.stringify(error)));
                 connectBtn.innerHTML = `<span>🔮</span> Connect Wallet (Base Network)`;
             }
         } else {
-            // Jika window.ethereum tidak terdeteksi (dibuka di browser biasa seperti Chrome/SafarI HP)
-            alert('Web3 Wallet Not Detected!\n\nTo use Base Forecaster, please copy this website link and open it inside the built-in DApp Browser of MetaMask, OKX Wallet, or Coinbase Wallet app on your mobile phone.');
+            alert('Web3 Wallet Not Detected!\n\nPastikan buka link ini di tab DISCOVER/BROWSER internal aplikasi OKX Wallet atau MetaMask.');
             connectBtn.innerHTML = `<span>🔮</span> Connect Wallet (Base Network)`;
         }
     }
