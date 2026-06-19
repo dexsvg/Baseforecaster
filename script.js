@@ -38,8 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mengambil domain dApp kamu secara dinamis dari Vercel
     const currentDappUrl = window.location.href;
 
-    // Tautan Rujukan Resmi OKX Milik Kamu
+    // Kumpulan Tautan Rujukan Resmi Milik Kamu
     const okxReferralUrl = "https://web3.okx.com/join/DONKEY";
+    const baseReferralUrl = "https://base.app/invite/baseberry/0XLYVZQB";
 
     // 1. Fungsi Utama saat tombol Hubungkan Kripto diklik
     async function handleConnectClick() {
@@ -64,20 +65,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 2. Aksi Tombol di dalam Modal Kustom (Ditambah Proteksi Tautan Rujukan OKX)
+    // 2. Aksi Tombol di dalam Modal Kustom (Ditambah Proteksi Tautan Rujukan)
     
+    // Alur OKX Wallet + Rujukan OKX
     chooseOkx.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        
-        // Membuka dApp di dalam OKX Wallet menggunakan skema deep-link universal
         const okxDeepLink = `okx://wallet/dapp/details?dappUrl=${encodeURIComponent(currentDappUrl)}`;
         
-        // Buat pencatat waktu untuk mendeteksi apakah aplikasi OKX berhasil terbuka atau tidak di HP user
         const start = Date.now();
         window.location.href = okxDeepLink;
 
-        // Jika dalam waktu 2.5 detik halaman tidak berpindah (artinya user tidak punya aplikasi OKX), 
-        // secara otomatis lemparkan mereka ke Tautan Rujukan OKX kamu agar mendaftar/mengunduh
+        // Fallback jika tidak punya aplikasi OKX, lempar ke rujukan kamu
         setTimeout(() => {
             if (Date.now() - start < 2600) {
                 window.location.href = okxReferralUrl;
@@ -85,16 +83,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2500);
     });
 
+    // Alur MetaMask
     chooseMetamask.addEventListener('click', () => {
         customModal.classList.add('hidden');
         const metamaskTarget = `https://metamask.app.link/dapp/${currentDappUrl.replace('https://', '').replace('http://', '')}`;
         window.location.href = metamaskTarget;
     });
 
+    // Alur Coinbase/Base Wallet + Rujukan Base
     chooseCoinbase.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        const coinbaseTarget = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(currentDappUrl)}`;
-        window.location.href = coinbaseTarget;
+        const coinbaseDeepLink = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(currentDappUrl)}`;
+        
+        const start = Date.now();
+        window.location.href = coinbaseDeepLink;
+
+        // Fallback jika tidak punya aplikasi Coinbase Wallet, lempar ke rujukan Base kamu
+        setTimeout(() => {
+            if (Date.now() - start < 2600) {
+                window.location.href = baseReferralUrl;
+            }
+        }, 2500);
     });
 
     closeModalBtn.addEventListener('click', () => {
@@ -106,41 +115,5 @@ document.addEventListener('DOMContentLoaded', () => {
         walletSection.innerHTML = `
             <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
                 <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            </div>
-        `;
-        generatePrediction(address);
-    }
-
-    function generatePrediction(address) {
-        const cleanAddress = address.replace('0x', '');
-        const lastFour = cleanAddress.slice(-4); 
-        const seedNumber = parseInt(lastFour, 16) || 777; 
-
-        const chosenFate = fates[seedNumber % fates.length];
-        const chosenText = predictions[(seedNumber + 2) % predictions.length];
-        const calculatedLuck = (seedNumber % 91) + 10; 
-
-        resultSection.classList.remove('hidden');
-
-        fortuneEmoji.innerText = chosenFate.emoji;
-        fortuneFate.innerText = chosenFate.status;
-        fortuneText.innerText = chosenText;
-        luckScore.innerText = `${calculatedLuck}%`;
-        seedAnchor.innerText = `#${lastFour.toUpperCase()}`;
-
-        setTimeout(() => {
-            luckBar.style.width = `${calculatedLuck}%`;
-        }, 200);
-    }
-
-    connectBtn.addEventListener('click', handleConnectClick);
-
-    // Cek otomatis di awal jika user membuka langsung di dalam browser dompet
-    setTimeout(() => {
-        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
-        if (injectedProvider && injectedProvider.selectedAddress) {
-            handleWalletConnected(injectedProvider.selectedAddress);
-        }
-    }, 500);
-});
+                <span
+            
