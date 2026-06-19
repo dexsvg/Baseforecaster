@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Forecaster - Your Wallet's Destiny</title>
-    <!-- Tailwind CSS CDN untuk mempermudah styling di HP -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Ethers.js v6 CDN untuk koneksi Web3 -->
-    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/global/index.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 relative overflow-x-hidden">
@@ -39,7 +37,7 @@
             </button>
         </div>
 
-        <!-- Hasil Ramalan (Awalnya Tersembunyi) -->
+        <!-- Hasil Ramalan -->
         <div id="result-section" class="hidden mt-6 border-t border-slate-800 pt-6 animate-fade-in">
             <div id="fortune-emoji" class="text-6xl mb-3 animate-bounce">🔮</div>
             
@@ -75,7 +73,8 @@
         Built on Base • 100% Unique Address Logic
     </footer>
 
+    <!-- KITA PINDAHKAN LOAD ETHERS.JS V5 KE BAWAH BIAR JALAN SEBELUM SCRIPT UTAMA -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js" type="text/javascript"></script>
     <script src="script.js"></script>
 </body>
 </html>
-
