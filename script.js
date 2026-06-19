@@ -38,6 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mengambil domain dApp kamu secara dinamis dari Vercel
     const currentDappUrl = window.location.href;
 
+    // Tautan Rujukan Resmi OKX Milik Kamu
+    const okxReferralUrl = "https://web3.okx.com/join/DONKEY";
+
     // 1. Fungsi Utama saat tombol Hubungkan Kripto diklik
     async function handleConnectClick() {
         // Cek jika dibuka langsung di dalam dApp Browser (In-app browser OKX/MetaMask)
@@ -61,24 +64,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 2. Aksi Tombol di dalam Modal Kustom (Menggunakan Jalur Universal Link Resmi)
+    // 2. Aksi Tombol di dalam Modal Kustom (Ditambah Proteksi Tautan Rujukan OKX)
     
-    // Perbaikan Jalur OKX Wallet
     chooseOkx.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        const okxTarget = `https://www.okx.com/download?deeplink=${encodeURIComponent("okx://wallet/dapp/details?dappUrl=" + encodeURIComponent(currentDappUrl))}`;
-        window.location.href = okxTarget;
+        
+        // Membuka dApp di dalam OKX Wallet menggunakan skema deep-link universal
+        const okxDeepLink = `okx://wallet/dapp/details?dappUrl=${encodeURIComponent(currentDappUrl)}`;
+        
+        // Buat pencatat waktu untuk mendeteksi apakah aplikasi OKX berhasil terbuka atau tidak di HP user
+        const start = Date.now();
+        window.location.href = okxDeepLink;
+
+        // Jika dalam waktu 2.5 detik halaman tidak berpindah (artinya user tidak punya aplikasi OKX), 
+        // secara otomatis lemparkan mereka ke Tautan Rujukan OKX kamu agar mendaftar/mengunduh
+        setTimeout(() => {
+            if (Date.now() - start < 2600) {
+                window.location.href = okxReferralUrl;
+            }
+        }, 2500);
     });
 
-    // Perbaikan Jalur MetaMask
     chooseMetamask.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        // Format universal link resmi MetaMask untuk mendeteksi aplikasi langsung di mobile
         const metamaskTarget = `https://metamask.app.link/dapp/${currentDappUrl.replace('https://', '').replace('http://', '')}`;
         window.location.href = metamaskTarget;
     });
 
-    // Perbaikan Jalur Coinbase Wallet
     chooseCoinbase.addEventListener('click', () => {
         customModal.classList.add('hidden');
         const coinbaseTarget = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(currentDappUrl)}`;
