@@ -6,21 +6,21 @@
     <title>Base Forecaster - Your Wallet's Destiny</title>
     
     <!-- Custom SVG Icon Base Forecaster -->
-    <link class="rounded-xl" rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%230052FF'/><circle cx='50' cy='45' r='20' fill='none' stroke='white' stroke-width='6'/><path d='M35 70 Q50 55 65 70' fill='none' stroke='white' stroke-width='6' stroke-linecap='round'/><circle cx='50' cy='45' r='6' fill='%2300D2FF'/></svg>">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 relative overflow-x-hidden">
+<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 relative overflow-x-hidden select-none">
 
     <!-- Efek Cahaya Biru Khas Base -->
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
     <!-- Main Card -->
-    <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10">
+    <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10 my-4">
         
         <!-- Header -->
         <div class="flex items-center justify-center gap-2 mb-2">
@@ -43,7 +43,7 @@
         </div>
 
         <!-- Hasil Ramalan -->
-        <div id="result-section" class="hidden mt-6 border-t border-slate-800 pt-6 animate-fade-in">
+        <div id="result-section" class="hidden mt-6 border-t border-slate-800 pt-5 text-center">
             <div id="fortune-emoji" class="text-6xl mb-3 animate-bounce">🔮</div>
             
             <h2 id="fortune-fate" class="text-xl font-bold text-blue-400 mb-2 tracking-wide uppercase">
@@ -55,7 +55,7 @@
             </div>
 
             <!-- Stats Bar Unik -->
-            <div class="space-y-3 text-left">
+            <div class="space-y-3 text-left mb-5">
                 <div>
                     <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
                         <span>Degen Luck Score:</span>
@@ -65,10 +65,47 @@
                         <div id="luck-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000"></div>
                     </div>
                 </div>
-                <div class="text-center text-[10px] text-slate-500 font-mono mt-2">
+                <div class="text-center text-[10px] text-slate-500 font-mono mt-1">
                     Deterministic Seed Anchor: <span id="seed-anchor" class="text-blue-400">#0000</span>
                 </div>
             </div>
+
+            <!-- MENU CUAN 1: PREMIUM ACTION HUBS -->
+            <div class="grid grid-cols-2 gap-2.5 mb-5 border-t border-slate-800/60 pt-4">
+                <!-- Tombol Share ke X (Virality Engine) -->
+                <button id="share-x-btn" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col items-center justify-center transition-all group">
+                    <span class="text-lg mb-0.5">𝕏</span>
+                    <span class="text-[10px] font-bold text-slate-300 group-hover:text-blue-400">Flex on Twitter</span>
+                </button>
+
+                <!-- Tombol Premium Mint NFT -->
+                <button id="mint-nft-btn" class="bg-gradient-to-br from-purple-600/20 to-indigo-600/20 border border-purple-500/30 hover:border-purple-500 p-2.5 rounded-xl flex flex-col items-center justify-center transition-all group">
+                    <span class="text-lg mb-0.5">🖼️</span>
+                    <span class="text-[10px] font-bold text-purple-400 group-hover:scale-105 transition-all">Mint Destiny Pass</span>
+                </button>
+            </div>
+
+            <!-- MENU CUAN 2: DONATION AREA -->
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2">
+                <p class="text-[10px] text-slate-400 italic mb-2">Saved from a rugpull? Feed the Based Dev 👇</p>
+                <button id="donate-btn" class="w-full bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
+                    💸 Send 0.001 ETH Tip
+                </button>
+            </div>
+        </div>
+
+        <!-- SLOT IKLAN SPANDUK MINI (Sponsorship Monetization) -->
+        <div class="mt-6 border-t border-slate-800/80 pt-4">
+            <a href="https://web3.okx.com/join/DONKEY" target="_blank" class="block bg-gradient-to-r from-slate-950 via-blue-950/30 to-slate-950 border border-slate-800 hover:border-blue-500/30 rounded-xl p-2.5 transition-all text-left relative overflow-hidden group">
+                <span class="absolute top-0 right-0 bg-blue-600/20 text-blue-400 text-[8px] px-1.5 py-0.5 rounded-bl font-mono tracking-widest uppercase">SPONSORED</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600/10 rounded-lg flex items-center justify-center text-md group-hover:animate-spin">🐴</div>
+                    <div>
+                        <h4 class="text-[11px] font-bold text-slate-200 group-hover:text-blue-400 transition-colors">Dazed Donkey Yacht Club</h4>
+                        <p class="text-[9px] text-slate-500">Discover chaotic Donkey variants on OKX NFT Marketplace.</p>
+                    </div>
+                </div>
+            </a>
         </div>
 
     </div>
@@ -80,7 +117,6 @@
             
             <h3 class="text-md font-bold text-center text-slate-300 mb-4 tracking-wide uppercase">Select Your Wallet</h3>
             
-            <!-- SEKSI 1: UNTUK YANG SUDAH PUNYA APLIKASI WALLET -->
             <div class="space-y-2.5">
                 <button id="choose-okx" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-3 rounded-2xl flex items-center justify-between transition-all group">
                     <div class="flex items-center gap-3">
@@ -109,17 +145,15 @@
 
             <div class="border-t border-slate-800 my-4"></div>
 
-            <!-- SEKSI 2: AREA KHUSUS TAUTAN RUJUKAN KAMU (MONETISASI) -->
+            <!-- SEKSI TAUTAN RUJUKAN KAMU -->
             <h4 class="text-[10px] font-bold text-slate-500 mb-2 tracking-wider uppercase text-center">Don't have a Web3 Wallet?</h4>
             
             <div class="grid grid-cols-2 gap-2">
-                <!-- Referral OKX -->
                 <a href="https://web3.okx.com/join/DONKEY" target="_blank" class="bg-gradient-to-br from-amber-500/10 to-orange-600/10 border border-amber-500/20 hover:border-amber-500/50 p-2.5 rounded-xl text-center block transition-all group">
                     <div class="text-md mb-0.5">🎁</div>
                     <div class="text-[10px] font-bold text-amber-400">Claim OKX Bonus</div>
                 </a>
                 
-                <!-- Referral Base -->
                 <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 border border-blue-500/20 hover:border-blue-500/50 p-2.5 rounded-xl text-center block transition-all group">
                     <div class="text-md mb-0.5">🔵</div>
                     <div class="text-[10px] font-bold text-blue-400">Join Base Network</div>
@@ -131,9 +165,10 @@
 
     <!-- Footer -->
     <footer class="mt-8 text-[10px] text-slate-600 font-mono">
-        Built on Base • Hybrid Launch System
+        Built on Base • Ultimate Monetized Build
     </footer>
 
     <script src="script.js"></script>
 </body>
-</html>
+    </html>
+    
