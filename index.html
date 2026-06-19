@@ -11,8 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <script src="https://unpkg.com/@web3modal/ethers5@5.0.11/dist/umd/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
 </head>
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 relative overflow-x-hidden">
 
@@ -32,7 +31,7 @@
             "Forget technical analysis. Stop staring at the charts. The true fate of your portfolio isn’t in the candles—it’s written in your wallet address. Base Forecaster hashes your hexadecimal identity into chaotic, 100% unique, and slightly unhinged destiny readings. Are you destined for generational wealth, or is a dusting attack waiting in your shadows? Connect your wallet and let the Base chain speak your truth."
         </p>
 
-        <div id="wallet-section" class="flex justify-center">
+        <div id="wallet-section">
             <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-md">
                 <span>🔮</span> Connect Wallet
             </button>
@@ -68,7 +67,7 @@
     </div>
 
     <footer class="mt-8 text-[10px] text-slate-600 font-mono">
-        Built on Base • Powered by WalletConnect Universal
+        Built on Base • Universal Wallet Provider
     </footer>
 
     <script src="script.js"></script>
