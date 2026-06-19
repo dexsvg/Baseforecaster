@@ -3,6 +3,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const walletSection = document.getElementById('wallet-section');
     const resultSection = document.getElementById('result-section');
     
+    // Elemen Modal Kustom
+    const customModal = document.getElementById('custom-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const chooseOkx = document.getElementById('choose-okx');
+    const chooseMetamask = document.getElementById('choose-metamask');
+    const chooseCoinbase = document.getElementById('choose-coinbase');
+
     const fortuneEmoji = document.getElementById('fortune-emoji');
     const fortuneFate = document.getElementById('fortune-fate');
     const fortuneText = document.getElementById('fortune-text');
@@ -28,46 +35,61 @@ document.addEventListener('DOMContentLoaded', () => {
         "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap memecoin multipliers this week."
     ];
 
-    // Project ID WalletConnect V2 Resmi
-    const projectId = '8e6b5ffdcbc9794bf9f448ea2361483b';
+    // Domain dApp kamu di Vercel
+    const dAppUrl = "baseforecaster.vercel.app";
 
-    const baseChain = {
-        chainId: 8453,
-        name: 'Base Mainnet',
-        currency: 'ETH',
-        explorerUrl: 'https://basescan.org',
-        rpcUrl: 'https://mainnet.base.org'
-    };
-
-    // Inisialisasi Kontroler Universal Modal
-    const modal = window.Web3ModalEthers5.createWeb3Modal({
-        ethersConfig: window.Web3ModalEthers5.defaultConfig({
-            metadata: {
-                name: 'Base Forecaster',
-                description: 'Hexadecimal Address Destiny Tool',
-                url: window.location.origin,
-                icons: ['https://avatars.githubusercontent.com/u/37784886']
+    // 1. Fungsi Utama saat tombol Hubungkan Kripto diklik
+    async function handleConnectClick() {
+        // Cek jika dibuka langsung di dalam dApp Browser (In-app browser OKX/MetaMask)
+        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
+        
+        if (injectedProvider) {
+            try {
+                connectBtn.innerHTML = `Connecting...`;
+                const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts[0]) {
+                    handleWalletConnected(accounts[0]);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Connection rejected by user.");
+                connectBtn.innerHTML = `<span>🔮</span> Connect Wallet`;
             }
-        }),
-        chains: [baseChain],
-        projectId,
-        themeMode: 'dark'
+        } else {
+            // Jika dibuka di Google Chrome biasa, munculkan modal buatan kita sendiri
+            customModal.classList.remove('hidden');
+        }
+    }
+
+    // 2. Aksi tombol-tombol di dalam Modal Kustom (Jalur Chrome Biasa)
+    chooseOkx.addEventListener('click', () => {
+        customModal.classList.add('hidden');
+        window.location.href = `okx://wallet/dapp/details?dappUrl=${encodeURIComponent("https://" + dAppUrl)}`;
     });
 
-    // Fungsi mengecek dan merubah tampilan jika sukses konek
-    function syncWalletConnection() {
-        const isConnected = modal.getIsConnected();
-        const currentAddress = modal.getAddress();
+    chooseMetamask.addEventListener('click', () => {
+        customModal.classList.add('hidden');
+        window.location.href = `https://metamask.app.link/dapp/${dAppUrl}`;
+    });
 
-        if (isConnected && currentAddress) {
-            walletSection.innerHTML = `
-                <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full animate-fade-in">
-                    <span>Connected: ${currentAddress.slice(0,6)}...${currentAddress.slice(-4)}</span>
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                </div>
-            `;
-            generatePrediction(currentAddress);
-        }
+    chooseCoinbase.addEventListener('click', () => {
+        customModal.classList.add('hidden');
+        window.location.href = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent("https://" + dAppUrl)}`;
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        customModal.classList.add('hidden');
+    });
+
+    // 3. Update Tampilan setelah Wallet Sukses Tersambung
+    function handleWalletConnected(address) {
+        walletSection.innerHTML = `
+            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
+                <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            </div>
+        `;
+        generatePrediction(address);
     }
 
     function generatePrediction(address) {
@@ -92,44 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 
-    // Tombol pemicu buka modal universal
-    connectBtn.addEventListener('click', async () => {
+    connectBtn.addEventListener('click', handleConnectClick);
+
+    // Cek otomatis di awal jika user membuka langsung di dalam browser dompet
+    setTimeout(() => {
         const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
-        
-        // Shortcut jika mendeteksi in-app browser aktif (Biar gak muter-muter)
-        if (injectedProvider) {
-            try {
-                const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
-                if (accounts && accounts[0]) {
-                    handleWalletConnectedDirect(accounts[0]);
-                    return;
-                }
-            } catch (e) {
-                console.log("Injected rejected, running standard modal.");
-            }
+        if (injectedProvider && injectedProvider.selectedAddress) {
+            handleWalletConnected(injectedProvider.selectedAddress);
         }
-        
-        // Pemicu buka jendela pop-up di browser Chrome/Safari biasa
-        modal.open();
-    });
-
-    function handleWalletConnectedDirect(address) {
-        walletSection.innerHTML = `
-            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
-                <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            </div>
-        `;
-        generatePrediction(address);
-    }
-
-    // Pantau perubahan status koneksi modal secara real-time
-    modal.subscribeProvider((state) => {
-        if (state.isConnected && state.address) {
-            handleWalletConnectedDirect(state.address);
-        }
-    });
-
-    // Cek status koneksi otomatis saat halaman pertama dimuat
-    setTimeout(syncWalletConnection, 800);
+    }, 500);
 });
+            
