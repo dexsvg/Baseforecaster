@@ -28,61 +28,46 @@ document.addEventListener('DOMContentLoaded', () => {
         "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap memecoin multipliers this week."
     ];
 
-    async function connectWallet() {
-        // A. JALUR INTERNAL: Jika dibuka di dApp Browser OKX / MetaMask / Coinbase Wallet
-        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
-        
-        if (injectedProvider) {
-            try {
-                connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Injected Connecting...`;
-                const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
-                if (accounts && accounts[0]) {
-                    handleWalletConnected(accounts[0]);
-                    return;
-                }
-            } catch (error) {
-                console.log("Injected provider bypassed or rejected, using WalletConnect...");
+    // Project ID WalletConnect V2 Resmi
+    const projectId = '8e6b5ffdcbc9794bf9f448ea2361483b';
+
+    const baseChain = {
+        chainId: 8453,
+        name: 'Base Mainnet',
+        currency: 'ETH',
+        explorerUrl: 'https://basescan.org',
+        rpcUrl: 'https://mainnet.base.org'
+    };
+
+    // Inisialisasi Kontroler Universal Modal
+    const modal = window.Web3ModalEthers5.createWeb3Modal({
+        ethersConfig: window.Web3ModalEthers5.defaultConfig({
+            metadata: {
+                name: 'Base Forecaster',
+                description: 'Hexadecimal Address Destiny Tool',
+                url: window.location.origin,
+                icons: ['https://avatars.githubusercontent.com/u/37784886']
             }
+        }),
+        chains: [baseChain],
+        projectId,
+        themeMode: 'dark'
+    });
+
+    // Fungsi mengecek dan merubah tampilan jika sukses konek
+    function syncWalletConnection() {
+        const isConnected = modal.getIsConnected();
+        const currentAddress = modal.getAddress();
+
+        if (isConnected && currentAddress) {
+            walletSection.innerHTML = `
+                <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full animate-fade-in">
+                    <span>Connected: ${currentAddress.slice(0,6)}...${currentAddress.slice(-4)}</span>
+                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                </div>
+            `;
+            generatePrediction(currentAddress);
         }
-
-        // B. JALUR UNIVERSAL: Jika dibuka di Google Chrome biasa / Safari HP
-        try {
-            connectBtn.innerHTML = `<div class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div> Opening Modal...`;
-            
-            // Menginisialisasi Web3Provider WalletConnect independen
-            const provider = new window.WalletConnectProvider.default({
-                rpc: {
-                    8453: "https://mainnet.base.org" // RPC Base Network
-                },
-                chainId: 8453,
-                qrcodeModalOptions: {
-                    mobileLinks: ["okx", "metamask", "coinbase", "trust"] // Memprioritaskan pop-up dompet utama di HP
-                }
-            });
-
-            // Memicu jendela QR Code & Deep Link modal universal
-            await provider.enable();
-
-            // Ambil address wallet setelah user menyetujui koneksi di aplikasi dompetnya
-            if (provider.accounts && provider.accounts[0]) {
-                handleWalletConnected(provider.accounts[0]);
-            }
-
-        } catch (error) {
-            console.error("User closed modal or connection failed:", error);
-            alert("Connection cancelled.");
-            connectBtn.innerHTML = `<span>🔮</span> Connect Wallet`;
-        }
-    }
-
-    function handleWalletConnected(address) {
-        walletSection.innerHTML = `
-            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
-                <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
-                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-            </div>
-        `;
-        generatePrediction(address);
     }
 
     function generatePrediction(address) {
@@ -107,5 +92,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 200);
     }
 
-    connectBtn.addEventListener('click', connectWallet);
+    // Tombol pemicu buka modal universal
+    connectBtn.addEventListener('click', async () => {
+        const injectedProvider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
+        
+        // Shortcut jika mendeteksi in-app browser aktif (Biar gak muter-muter)
+        if (injectedProvider) {
+            try {
+                const accounts = await injectedProvider.request({ method: 'eth_requestAccounts' });
+                if (accounts && accounts[0]) {
+                    handleWalletConnectedDirect(accounts[0]);
+                    return;
+                }
+            } catch (e) {
+                console.log("Injected rejected, running standard modal.");
+            }
+        }
+        
+        // Pemicu buka jendela pop-up di browser Chrome/Safari biasa
+        modal.open();
+    });
+
+    function handleWalletConnectedDirect(address) {
+        walletSection.innerHTML = `
+            <div class="bg-slate-950 border border-blue-500/30 p-3 rounded-2xl text-[11px] text-blue-400 font-mono flex justify-between items-center w-full">
+                <span>Connected: ${address.slice(0,6)}...${address.slice(-4)}</span>
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            </div>
+        `;
+        generatePrediction(address);
+    }
+
+    // Pantau perubahan status koneksi modal secara real-time
+    modal.subscribeProvider((state) => {
+        if (state.isConnected && state.address) {
+            handleWalletConnectedDirect(state.address);
+        }
+    });
+
+    // Cek status koneksi otomatis saat halaman pertama dimuat
+    setTimeout(syncWalletConnection, 800);
 });
