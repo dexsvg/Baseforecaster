@@ -35,8 +35,8 @@ document.addEventListener('DOMContentLoaded', () => {
         "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap memecoin multipliers this week."
     ];
 
-    // Domain dApp kamu di Vercel
-    const dAppUrl = "baseforecaster.vercel.app";
+    // Mengambil domain dApp kamu secara dinamis dari Vercel
+    const currentDappUrl = window.location.href;
 
     // 1. Fungsi Utama saat tombol Hubungkan Kripto diklik
     async function handleConnectClick() {
@@ -61,20 +61,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 2. Aksi tombol-tombol di dalam Modal Kustom (Jalur Chrome Biasa)
+    // 2. Aksi Tombol di dalam Modal Kustom (Menggunakan Jalur Universal Link Resmi)
+    
+    // Perbaikan Jalur OKX Wallet
     chooseOkx.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        window.location.href = `okx://wallet/dapp/details?dappUrl=${encodeURIComponent("https://" + dAppUrl)}`;
+        const okxTarget = `https://www.okx.com/download?deeplink=${encodeURIComponent("okx://wallet/dapp/details?dappUrl=" + encodeURIComponent(currentDappUrl))}`;
+        window.location.href = okxTarget;
     });
 
+    // Perbaikan Jalur MetaMask
     chooseMetamask.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        window.location.href = `https://metamask.app.link/dapp/${dAppUrl}`;
+        // Format universal link resmi MetaMask untuk mendeteksi aplikasi langsung di mobile
+        const metamaskTarget = `https://metamask.app.link/dapp/${currentDappUrl.replace('https://', '').replace('http://', '')}`;
+        window.location.href = metamaskTarget;
     });
 
+    // Perbaikan Jalur Coinbase Wallet
     chooseCoinbase.addEventListener('click', () => {
         customModal.classList.add('hidden');
-        window.location.href = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent("https://" + dAppUrl)}`;
+        const coinbaseTarget = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(currentDappUrl)}`;
+        window.location.href = coinbaseTarget;
     });
 
     closeModalBtn.addEventListener('click', () => {
@@ -124,4 +132,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 500);
 });
-            
