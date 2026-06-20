@@ -1,25 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- KONFIGURASI DEV WALLET ---
-    const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8";
+    // --- KONFIGURASI ALAMAT RESMI ---
+    const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; // Untuk Donasi/Tip
+    const nftContractAddress = "0x5693B08eD075012E42caCeAB11AA53b07f227e35"; // KONTRAK NFT BASE KAMU
 
-    // --- ELEMEN UTAMA ---
+    // --- ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
     const walletSection = document.getElementById('wallet-section');
     const resultSection = document.getElementById('result-section');
     const shareXBtn = document.getElementById('share-x-btn');
     const mintNftBtn = document.getElementById('mint-nft-btn');
     const donateBtn = document.getElementById('donate-btn');
-
-    // --- ELEMEN HASIL (DIKENDALIKAN CANVAS) ---
-    const fortuneEmoji = document.getElementById('fortune-emoji');
+    const cardCanvas = document.getElementById('destiny-card');
     const fortuneFate = document.getElementById('fortune-fate');
-    const fortuneText = document.getElementById('fortune-text');
     const luckScore = document.getElementById('luck-score');
     const luckBar = document.getElementById('luck-bar');
     const seedAnchor = document.getElementById('seed-anchor');
-    const cardCanvas = document.getElementById('destiny-card');
 
-    // --- ELEMEN CUSTOM MODAL ---
+    // --- CUSTOM MODAL DOMPET ---
     const customModal = document.getElementById('custom-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const chooseOkx = document.getElementById('choose-okx');
@@ -30,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     degenRatingContainer.className = "mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-xl text-center mb-4";
     resultSection.insertBefore(degenRatingContainer, resultSection.firstChild);
 
-    // Database Ramalan Variatif
+    // Database Ramalan Unik
     const fates = [
         { status: "The Chad Base Whale", emoji: "🐋", label: "Apex Predator", text: "Horror awaits your portfolio if you open phishing links today. However, your luck indicator shows a weird spike in low-cap multipliers." },
         { status: "Paper Hands Martyr", emoji: "🧻", label: "Panic Seller", text: "You will sell the bottom right before a 100x pump. Take a deep breath, lock your tokens, and stay Based." },
@@ -94,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="text-[9px] text-slate-500 mt-0.5">Streak: ${seedNumber % 5 + 1} Days Active</div>
         `;
 
-        // DRAW POKEMON GOLD-BLUE CARD TO CANVAS
         drawDestinyCard(address, fate, luck, shortHex);
 
         shareXBtn.onclick = () => {
@@ -103,96 +99,78 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // --- ENGINE PEMBUAT KARTU POKEMON EMAS BIRU ---
     function drawDestinyCard(address, fate, luck, shortHex) {
         const ctx = cardCanvas.getContext('2d');
-        
-        // 1. Background Dasar Gradasi Biru Tua & Gold
         const bgGrad = ctx.createLinearGradient(0, 0, 350, 500);
-        bgGrad.addColorStop(0, '#020617'); // Slate 950
-        bgGrad.addColorStop(0.5, '#1e3a8a'); // Blue 900
-        bgGrad.addColorStop(1, '#0f172a'); // Slate 900
+        bgGrad.addColorStop(0, '#020617');
+        bgGrad.addColorStop(0.5, '#1e3a8a');
+        bgGrad.addColorStop(1, '#0f172a');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, 350, 500);
 
-        // 2. Border Luar Emas Mewah (Gold Pokémon Card Border)
-        ctx.strokeStyle = '#d97706'; // Amber 600
+        ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 14;
         ctx.strokeRect(7, 7, 336, 486);
 
-        // Border Dalam Neon Biru Base
-        ctx.strokeStyle = '#2563eb'; // Blue 600
+        ctx.strokeStyle = '#2563eb';
         ctx.lineWidth = 2;
         ctx.strokeRect(16, 16, 318, 468);
 
-        // 3. Header Kartu: Judul Layaknya Nama Pokémon
-        ctx.fillStyle = '#f59e0b'; // Amber 500 Gold
+        ctx.fillStyle = '#f59e0b';
         ctx.font = 'bold 18px Helvetica, Arial, sans-serif';
         ctx.fillText("BASE FORECASTER", 28, 45);
 
-        // ID Anchor di pojok kanan atas
-        ctx.fillStyle = '#60a5fa'; // Blue 400
+        ctx.fillStyle = '#60a5fa';
         ctx.font = 'bold 13px Courier New, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`ID: #${shortHex}`, 320, 43);
         ctx.textAlign = 'left';
 
-        // 4. Bingkai Tengah Gambar Profil (Ilustrasi Avatar)
         ctx.fillStyle = '#090d16';
         ctx.fillRect(28, 65, 294, 180);
         ctx.strokeStyle = '#d97706';
         ctx.lineWidth = 3;
         ctx.strokeRect(28, 65, 294, 180);
 
-        // Efek Cahaya Hologram di dalam kotak avatar
         const holoGrad = ctx.createRadialGradient(175, 155, 10, 175, 155, 120);
         holoGrad.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
         holoGrad.addColorStop(1, 'rgba(217, 119, 6, 0.05)');
         ctx.fillStyle = holoGrad;
         ctx.fillRect(30, 67, 290, 176);
 
-        // Render Emoji Tengah Besar sebagai Identitas Utama
         ctx.font = '75px Arial';
         ctx.textAlign = 'center';
         ctx.fillText(fate.emoji, 175, 175);
         ctx.textAlign = 'left';
 
-        // 5. Kotak Alamat Wallet Pengguna (Di bawah gambar)
         ctx.fillStyle = 'rgba(37, 99, 235, 0.15)';
         ctx.fillRect(28, 255, 294, 30);
         ctx.strokeStyle = 'rgba(96, 165, 250, 0.3)';
         ctx.lineWidth = 1;
         ctx.strokeRect(28, 255, 294, 30);
 
-        ctx.fillStyle = '#93c5fd'; // Blue 300
+        ctx.fillStyle = '#93c5fd';
         ctx.font = '11px Courier New, monospace';
         const displayAddr = `${address.slice(0, 14)}...${address.slice(-12)}`;
         ctx.fillText(displayAddr, 38, 274);
 
-        // 6. Section Info Atribut & Status Ramalan
         ctx.fillStyle = '#f59e0b';
         ctx.font = 'bold 15px Helvetica, Arial, sans-serif';
         ctx.fillText(fate.status.toUpperCase(), 28, 315);
 
-        // Luck Score Badge (HP di Kartu Pokemon)
-        ctx.fillStyle = '#10b981'; // Emerald 500
+        ctx.fillStyle = '#10b981';
         ctx.font = 'bold 14px Helvetica, Arial, sans-serif';
         ctx.textAlign = 'right';
         ctx.fillText(`LUCK: ${luck}%`, 320, 315);
         ctx.textAlign = 'left';
 
-        // 7. Deskripsi Ramalan (Mengatur Bungkus Teks Otomatis)
-        ctx.fillStyle = '#cbd5e1'; // Slate 300
-        ctx.font = 'italic 12px Georgia, serif';
         wrapText(ctx, `"${fate.text}"`, 28, 345, 294, 18);
 
-        // 8. Watermark Kecil Footer
         ctx.fillStyle = 'rgba(255,255,255,0.15)';
         ctx.font = '9px Helvetica';
         ctx.fillText("© 2026 BASE FORECASTER DEV • BUILT ON BASE", 28, 475);
     }
 
-    // Fungsi Pembantu Pembungkus Paragraf Teks Canvas
     function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
         const words = text.split(' ');
         let line = '';
@@ -211,48 +189,87 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- SYSTEM MINT NFT (HARGA BARU PASTI MURAH: 0.0005 ETH) ---
+    // --- INTEGRASI SMART CONTRACT (MINT NFT) ---
+    const nftAbi = [
+        "function mint() external payable",
+        "function purchase() external payable"
+    ];
+
     mintNftBtn.onclick = async () => {
         if (!window.ethereum) {
-            alert("Please open this app inside a Web3 Wallet to Mint your NFT!");
+            alert("Sila gunakan dompet Web3 (MetaMask/Coinbase) untuk mencetak NFT!");
             return;
         }
         try {
+            // Pindah jaringan dompet secara paksa ke Base Mainnet (0x2105)
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x2105' }],
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x2105',
+                            chainName: 'Base Mainnet',
+                            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                            rpcUrls: ['https://mainnet.base.org'],
+                            blockExplorerUrls: ['https://basescan.org']
+                        }],
+                    });
+                }
+            }
+
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
+            const contract = new ethers.Contract(nftContractAddress, nftAbi, signer);
 
-            // Eksekusi transaksi langsung ke dompet developer sebesar 0.0005 ETH
-            const tx = await signer.sendTransaction({
-                to: devWalletAddress,
-                value: ethers.utils.parseEther("0.0005") 
+            alert("Membuka dompet untuk konfirmasi minting NFT (0.0005 ETH)...");
+            
+            // Mencoba mengeksekusi fungsi standar mint() pada contract kamu
+            const tx = await contract.mint({
+                value: ethers.utils.parseEther("0.0005")
             });
 
-            alert("Minting request submitted to Base Mainnet! Processing... 🚀");
+            alert("Transaksi dikirim ke Base Network! Memproses... 🚀");
             await tx.wait();
-            alert("Destiny Pass successfully minted into your wallet! Check your collectibles. 🎉");
+            alert("Sukses! NFT Kartu Destiny Pass resmi dicetak ke dalam dompetmu. 🎉");
         } catch (err) {
-            alert("Minting transaction failed or was canceled.");
+            console.error(err);
+            alert(`Minting gagal: ${err.message || err}`);
         }
     };
 
-    // --- SYSTEM TRANSFER DONASI (SEND 0.001 ETH) ---
+    // --- TRANSFER DONASI TIP (0.001 ETH) ---
     donateBtn.onclick = async () => {
         if (!window.ethereum) {
-            alert("Please use a Web3 environment to tip.");
+            alert("Sila gunakan lingkungan Web3 untuk mengirim tip.");
             return;
         }
         try {
+            await window.ethereum.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }],
+            });
+
             const provider = new ethers.providers.Web3Provider(window.ethereum);
             const signer = provider.getSigner();
+
+            alert("Membuka dompet untuk transfer tip 0.001 ETH...");
             const tx = await signer.sendTransaction({
                 to: devWalletAddress,
                 value: ethers.utils.parseEther("0.001")
             });
-            alert("Tip transaction submitted! Sending 0.001 ETH to Dev... 🚀");
+
+            alert("Tip sedang dikonfirmasi di jaringan Base... 🚀");
             await tx.wait();
-            alert("Thank you for supporting Base Forecaster, Chad! 🔥");
+            alert("Terima kasih atas kiriman tipnya, Chad! Kreativitas Anda sangat dihargai! 🔥");
         } catch (err) {
-            alert("Transaction canceled.");
+            console.error(err);
+            alert(`Donasi gagal: ${err.message || err}`);
         }
     };
 });
+    
