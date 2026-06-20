@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- KONFIGURASI ---
-    const devWalletAddress = "ALAMAT_WALLET_BASE_KAMU_DISINI";
+    const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8";
     
     // ... (elemen DOM seperti sebelumnya) ...
     const connectBtn = document.getElementById('connect-btn');
