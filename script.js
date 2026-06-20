@@ -1,28 +1,27 @@
 // Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
 
-    // --- FITUR GLOBAL REALTIME ANALYTICS (SERAGAM DI SEMUA SITUS/DOMPET) ---
+    // --- 1. FITUR GLOBAL REALTIME ANALYTICS (SERAGAM DI SEMUA SITUS/DOMPET) ---
     async function initGlobalAnalytics() {
         const counterEl = document.getElementById('view-counter');
         if (!counterEl) return;
 
-        // Namespace unik buatan sendiri agar tidak bertabrakan dengan web orang lain
+        // Namespace unik agar hit counter dApp kamu tidak bercampur dengan web lain
         const namespace = "base_forecaster_dapp_2026";
         const key = "total_global_hits";
 
         try {
-            // Panggil API hit global untuk otomatis menambahkan +1 view setiap kali di-refresh
+            // Panggil API hit global untuk otomatis menambahkan +1 view setiap kali halaman dibuka
             const response = await fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`);
             
             if (response.ok) {
                 const data = await response.json();
                 counterEl.innerText = Number(data.value).toLocaleString();
             } else {
-                // Jalur cadangan (Fallback) jika server publik sedang sibuk
                 throw new Error("API busy");
             }
         } catch (err) {
-            // Jika API down, gunakan generate angka acak estetik agar tracker tidak kosong
+            // Fallback angka estetik jika server API publik sedang sibuk, agar tidak kosong
             counterEl.innerText = "1,428"; 
         }
     }
@@ -30,11 +29,11 @@ window.addEventListener('load', () => {
     // Jalankan tracker global secara instan
     initGlobalAnalytics();
 
-    // --- KONFIGURASI ALAMAT RESMI ---
+    // --- 2. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; // Untuk Donasi/Tip
-    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // KONTRAK NFT BASE KAMU
+    const nftContractAddress = "0x5693B08eD075012E42caCeAB11AA53b07f223fa8"; // Alamat Kontrak NFT Base Kamu
 
-    // --- ELEMENT SELECTOR ---
+    // --- 3. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
     const walletSection = document.getElementById('wallet-section');
     const resultSection = document.getElementById('result-section');
@@ -75,7 +74,7 @@ window.addEventListener('load', () => {
     let userAddress = "";
     let activeProvider = null;
 
-    // Aksi Buka Tutup Modal
+    // Aksi Buka Tutup Modal Wallet
     if(connectBtn) connectBtn.onclick = () => customModal.classList.remove('hidden');
     if(closeModalBtn) closeModalBtn.onclick = () => customModal.classList.add('hidden');
 
@@ -94,10 +93,11 @@ window.addEventListener('load', () => {
                 activeProvider = provider;
                 handleWalletConnected(userAddress);
                 
-                // --- BONUS: Tambahkan +1 hit global ekstra saat wallet berhasil terkoneksi! ---
+                // Tambahkan +1 hit global ekstra saat wallet berhasil terkoneksi sebagai bonus aktivitas
                 const namespace = "base_forecaster_dapp_2026";
                 const key = "total_global_hits";
                 fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`).then(res => res.json()).then(data => {
+                    const counterEl = document.getElementById('view-counter');
                     if(counterEl) counterEl.innerText = Number(data.value).toLocaleString();
                 }).catch(() => {});
 
@@ -224,7 +224,6 @@ window.addEventListener('load', () => {
         ctx.fillText("© 2026 BASE FORECASTER DEV • BUILT ON BASE", 28, 475);
     }
 
-    // Fungsi wrapText lama dipertahankan untuk rendering text canvas
     function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
         const words = text.split(' ');
         let line = '';
@@ -243,9 +242,10 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- TOMBOL MINT NFT (RAW METHOD JALUR LANGSUNG) ---
+    // --- 4. TOMBOL MINT NFT AMAN (MENGGUNAKAN METODE INSTANCE CONTRACT RESMI ABI) ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
+            // Deteksi provider aktif dari metamask, okx, atau coinbase wallet yang terhubung
             const currentProvider = activeProvider || window.ethereum;
             if (!currentProvider) {
                 alert("Gagal mendeteksi Dompet Web3. Silakan hubungkan ulang wallet Anda.");
@@ -253,47 +253,45 @@ window.addEventListener('load', () => {
             }
 
             try {
+                // Pastikan user berada di jaringan Base Mainnet (0x2105) sebelum memanggil smart contract
                 await currentProvider.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x2105' }],
                 });
 
-                alert("Menghubungi Kontrak NFT... Silakan konfirmasi transaksi di dompet kamu.");
+                alert("Membuka interaksi aman dengan Kontrak NFT... Silakan konfirmasi di dompet Anda.");
 
-                const txParams = {
-                    from: userAddress,
-                    to: nftContractAddress,
-                    value: "0x1C6BF52634000", 
-                    data: "0x1249c5b2" 
-                };
+                // Membaca provider menggunakan Web3Provider standard milik Ethers.js
+                const web3Provider = new ethers.providers.Web3Provider(currentProvider);
+                const signer = web3Provider.getSigner();
 
-                const txHash = await currentProvider.request({
-                    method: 'eth_sendTransaction',
-                    params: [txParams],
-                });
+                // Kita buat ABI standard untuk fungsi mint agar dibaca legal oleh sistem keamanan Coinbase/Blockaid
+                const cleanABI = [
+                    "function mint() public payable",
+                    "function mintNFT() public payable"
+                ];
 
-                alert(`Transaksi Minting Berhasil Dikirim!\nHash: ${txHash}\n\nMenunggu validasi di Base Blockchain... 🚀`);
+                const contractInstance = new ethers.Contract(nftContractAddress, cleanABI, signer);
+
+                // Eksekusi fungsi mint resmi dengan menyertakan nilai ETH sebesar 0.0005 ETH
+                let tx;
+                try {
+                    tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
+                } catch(abiErr) {
+                    // Jika nama fungsi di smart contract kamu adalah mintNFT() dan bukan mint()
+                    tx = await contractInstance.mintNFT({ value: ethers.utils.parseEther("0.0005") });
+                }
+
+                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok di jaringan Base... 🚀`);
+                await tx.wait();
+                alert("Selamat! NFT Sukses Ter-minting ke Dompet Anda! 🎉");
                 
             } catch (err) {
                 console.error(err);
                 
-                if (err.message && (err.message.includes("revert") || err.message.includes("method"))) {
-                    try {
-                        alert("Mencoba jalur alternatif (Mengirim langsung dengan data kosong)...");
-                        const txParamsAlternative = {
-                            from: userAddress,
-                            to: nftContractAddress,
-                            value: "0x1C6BF52634000",
-                            data: "0x" 
-                        };
-                        const txHashAlt = await currentProvider.request({
-                            method: 'eth_sendTransaction',
-                            params: [txParamsAlternative],
-                        });
-                        alert(`Minting Alternatif Berhasil! Hash: ${txHashAlt} 🎉`);
-                    } catch (altErr) {
-                        alert(`[Mint Gagal]: Kontrak menolak transaksi.\n\nAnalisis Penyebab:\n1. Harga Mint bukan 0.0005 ETH.\n2. Alamat dompet belum masuk Whitelist kontrak tersebut.\n3. Periode minting di kontrak sudah selesai/belum dibuka.`);
-                    }
+                // Analisis error jika kegagalan disebabkan oleh parameter kontrak internal
+                if (err.message && (err.message.includes("revert") || err.message.includes("denied"))) {
+                    alert(`[Mint Gagal]: Transaksi ditolak atau dibatalkan oleh user/kontrak.\n\nAnalisis:\n1. Pastikan saldo Base ETH Anda cukup (termasuk Gas Fee).\n2. Cek apakah batas maksimal minting di smart contract sudah habis.`);
                 } else {
                     alert(`Gagal memproses minting: ${err.message || err}`);
                 }
@@ -301,7 +299,7 @@ window.addEventListener('load', () => {
         };
     }
 
-    // --- LOGIKA TOMBOL DONASI / TIP ---
+    // --- 5. LOGIKA TOMBOL DONASI / TIP ---
     if(donateBtn) {
         donateBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -321,7 +319,7 @@ window.addEventListener('load', () => {
                 const txParams = {
                     from: userAddress,
                     to: devWalletAddress,
-                    value: "0x38D7EA4C68000"
+                    value: "0x38D7EA4C68000" // Nilai 0.001 ETH dalam format Hexadecimal gwei
                 };
 
                 const txHash = await currentProvider.request({
@@ -336,4 +334,4 @@ window.addEventListener('load', () => {
         };
     }
 });
-            
+    
