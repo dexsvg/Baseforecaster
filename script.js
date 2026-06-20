@@ -6,29 +6,23 @@ window.addEventListener('load', () => {
         const counterEl = document.getElementById('view-counter');
         if (!counterEl) return;
 
-        // Gunakan key unik yang spesifik untuk dApp Base Forecaster kamu
         const key = "base_forecaster_v1_live_views";
 
         try {
-            // Menggunakan API hit counter yang lebih stabil dan real-time
             const response = await fetch(`https://api.mojocounter.com/hit/baseforecaster/${key}`);
-            
             if (response.ok) {
                 const data = await response.json();
-                // Angka asli dari server Mojo, ditambah 3500 (booster) supaya dApp langsung terlihat ramai
                 const realViews = Number(data.value || 1) + 3500;
                 counterEl.innerText = realViews.toLocaleString();
             } else {
                 throw new Error("API busy");
             }
         } catch (err) {
-            // Jika API gagal, tampilkan angka backup dinamis berbasis menit (supaya tetap terlihat hidup)
             const fallbackValue = 3524 + new Date().getMinutes();
             counterEl.innerText = fallbackValue.toLocaleString(); 
         }
     }
 
-    // Jalankan tracker global secara instan
     initGlobalAnalytics();
 
     // --- 2. KONFIGURASI ALAMAT RESMI ---
@@ -48,7 +42,6 @@ window.addEventListener('load', () => {
     const luckBar = document.getElementById('luck-bar');
     const seedAnchor = document.getElementById('seed-anchor');
 
-    // --- CUSTOM MODAL DOMPET ---
     const customModal = document.getElementById('custom-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const chooseOkx = document.getElementById('choose-okx');
@@ -92,7 +85,6 @@ window.addEventListener('load', () => {
                 activeProvider = provider;
                 handleWalletConnected(userAddress);
                 
-                // Tambahkan hit saat wallet connect (tetap pakai fungsi hit yang baru)
                 fetch(`https://api.mojocounter.com/hit/baseforecaster/base_forecaster_v1_live_views`).catch(() => {});
             } catch (err) {
                 alert("Koneksi dibatalkan atau ditolak.");
@@ -144,10 +136,199 @@ window.addEventListener('load', () => {
         }
     }
 
-    // Fungsi Draw, WrapText, Mint, Donate... (TETAP SAMA SEPERTI SEBELUMNYA)
-    // Saya persingkat di sini, tapi di file kamu jangan dihapus ya!
-    // (Fungsi drawDestinyCard, wrapText, tombol mintNftBtn dan donateBtn biarkan sesuai kode terakhir yang sudah fix)
-    
-    // Pastikan tombol Mint dan Donate tetap menggunakan logika Contract ABI yang sudah kita fix tadi!
-});
+    // --- 4. ENGINE GENERATOR KARTU BARU (8-BIT RETRO PIXEL NFT STYLE) ---
+    function drawDestinyCard(address, fate, luck, shortHex) {
+        if(!cardCanvas) return;
+        const ctx = cardCanvas.getContext('2d');
         
+        // Matikan anti-aliasing agar rendering teks dan kotak benar-benar tajam khas piksel lama
+        ctx.imageSmoothingEnabled = false;
+
+        // Background Cyberpunk Hitam Hijau/Biru Tua ala terminal dApp kuno
+        ctx.fillStyle = '#060a13';
+        ctx.fillRect(0, 0, 350, 500);
+
+        // Border Piksel Ganda (Gaya Arcade Game)
+        ctx.fillStyle = '#0052FF'; // Base Blue
+        ctx.fillRect(6, 6, 338, 8); // Top
+        ctx.fillRect(6, 486, 338, 8); // Bottom
+        ctx.fillRect(6, 6, 8, 488); // Left
+        ctx.fillRect(336, 6, 8, 488); // Right
+
+        ctx.fillStyle = '#f59e0b'; // Amber Accent Inner Border
+        ctx.fillRect(18, 18, 314, 3);
+        ctx.fillRect(18, 479, 314, 3);
+        ctx.fillRect(18, 18, 3, 464);
+        ctx.fillRect(329, 18, 3, 464);
+
+        // Teks Atas bergaya Arcade Monospace
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px "Courier New", Courier, monospace';
+        ctx.fillText("■ BASE_FORECASTER.EXE", 28, 45);
+
+        // ID Pojok Kanan
+        ctx.fillStyle = '#0052FF';
+        ctx.font = 'bold 12px "Courier New", Courier, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`[NFT #${shortHex}]`, 322, 45);
+        ctx.textAlign = 'left';
+
+        // Kotak Frame Utama Gambar NFT (Tempat Emoji)
+        ctx.fillStyle = '#020408';
+        ctx.fillRect(32, 70, 286, 180);
+        
+        // Border frame gambar
+        ctx.strokeStyle = '#22c55e'; // Green terminal color
+        ctx.lineWidth = 2;
+        ctx.strokeRect(32, 70, 286, 180);
+
+        // PROSES FILTER PIXELLATION PADA EMOJI (MEMBUAT EMOJI JADI 8-BIT)
+        // Kita gambar emojinya dulu berukuran sangat kecil, lalu kita stretch agar pecah berkotak-kotak otomatis!
+        const memCtx = document.createElement('canvas').getContext('2d');
+        memCtx.canvas.width = 16;
+        memCtx.canvas.height = 16;
+        memCtx.font = '14px Arial';
+        memCtx.textAlign = 'center';
+        memCtx.textBaseline = 'middle';
+        memCtx.fillText(fate.emoji, 8, 9);
+        
+        // Gambar ulang hasil emoji kecil tadi ke canvas utama dengan skala besar (Pixelated Effect)
+        ctx.drawImage(memCtx.canvas, 0, 0, 16, 16, 100, 85, 150, 150);
+
+        // Banner Status Wallet Address
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(32, 265, 286, 26);
+        ctx.strokeStyle = '#1e3a8a';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(32, 265, 286, 26);
+
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '11px "Courier New", Courier, monospace';
+        const displayAddr = `ADDR: ${address.slice(0, 10)}...${address.slice(-8)}`;
+        ctx.fillText(displayAddr, 42, 282);
+
+        // Judul Karakter / Nasib
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px "Courier New", Courier, monospace';
+        ctx.fillText(`ROLE: ${fate.status.toUpperCase()}`, 32, 320);
+
+        // Angka Keberuntungan
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 13px "Courier New", Courier, monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`LUCK: ${luck}%`, 318, 320);
+        ctx.textAlign = 'left';
+
+        // Teks Deskripsi (Wrapped Berformat Ketikan Monitor Kuno)
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = '12px "Courier New", Courier, monospace';
+        wrapText(ctx, `> ${fate.text}`, 32, 350, 286, 16);
+
+        // Watermark Footer
+        ctx.fillStyle = '#4b5563';
+        ctx.font = '9px "Courier New", Courier, monospace';
+        ctx.fillText("SYS.REV // GEN_2026_MINT_LIVE", 32, 468);
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + ' ';
+            let metrics = ctx.measureText(testLine);
+            let testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                ctx.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, x, y);
+    }
+
+    // --- 5. TOMBOL MINT NFT AMAN (MENGGUNAKAN METODE INSTANCE CONTRACT RESMI ABI) ---
+    if(mintNftBtn) {
+        mintNftBtn.onclick = async () => {
+            const currentProvider = activeProvider || window.ethereum;
+            if (!currentProvider) {
+                alert("Gagal mendeteksi Dompet Web3. Silakan hubungkan ulang wallet Anda.");
+                return;
+            }
+
+            try {
+                await currentProvider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x2105' }],
+                });
+
+                alert("Membuka interaksi aman dengan Kontrak NFT... Silakan konfirmasi di dompet Anda.");
+
+                const web3Provider = new ethers.providers.Web3Provider(currentProvider);
+                const signer = web3Provider.getSigner();
+
+                const cleanABI = [
+                    "function mint() public payable",
+                    "function mintNFT() public payable"
+                ];
+
+                const contractInstance = new ethers.Contract(nftContractAddress, cleanABI, signer);
+
+                let tx;
+                try {
+                    tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
+                } catch(abiErr) {
+                    tx = await contractInstance.mintNFT({ value: ethers.utils.parseEther("0.0005") });
+                }
+
+                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok di jaringan Base... 🚀`);
+                await tx.wait();
+                alert("Selamat! NFT Sukses Ter-minting ke Dompet Anda! 🎉");
+                
+            } catch (err) {
+                console.error(err);
+                if (err.message && (err.message.includes("revert") || err.message.includes("denied"))) {
+                    alert(`[Mint Gagal]: Transaksi ditolak atau dibatalkan oleh user/kontrak.\n\nAnalisis:\n1. Pastikan saldo Base ETH Anda cukup (termasuk Gas Fee).\n2. Cek apakah batas maksimal minting di smart contract sudah habis.`);
+                } else {
+                    alert(`Gagal memproses minting: ${err.message || err}`);
+                }
+            }
+        };
+    }
+
+    // --- 6. LOGIKA TOMBOL DONASI / TIP ---
+    if(donateBtn) {
+        donateBtn.onclick = async () => {
+            const currentProvider = activeProvider || window.ethereum;
+            if (!currentProvider) {
+                alert("Dompet Web3 tidak ditemukan.");
+                return;
+            }
+
+            try {
+                await currentProvider.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x2105' }],
+                });
+
+                alert("Membuka konfirmasi transfer tip 0.001 Base ETH...");
+                
+                const txParams = {
+                    from: userAddress,
+                    to: devWalletAddress,
+                    value: "0x38D7EA4C68000" 
+                };
+
+                const txHash = await currentProvider.request({
+                    method: 'eth_sendTransaction',
+                    params: [txParams],
+                });
+
+                alert(`Terima kasih Chad! Tip terkirim. Tx Hash: ${txHash} 🔥`);
+            } catch (err) {
+                alert(`Donasi batal/gagal: ${err.message || err}`);
+            }
+        };
+    }
+});
