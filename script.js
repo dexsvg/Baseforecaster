@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
 
     // --- 2. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // KONTRAK NFT BASE KAMU
+    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; 
 
     // --- 3. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
@@ -128,63 +128,106 @@ window.addEventListener('load', () => {
 
         drawDestinyCard(address, fate, luck, shortHex);
 
-        if(shareXBtn) {
-            shareXBtn.onclick = () => {
-                const tweetText = `My ${today} Destiny Report from Base Forecaster:\n\nStatus: ${fate.status} ${fate.emoji}\nLuck: ${luck}%\nRating: ${fate.label}\n\nCheck your wallet's destiny daily on @Base: ${window.location.origin}`;
-                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
+        // --- 4. TOMBOL SHARE NATIVE (MENGIRIM GAMBAR + TEKS + LINK APLIKASI SEKALIGUS) ---
+        if (shareXBtn) {
+            shareXBtn.onclick = async () => {
+                if (!cardCanvas) return;
+
+                // Konversi hasil gambar canvas menjadi data file Blob
+                cardCanvas.toBlob(async (blob) => {
+                    if (!blob) return;
+
+                    const file = new File([blob], `Base_Forecaster_${shortHex}.png`, { type: 'image/png' });
+
+                    // Paket data kiriman share sistem mobile
+                    const shareData = {
+                        files: [file],
+                        title: 'My Base Destiny',
+                        text: `My ${today} Destiny Report from Base Forecaster:\n\nStatus: ${fate.status} ${fate.emoji}\nLuck: ${luck}%\nRating: ${fate.label}\n\nCheck your wallet's destiny here:`,
+                        url: window.location.origin
+                    };
+
+                    // Cek jika browser mendukung Web Share API (Sangat optimal di HP)
+                    if (navigator.canShare && navigator.canShare(shareData)) {
+                        try {
+                            await navigator.share(shareData);
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error("Error sharing:", err);
+                            }
+                        }
+                    } else {
+                        // Fallback jika dibuka lewat browser desktop lama / yang tidak mendukung share file
+                        const link = document.createElement('a');
+                        link.download = `Base_Forecaster_${shortHex}.png`;
+                        link.href = cardCanvas.toDataURL('image/png');
+                        link.click();
+                        
+                        const tweetText = `My ${today} Destiny Report from Base Forecaster:\n\nStatus: ${fate.status} ${fate.emoji}\nLuck: ${luck}%\nRating: ${fate.label}\n\nCheck your wallet's destiny daily on @Base: ${window.location.origin}`;
+                        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`, '_blank');
+                    }
+                }, 'image/png');
             };
         }
     }
 
-    // --- 4. ENGINE GENERATOR KARTU BARU (8-BIT RETRO PIXEL NFT STYLE) ---
+    // --- 5. ENGINE GENERATOR KARTU (KEMBALI KE STYLE BIASA / NON-PIXEL) ---
     function drawDestinyCard(address, fate, luck, shortHex) {
         if(!cardCanvas) return;
         const ctx = cardCanvas.getContext('2d');
         
-        ctx.imageSmoothingEnabled = false;
+        // Aktifkan kembali anti-aliasing agar tampilan gambar halus
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
 
+        // Background Cyberpunk Hitam Hijau/Biru Tua ala terminal dApp kuno
         ctx.fillStyle = '#060a13';
         ctx.fillRect(0, 0, 350, 500);
 
-        ctx.fillStyle = '#0052FF'; 
-        ctx.fillRect(6, 6, 338, 8); 
-        ctx.fillRect(6, 486, 338, 8); 
-        ctx.fillRect(6, 6, 8, 488); 
-        ctx.fillRect(336, 6, 8, 488); 
+        // Border Ganda
+        ctx.fillStyle = '#0052FF'; // Base Blue
+        ctx.fillRect(6, 6, 338, 8); // Top
+        ctx.fillRect(6, 486, 338, 8); // Bottom
+        ctx.fillRect(6, 6, 8, 488); // Left
+        ctx.fillRect(336, 6, 8, 488); // Right
 
-        ctx.fillStyle = '#f59e0b'; 
+        ctx.fillStyle = '#f59e0b'; // Amber Accent Inner Border
         ctx.fillRect(18, 18, 314, 3);
         ctx.fillRect(18, 479, 314, 3);
         ctx.fillRect(18, 18, 3, 464);
         ctx.fillRect(329, 18, 3, 464);
 
+        // Teks Atas bergaya Arcade Monospace
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 16px "Courier New", Courier, monospace';
         ctx.fillText("■ BASE_FORECASTER.EXE", 28, 45);
 
+        // ID Pojok Kanan
         ctx.fillStyle = '#0052FF';
         ctx.font = 'bold 12px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`[NFT #${shortHex}]`, 322, 45);
         ctx.textAlign = 'left';
 
+        // Kotak Frame Utama Gambar NFT (Tempat Emoji)
         ctx.fillStyle = '#020408';
         ctx.fillRect(32, 70, 286, 180);
         
-        ctx.strokeStyle = '#22c55e'; 
+        // Border frame gambar
+        ctx.strokeStyle = '#22c55e'; // Green terminal color
         ctx.lineWidth = 2;
         ctx.strokeRect(32, 70, 286, 180);
 
-        const memCtx = document.createElement('canvas').getContext('2d');
-        memCtx.canvas.width = 16;
-        memCtx.canvas.height = 16;
-        memCtx.font = '14px Arial';
-        memCtx.textAlign = 'center';
-        memCtx.textBaseline = 'middle';
-        memCtx.fillText(fate.emoji, 8, 9);
-        
-        ctx.drawImage(memCtx.canvas, 0, 0, 16, 16, 100, 85, 150, 150);
+        // MERUBAH GAMBAR KEMBALI JADI NORMAL (RENDERING HD HALUS TANPA PIXELASI)
+        ctx.font = '110px Arial'; 
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(fate.emoji, 175, 160);
 
+        // Reset alignment font ke kiri untuk teks deskripsi di bawahnya
+        ctx.textAlign = 'left';
+
+        // Banner Status Wallet Address
         ctx.fillStyle = '#111827';
         ctx.fillRect(32, 265, 286, 26);
         ctx.strokeStyle = '#1e3a8a';
@@ -196,20 +239,24 @@ window.addEventListener('load', () => {
         const displayAddr = `ADDR: ${address.slice(0, 10)}...${address.slice(-8)}`;
         ctx.fillText(displayAddr, 42, 282);
 
+        // Judul Karakter / Nasib
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px "Courier New", Courier, monospace';
         ctx.fillText(`ROLE: ${fate.status.toUpperCase()}`, 32, 320);
 
+        // Angka Keberuntungan
         ctx.fillStyle = '#22c55e';
         ctx.font = 'bold 13px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`LUCK: ${luck}%`, 318, 320);
         ctx.textAlign = 'left';
 
+        // Teks Deskripsi (Wrapped Berformat Ketikan Monitor Kuno)
         ctx.fillStyle = '#cbd5e1';
         ctx.font = '12px "Courier New", Courier, monospace';
         wrapText(ctx, `> ${fate.text}`, 32, 350, 286, 16);
 
+        // Watermark Footer
         ctx.fillStyle = '#4b5563';
         ctx.font = '9px "Courier New", Courier, monospace';
         ctx.fillText("SYS.REV // GEN_2026_MINT_LIVE", 32, 468);
@@ -233,7 +280,7 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- 5. PERBAIKAN TOTAL TOMBOL MINT NFT AMAN (METODE HYBRID ANTI-MACET) ---
+    // --- 6. TOMBOL MINT NFT AMAN (MENGGUNAKAN METODE HYBRID ANTI-MACET) ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -253,7 +300,6 @@ window.addEventListener('load', () => {
                 const web3Provider = new ethers.providers.Web3Provider(currentProvider);
                 const signer = web3Provider.getSigner();
 
-                // Daftar ABI Komprehensif mencakup fungsi minting standar industri
                 const robustABI = [
                     "function mint() public payable",
                     "function mint(uint256 quantity) public payable",
@@ -265,29 +311,23 @@ window.addEventListener('load', () => {
                 const contractInstance = new ethers.Contract(nftContractAddress, robustABI, signer);
                 let tx;
 
-                // Taktik Eksekusi Berantai (Chain Fallback Execution)
                 try {
-                    // Jalur Utama: Fungsi mint() tanpa parameter
                     tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
                 } catch(err1) {
                     console.log("Jalur 1 gagal, mencoba Jalur 2 (mint dengan kuantitas)...");
                     try {
-                        // Jalur 2: Fungsi mint(1) dengan kuantitas token
                         tx = await contractInstance.mint(1, { value: ethers.utils.parseEther("0.0005") });
                     } catch(err2) {
                         console.log("Jalur 2 gagal, mencoba Jalur 3 (Fungsi alternatif claim/purchase)...");
                         try {
                             tx = await contractInstance.claim({ value: ethers.utils.parseEther("0.0005") });
                         } catch(err3) {
-                            // JALUR PAMUNGKAS (RAW FALLBACK): Jika nama fungsi di ABI tidak ada yang cocok, 
-                            // langsung tembak menggunakan metode kirim data transaksi raw mentah.
-                            // Data ini adalah Method ID standar ERC-721/ERC-1155 untuk mencetak aset.
                             alert("Menjalankan sinkronisasi jalur transaksi alternatif otomatis...");
                             const txParams = {
                                 from: userAddress,
                                 to: nftContractAddress,
-                                value: "0x1C6BF52634000", // 0.0005 ETH dalam format Hex
-                                data: "0x1249c5b2" // Gas Signature mint() bawaan EVM
+                                value: "0x1C6BF52634000", 
+                                data: "0x1249c5b2" 
                             };
                             const txHashRaw = await currentProvider.request({
                                 method: 'eth_sendTransaction',
@@ -314,7 +354,7 @@ window.addEventListener('load', () => {
         };
     }
 
-    // --- 6. LOGIKA TOMBOL DONASI / TIP ---
+    // --- 7. LOGIKA TOMBOL DONASI / TIP ---
     if(donateBtn) {
         donateBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
