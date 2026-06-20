@@ -1,5 +1,30 @@
 // Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
+
+    // --- FITUR LOCAL TRACKING ANALYTICS (ANTI-BLOCK) ---
+    function initDappAnalytics() {
+        const counterEl = document.getElementById('view-counter');
+        if (!counterEl) return;
+
+        // Ambil data kunjungan saat ini dari storage lokal dApp
+        let currentViews = localStorage.getItem('dapp_total_views');
+
+        if (!currentViews) {
+            currentViews = 1;
+        } else {
+            currentViews = parseInt(currentViews, 10) + 1;
+        }
+
+        // Simpan kembali angka terbaru ke storage dApp
+        localStorage.setItem('dapp_total_views', currentViews);
+
+        // Tampilkan angka kunjungan secara langsung di bagian paling bawah dapp
+        counterEl.innerText = Number(currentViews).toLocaleString();
+    }
+
+    // Jalankan tracker langsung saat dApp berhasil dimuat
+    initDappAnalytics();
+
     // --- KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; // Untuk Donasi/Tip
     const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // KONTRAK NFT BASE KAMU
@@ -302,3 +327,4 @@ window.addEventListener('load', () => {
         };
     }
 });
+                    
