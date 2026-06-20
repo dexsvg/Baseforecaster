@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
 
     // --- 2. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; 
+    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // Ganti dengan alamat kontrak baru setelah kamu deploy dari Remix nanti
 
     // --- 3. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
@@ -128,18 +128,15 @@ window.addEventListener('load', () => {
 
         drawDestinyCard(address, fate, luck, shortHex);
 
-        // --- 4. TOMBOL SHARE NATIVE (MENGIRIM GAMBAR + TEKS + LINK APLIKASI SEKALIGUS) ---
         if (shareXBtn) {
             shareXBtn.onclick = async () => {
                 if (!cardCanvas) return;
 
-                // Konversi hasil gambar canvas menjadi data file Blob
                 cardCanvas.toBlob(async (blob) => {
                     if (!blob) return;
 
                     const file = new File([blob], `Base_Forecaster_${shortHex}.png`, { type: 'image/png' });
 
-                    // Paket data kiriman share sistem mobile
                     const shareData = {
                         files: [file],
                         title: 'My Base Destiny',
@@ -147,7 +144,6 @@ window.addEventListener('load', () => {
                         url: window.location.origin
                     };
 
-                    // Cek jika browser mendukung Web Share API (Sangat optimal di HP)
                     if (navigator.canShare && navigator.canShare(shareData)) {
                         try {
                             await navigator.share(shareData);
@@ -157,7 +153,6 @@ window.addEventListener('load', () => {
                             }
                         }
                     } else {
-                        // Fallback jika dibuka lewat browser desktop lama / yang tidak mendukung share file
                         const link = document.createElement('a');
                         link.download = `Base_Forecaster_${shortHex}.png`;
                         link.href = cardCanvas.toDataURL('image/png');
@@ -171,63 +166,53 @@ window.addEventListener('load', () => {
         }
     }
 
-    // --- 5. ENGINE GENERATOR KARTU (KEMBALI KE STYLE BIASA / NON-PIXEL) ---
+    // --- 4. ENGINE GENERATOR KARTU (STYLE NORMAL / HD SMOOTH) ---
     function drawDestinyCard(address, fate, luck, shortHex) {
         if(!cardCanvas) return;
         const ctx = cardCanvas.getContext('2d');
         
-        // Aktifkan kembali anti-aliasing agar tampilan gambar halus
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
 
-        // Background Cyberpunk Hitam Hijau/Biru Tua ala terminal dApp kuno
         ctx.fillStyle = '#060a13';
         ctx.fillRect(0, 0, 350, 500);
 
-        // Border Ganda
-        ctx.fillStyle = '#0052FF'; // Base Blue
-        ctx.fillRect(6, 6, 338, 8); // Top
-        ctx.fillRect(6, 486, 338, 8); // Bottom
-        ctx.fillRect(6, 6, 8, 488); // Left
-        ctx.fillRect(336, 6, 8, 488); // Right
+        ctx.fillStyle = '#0052FF'; 
+        ctx.fillRect(6, 6, 338, 8); 
+        ctx.fillRect(6, 486, 338, 8); 
+        ctx.fillRect(6, 6, 8, 488); 
+        ctx.fillRect(336, 6, 8, 488); 
 
-        ctx.fillStyle = '#f59e0b'; // Amber Accent Inner Border
+        ctx.fillStyle = '#f59e0b'; 
         ctx.fillRect(18, 18, 314, 3);
         ctx.fillRect(18, 479, 314, 3);
         ctx.fillRect(18, 18, 3, 464);
         ctx.fillRect(329, 18, 3, 464);
 
-        // Teks Atas bergaya Arcade Monospace
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 16px "Courier New", Courier, monospace';
         ctx.fillText("■ BASE_FORECASTER.EXE", 28, 45);
 
-        // ID Pojok Kanan
         ctx.fillStyle = '#0052FF';
         ctx.font = 'bold 12px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`[NFT #${shortHex}]`, 322, 45);
         ctx.textAlign = 'left';
 
-        // Kotak Frame Utama Gambar NFT (Tempat Emoji)
         ctx.fillStyle = '#020408';
         ctx.fillRect(32, 70, 286, 180);
         
-        // Border frame gambar
-        ctx.strokeStyle = '#22c55e'; // Green terminal color
+        ctx.strokeStyle = '#22c55e'; 
         ctx.lineWidth = 2;
         ctx.strokeRect(32, 70, 286, 180);
 
-        // MERUBAH GAMBAR KEMBALI JADI NORMAL (RENDERING HD HALUS TANPA PIXELASI)
         ctx.font = '110px Arial'; 
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(fate.emoji, 175, 160);
 
-        // Reset alignment font ke kiri untuk teks deskripsi di bawahnya
         ctx.textAlign = 'left';
 
-        // Banner Status Wallet Address
         ctx.fillStyle = '#111827';
         ctx.fillRect(32, 265, 286, 26);
         ctx.strokeStyle = '#1e3a8a';
@@ -239,24 +224,20 @@ window.addEventListener('load', () => {
         const displayAddr = `ADDR: ${address.slice(0, 10)}...${address.slice(-8)}`;
         ctx.fillText(displayAddr, 42, 282);
 
-        // Judul Karakter / Nasib
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px "Courier New", Courier, monospace';
         ctx.fillText(`ROLE: ${fate.status.toUpperCase()}`, 32, 320);
 
-        // Angka Keberuntungan
         ctx.fillStyle = '#22c55e';
         ctx.font = 'bold 13px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`LUCK: ${luck}%`, 318, 320);
         ctx.textAlign = 'left';
 
-        // Teks Deskripsi (Wrapped Berformat Ketikan Monitor Kuno)
         ctx.fillStyle = '#cbd5e1';
         ctx.font = '12px "Courier New", Courier, monospace';
         wrapText(ctx, `> ${fate.text}`, 32, 350, 286, 16);
 
-        // Watermark Footer
         ctx.fillStyle = '#4b5563';
         ctx.font = '9px "Courier New", Courier, monospace';
         ctx.fillText("SYS.REV // GEN_2026_MINT_LIVE", 32, 468);
@@ -280,7 +261,7 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- 6. TOMBOL MINT NFT AMAN (MENGGUNAKAN METODE HYBRID ANTI-MACET) ---
+    // --- 5. TOMBOL MINT NFT AMAN (METODE HYBRID ANTI-MACET) ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -354,7 +335,7 @@ window.addEventListener('load', () => {
         };
     }
 
-    // --- 7. LOGIKA TOMBOL DONASI / TIP ---
+    // --- 6. LOGIKA TOMBOL DONASI / TIP ---
     if(donateBtn) {
         donateBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -388,5 +369,81 @@ window.addEventListener('load', () => {
             }
         };
     }
-});
+
+    // --- 7. FITUR BARU: LIVE REAL-TIME BUYER NFT NOTIFICATION (DYNAMIC POP-UP) ---
+    function initLiveBuyerNotification() {
+        // Membuat elemen kontainer notifikasi di pojok kiri bawah layar secara dinamis
+        const notifyBox = document.createElement('div');
+        notifyBox.style.position = 'fixed';
+        notifyBox.style.bottom = '-100px'; // Tersembunyi di awal
+        notifyBox.style.left = '20px';
+        notifyBox.style.zIndex = '9999';
+        notifyBox.style.backgroundColor = 'rgba(6, 10, 19, 0.95)';
+        notifyBox.style.border = '1px solid #0052FF'; // Base Blue border
+        notifyBox.style.boxShadow = '0 0 15px rgba(0, 82, 255, 0.4)';
+        notifyBox.style.padding = '12px 16px';
+        notifyBox.style.borderRadius = '12px';
+        notifyBox.style.display = 'flex';
+        notifyBox.style.alignItems = 'center';
+        notifyBox.style.gap = '12px';
+        notifyBox.style.transition = 'bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        notifyBox.style.fontFamily = '"Courier New", Courier, monospace';
+        notifyBox.style.color = '#ffffff';
+        notifyBox.style.maxWidth = '320px';
+
+        document.body.appendChild(notifyBox);
+
+        // Daftar karakter hex acak untuk simulasi address dompet
+        const hexChars = "0123456789ABCDEF";
         
+        function generateRandomBuyer() {
+            // Mengacak ringkasan address dompet (ex: 0x3A2B...F91E)
+            let startAddr = "";
+            let endAddr = "";
+            for(let i=0; i<4; i++) {
+                startAddr += hexChars[Math.floor(Math.random() * 16)];
+                endAddr += hexChars[Math.floor(Math.random() * 16)];
+            }
+            const fakeAddress = `0x${startAddr}...${endAddr}`;
+            
+            // Mengacak ID NFT dan durasi menit lalu (1-5 menit lalu)
+            const randomId = Math.floor(Math.random() * 850) + 120;
+            const randomTime = Math.floor(Math.random() * 5) + 1;
+            
+            // Mengacak emoji dari koleksi takdir
+            const liveEmojis = ["🐋", "🧻", "🔮", "🤡", "🤖", "🦖", "👻"];
+            const randomEmoji = liveEmojis[Math.floor(Math.random() * liveEmojis.length)];
+
+            // Isi konten HTML pop-up notifikasi
+            notifyBox.innerHTML = `
+                <div style="background: #020408; border: 1px solid #22c55e; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">
+                    ${randomEmoji}
+                </div>
+                <div>
+                    <div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase; tracking-widest: 1px;">■ Live Mint Success</div>
+                    <div style="font-size: 12px; font-weight: bold; margin-top: 1px; color: #ffffff;">${fakeAddress} <span style="color: #9ca3af; font-weight: normal;">minted</span> #${randomId.toString(16).toUpperCase()}</div>
+                    <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">${randomTime} min ago // Base Mainnet</div>
+                </div>
+            `;
+
+            // Munculkan pop-up ke atas layar
+            notifyBox.style.bottom = '20px';
+
+            // Sembunyikan kembali pop-up ke bawah setelah 6 detik muncul
+            setTimeout(() => {
+                notifyBox.style.bottom = '-100px';
+            }, 6000);
+        }
+
+        // Trigger kemunculan pertama kali dalam 4 detik setelah dApp dimuat
+        setTimeout(generateRandomBuyer, 4000);
+
+        // Atur interval perulangan notifikasi pembeli secara acak setiap 12 sampai 20 detik sekali
+        setInterval(() => {
+            generateRandomBuyer();
+        }, Math.floor(Math.random() * 8000) + 12000);
+    }
+
+    // Jalankan sistem real-time buyer secara otomatis
+    initLiveBuyerNotification();
+});
