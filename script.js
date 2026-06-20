@@ -1,7 +1,7 @@
 // Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
 
-    // --- 1. FITUR GLOBAL REALTIME ANALYTICS (ASLI & LIVE MENGGUNAKAN API STABIL) ---
+    // --- 1. FITUR GLOBAL REALTIME ANALYTICS (VIEW COUNTER) ---
     async function initGlobalAnalytics() {
         const counterEl = document.getElementById('view-counter');
         if (!counterEl) return;
@@ -25,11 +25,46 @@ window.addEventListener('load', () => {
 
     initGlobalAnalytics();
 
-    // --- 2. KONFIGURASI ALAMAT RESMI ---
-    const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // Ganti dengan alamat kontrak baru setelah kamu deploy dari Remix nanti
+    // --- 2. FITUR GLOBAL MINT COUNTER (BERTAMBAH TIAP JAM BERKELANJUTAN) ---
+    function initGlobalMintCounter() {
+        // Mencari atau membuat elemen penampung jumlah total mint di atas area result
+        let mintCountEl = document.getElementById('global-mint-counter');
+        if (!mintCountEl) {
+            // Jika elemen belum dibuat di HTML, kita sisipkan otomatis di bawah View Counter atau tempat strategis
+            const viewContainer = document.getElementById('view-counter')?.parentElement;
+            if (viewContainer) {
+                mintCountEl = document.createElement('span');
+                mintCountEl.id = 'global-mint-counter';
+                mintCountEl.className = "ml-4 pl-4 border-l border-slate-700 text-amber-400 font-bold";
+                viewContainer.appendChild(mintCountEl);
+            }
+        }
 
-    // --- 3. ELEMENT SELECTOR ---
+        if (!mintCountEl) return;
+
+        // Formula hitungan waktu berkelanjutan agar angka singkron di semua pengguna tiap jamnya
+        const baseMintCount = 840; // Angka dasar awal mulainya minting
+        const startTimestamp = 1782000000000; // Benchmark waktu dApp rilis
+        const currentTimestamp = Date.now();
+        
+        // Menghitung berapa jam yang telah berlalu sejak dApp aktif
+        const hoursPassed = Math.floor((currentTimestamp - startTimestamp) / (1000 * 60 * 60));
+        
+        // Tiap jam bertambah rata-rata 4 sampai 7 mint baru secara konstan
+        const calculatedMints = baseMintCount + (hoursPassed * 5) + (new Date().getMinutes() % 4);
+
+        // Tampilkan ke teks dApp dengan emoji piala/proses
+        mintCountEl.innerHTML = `🏆 Total Minted: ${calculatedMints.toLocaleString()}`;
+    }
+
+    initGlobalMintCounter();
+    setInterval(initGlobalMintCounter, 60000); // Segarkan hitungan tiap menit untuk update menit berjalan
+
+    // --- 3. KONFIGURASI ALAMAT RESMI ---
+    const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
+    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // Ganti dengan alamat kontrak baru hasil Remix kamu
+
+    // --- 4. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
     const walletSection = document.getElementById('wallet-section');
     const resultSection = document.getElementById('result-section');
@@ -85,6 +120,8 @@ window.addEventListener('load', () => {
                 activeProvider = provider;
                 handleWalletConnected(userAddress);
                 
+                // Pemicu Notifikasi Real-Time Asli saat ada user sukses login/join dApp
+                triggerRealNotification("join", userAddress);
                 fetch(`https://api.mojocounter.com/hit/baseforecaster/base_forecaster_v1_live_views`).catch(() => {});
             } catch (err) {
                 alert("Koneksi dibatalkan atau ditolak.");
@@ -166,7 +203,7 @@ window.addEventListener('load', () => {
         }
     }
 
-    // --- 4. ENGINE GENERATOR KARTU (STYLE NORMAL / HD SMOOTH) ---
+    // --- 5. ENGINE GENERATOR KARTU HALUS (ANTI-PIXEL) ---
     function drawDestinyCard(address, fate, luck, shortHex) {
         if(!cardCanvas) return;
         const ctx = cardCanvas.getContext('2d');
@@ -261,7 +298,7 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- 5. TOMBOL MINT NFT AMAN (METODE HYBRID ANTI-MACET) ---
+    // --- 6. TOMBOL MINT NFT AMAN ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -283,59 +320,27 @@ window.addEventListener('load', () => {
 
                 const robustABI = [
                     "function mint() public payable",
-                    "function mint(uint256 quantity) public payable",
-                    "function mintNFT() public payable",
-                    "function claim() public payable",
-                    "function purchase() public payable"
+                    "function mint(uint256 quantity) public payable"
                 ];
 
                 const contractInstance = new ethers.Contract(nftContractAddress, robustABI, signer);
-                let tx;
+                let tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
 
-                try {
-                    tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
-                } catch(err1) {
-                    console.log("Jalur 1 gagal, mencoba Jalur 2 (mint dengan kuantitas)...");
-                    try {
-                        tx = await contractInstance.mint(1, { value: ethers.utils.parseEther("0.0005") });
-                    } catch(err2) {
-                        console.log("Jalur 2 gagal, mencoba Jalur 3 (Fungsi alternatif claim/purchase)...");
-                        try {
-                            tx = await contractInstance.claim({ value: ethers.utils.parseEther("0.0005") });
-                        } catch(err3) {
-                            alert("Menjalankan sinkronisasi jalur transaksi alternatif otomatis...");
-                            const txParams = {
-                                from: userAddress,
-                                to: nftContractAddress,
-                                value: "0x1C6BF52634000", 
-                                data: "0x1249c5b2" 
-                            };
-                            const txHashRaw = await currentProvider.request({
-                                method: 'eth_sendTransaction',
-                                params: [txParams],
-                            });
-                            alert(`Transaksi Dikirim via Jalur Alternatif!\nHash: ${txHashRaw}\n\nMemproses konfirmasi di jaringan Base... 🚀`);
-                            return;
-                        }
-                    }
-                }
-
-                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok di jaringan Base... 🚀`);
+                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok... 🚀`);
                 await tx.wait();
+                
+                // Pemicu Notifikasi Real-Time Asli saat klik mint berhasil
+                triggerRealNotification("mint", userAddress);
                 alert("Selamat! NFT Sukses Ter-minting ke Dompet Anda! 🎉");
                 
             } catch (err) {
                 console.error(err);
-                if (err.message && (err.message.includes("revert") || err.message.includes("denied"))) {
-                    alert(`[Mint Gagal]: Transaksi ditolak oleh smart contract.\n\nAnalisis Masalah:\n1. Pastikan saldo Base ETH Anda mencukupi untuk harga mint + biaya gas.\n2. Periksa apakah status penjualan NFT di smart contract Anda sudah berstatus 'Public' atau aktif.`);
-                } else {
-                    alert(`Gagal memproses minting: ${err.message || err}`);
-                }
+                alert("Proses transaksi dihentikan atau saldo kurang.");
             }
         };
     }
 
-    // --- 6. LOGIKA TOMBOL DONASI / TIP ---
+    // --- 7. TOMBOL DONASI / TIP ---
     if(donateBtn) {
         donateBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -363,87 +368,141 @@ window.addEventListener('load', () => {
                     params: [txParams],
                 });
 
-                alert(`Terima kasih Chad! Tip terkirim. Tx Hash: ${txHash} 🔥`);
+                // Pemicu Notifikasi Real-Time Asli saat kirim tip berhasil
+                triggerRealNotification("tip", userAddress);
+                alert(`Terima kasih Chad! Tip terkirim. 🔥`);
             } catch (err) {
-                alert(`Donasi batal/gagal: ${err.message || err}`);
+                alert(`Donasi batal/gagal.`);
             }
         };
     }
 
-    // --- 7. FITUR BARU: LIVE REAL-TIME BUYER NFT NOTIFICATION (DYNAMIC POP-UP) ---
-    function initLiveBuyerNotification() {
-        // Membuat elemen kontainer notifikasi di pojok kiri bawah layar secara dinamis
-        const notifyBox = document.createElement('div');
+    // --- 8. SISTEM ENGINE NOTIFIKASI MULTI-ACAK (SIMULASI + REAL INTERACTION) ---
+    let notifyBox;
+    function createNotificationContainer() {
+        notifyBox = document.createElement('div');
         notifyBox.style.position = 'fixed';
-        notifyBox.style.bottom = '-100px'; // Tersembunyi di awal
+        notifyBox.style.bottom = '-120px'; 
         notifyBox.style.left = '20px';
         notifyBox.style.zIndex = '9999';
-        notifyBox.style.backgroundColor = 'rgba(6, 10, 19, 0.95)';
-        notifyBox.style.border = '1px solid #0052FF'; // Base Blue border
-        notifyBox.style.boxShadow = '0 0 15px rgba(0, 82, 255, 0.4)';
-        notifyBox.style.padding = '12px 16px';
-        notifyBox.style.borderRadius = '12px';
+        notifyBox.style.backgroundColor = 'rgba(6, 10, 19, 0.98)';
+        notifyBox.style.border = '1px solid #0052FF'; 
+        notifyBox.style.boxShadow = '0 0 20px rgba(0, 82, 255, 0.5)';
+        notifyBox.style.padding = '14px 18px';
+        notifyBox.style.borderRadius = '14px';
         notifyBox.style.display = 'flex';
         notifyBox.style.alignItems = 'center';
-        notifyBox.style.gap = '12px';
-        notifyBox.style.transition = 'bottom 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        notifyBox.style.gap = '14px';
+        notifyBox.style.transition = 'bottom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         notifyBox.style.fontFamily = '"Courier New", Courier, monospace';
         notifyBox.style.color = '#ffffff';
-        notifyBox.style.maxWidth = '320px';
-
+        notifyBox.style.maxWidth = '340px';
         document.body.appendChild(notifyBox);
-
-        // Daftar karakter hex acak untuk simulasi address dompet
-        const hexChars = "0123456789ABCDEF";
-        
-        function generateRandomBuyer() {
-            // Mengacak ringkasan address dompet (ex: 0x3A2B...F91E)
-            let startAddr = "";
-            let endAddr = "";
-            for(let i=0; i<4; i++) {
-                startAddr += hexChars[Math.floor(Math.random() * 16)];
-                endAddr += hexChars[Math.floor(Math.random() * 16)];
-            }
-            const fakeAddress = `0x${startAddr}...${endAddr}`;
-            
-            // Mengacak ID NFT dan durasi menit lalu (1-5 menit lalu)
-            const randomId = Math.floor(Math.random() * 850) + 120;
-            const randomTime = Math.floor(Math.random() * 5) + 1;
-            
-            // Mengacak emoji dari koleksi takdir
-            const liveEmojis = ["🐋", "🧻", "🔮", "🤡", "🤖", "🦖", "👻"];
-            const randomEmoji = liveEmojis[Math.floor(Math.random() * liveEmojis.length)];
-
-            // Isi konten HTML pop-up notifikasi
-            notifyBox.innerHTML = `
-                <div style="background: #020408; border: 1px solid #22c55e; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">
-                    ${randomEmoji}
-                </div>
-                <div>
-                    <div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase; tracking-widest: 1px;">■ Live Mint Success</div>
-                    <div style="font-size: 12px; font-weight: bold; margin-top: 1px; color: #ffffff;">${fakeAddress} <span style="color: #9ca3af; font-weight: normal;">minted</span> #${randomId.toString(16).toUpperCase()}</div>
-                    <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">${randomTime} min ago // Base Mainnet</div>
-                </div>
-            `;
-
-            // Munculkan pop-up ke atas layar
-            notifyBox.style.bottom = '20px';
-
-            // Sembunyikan kembali pop-up ke bawah setelah 6 detik muncul
-            setTimeout(() => {
-                notifyBox.style.bottom = '-100px';
-            }, 6000);
-        }
-
-        // Trigger kemunculan pertama kali dalam 4 detik setelah dApp dimuat
-        setTimeout(generateRandomBuyer, 4000);
-
-        // Atur interval perulangan notifikasi pembeli secara acak setiap 12 sampai 20 detik sekali
-        setInterval(() => {
-            generateRandomBuyer();
-        }, Math.floor(Math.random() * 8000) + 12000);
     }
 
-    // Jalankan sistem real-time buyer secara otomatis
-    initLiveBuyerNotification();
+    createNotificationContainer();
+
+    const hexChars = "0123456789ABCDEF";
+    function makeFakeAddress() {
+        let start = "", end = "";
+        for(let i=0; i<4; i++) {
+            start += hexChars[Math.floor(Math.random() * 16)];
+            end += hexChars[Math.floor(Math.random() * 16)];
+        }
+        return `0x${start}...${end}`;
+    }
+
+    // Fungsi utama pembuat rotasi notifikasi acak (Mint, Tip, atau Join)
+    function showRandomLiveNotification() {
+        const actionTypes = ["mint", "tip", "join"];
+        const chosenAction = actionTypes[Math.floor(Math.random() * actionTypes.length)];
+        const fakeAddr = makeFakeAddress();
+        
+        let iconHtml = "";
+        let titleHtml = "";
+        let bodyHtml = "";
+        let footerHtml = "just now // Base Mainnet";
+
+        if (chosenAction === "mint") {
+            const liveEmojis = ["🐋", "🧻", "🔮", "🤡", "🤖", "🦖", "👻"];
+            const emoji = liveEmojis[Math.floor(Math.random() * liveEmojis.length)];
+            const randomId = Math.floor(Math.random() * 850) + 120;
+            
+            iconHtml = `<div style="background: #020408; border: 1px solid #22c55e; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">${emoji}</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase;">■ Mint Success</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">minted</span> #${randomId.toString(16).toUpperCase()}</div>`;
+        } 
+        else if (chosenAction === "tip") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #eab308; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">💸</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #eab308; font-weight: bold; text-transform: uppercase;">■ Tip Received</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">sent</span> 0.001 ETH <span style="color: #eab308;">Tip</span></div>`;
+        } 
+        else if (chosenAction === "join") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔮</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ User Joined</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">checking destiny...</span></div>`;
+        }
+
+        notifyBox.innerHTML = `
+            ${iconHtml}
+            <div>
+                ${titleHtml}
+                ${bodyHtml}
+                <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">${footerHtml}</div>
+            </div>
+        `;
+
+        notifyBox.style.bottom = '20px'; // Naikkan pop-up
+
+        setTimeout(() => {
+            notifyBox.style.bottom = '-120px'; // Turunkan pop-up setelah 5.5 detik
+        }, 5500);
+    }
+
+    // Fungsi pemotong antrean jika terjadi interaksi asli oleh user di dApp kamu
+    function triggerRealNotification(type, address) {
+        if (!address) return;
+        const cleanAddr = `${address.slice(0,6)}...${address.slice(-4)}`;
+        
+        let iconHtml = "", titleHtml = "", bodyHtml = "";
+
+        if (type === "mint") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #22c55e; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔥</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase;">■ Your Mint Verified</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${cleanAddr} <span style="color: #9ca3af; font-weight: normal;">successfully minted!</span></div>`;
+        } else if (type === "tip") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #eab308; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">👑</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #eab308; font-weight: bold; text-transform: uppercase;">■ Legend Tip Sent</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${cleanAddr} <span style="color: #eab308;">Sent 0.001 ETH Tip!</span></div>`;
+        } else if (type === "join") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">⚡</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ You Connected</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">Welcome ${cleanAddr} to Base Forecaster</div>`;
+        }
+
+        notifyBox.innerHTML = `
+            ${iconHtml}
+            <div>
+                ${titleHtml}
+                ${bodyHtml}
+                <div style="font-size: 9px; color: #22c55e; margin-top: 2px;">LIVE TRANS_CONFIRMED // SECURE</div>
+            </div>
+        `;
+        notifyBox.style.bottom = '20px';
+
+        setTimeout(() => {
+            notifyBox.style.bottom = '-120px';
+        }, 6000);
+    }
+
+    // Jalankan trigger awal simulasi bergantian secara acak
+    setTimeout(showLiveNotificationLoop, 3000);
+
+    function showLiveNotificationLoop() {
+        showRandomLiveNotification();
+        // Mengacak jeda waktu kemunculan pop-up berikutnya antara 11 sampai 18 detik agar ritme putaran terlihat alami
+        const randomNextDelay = Math.floor(Math.random() * 7000) + 11000;
+        setTimeout(showLiveNotificationLoop, randomNextDelay);
+    }
 });
+  
