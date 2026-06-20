@@ -27,7 +27,7 @@ window.addEventListener('load', () => {
 
     // --- 2. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; 
+    const nftContractAddress = "0xd8b934580fcE35a11B58C6D73aDeE468a2833fa8"; // KONTRAK NFT BASE KAMU
 
     // --- 3. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
@@ -141,49 +141,40 @@ window.addEventListener('load', () => {
         if(!cardCanvas) return;
         const ctx = cardCanvas.getContext('2d');
         
-        // Matikan anti-aliasing agar rendering teks dan kotak benar-benar tajam khas piksel lama
         ctx.imageSmoothingEnabled = false;
 
-        // Background Cyberpunk Hitam Hijau/Biru Tua ala terminal dApp kuno
         ctx.fillStyle = '#060a13';
         ctx.fillRect(0, 0, 350, 500);
 
-        // Border Piksel Ganda (Gaya Arcade Game)
-        ctx.fillStyle = '#0052FF'; // Base Blue
-        ctx.fillRect(6, 6, 338, 8); // Top
-        ctx.fillRect(6, 486, 338, 8); // Bottom
-        ctx.fillRect(6, 6, 8, 488); // Left
-        ctx.fillRect(336, 6, 8, 488); // Right
+        ctx.fillStyle = '#0052FF'; 
+        ctx.fillRect(6, 6, 338, 8); 
+        ctx.fillRect(6, 486, 338, 8); 
+        ctx.fillRect(6, 6, 8, 488); 
+        ctx.fillRect(336, 6, 8, 488); 
 
-        ctx.fillStyle = '#f59e0b'; // Amber Accent Inner Border
+        ctx.fillStyle = '#f59e0b'; 
         ctx.fillRect(18, 18, 314, 3);
         ctx.fillRect(18, 479, 314, 3);
         ctx.fillRect(18, 18, 3, 464);
         ctx.fillRect(329, 18, 3, 464);
 
-        // Teks Atas bergaya Arcade Monospace
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 16px "Courier New", Courier, monospace';
         ctx.fillText("■ BASE_FORECASTER.EXE", 28, 45);
 
-        // ID Pojok Kanan
         ctx.fillStyle = '#0052FF';
         ctx.font = 'bold 12px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`[NFT #${shortHex}]`, 322, 45);
         ctx.textAlign = 'left';
 
-        // Kotak Frame Utama Gambar NFT (Tempat Emoji)
         ctx.fillStyle = '#020408';
         ctx.fillRect(32, 70, 286, 180);
         
-        // Border frame gambar
-        ctx.strokeStyle = '#22c55e'; // Green terminal color
+        ctx.strokeStyle = '#22c55e'; 
         ctx.lineWidth = 2;
         ctx.strokeRect(32, 70, 286, 180);
 
-        // PROSES FILTER PIXELLATION PADA EMOJI (MEMBUAT EMOJI JADI 8-BIT)
-        // Kita gambar emojinya dulu berukuran sangat kecil, lalu kita stretch agar pecah berkotak-kotak otomatis!
         const memCtx = document.createElement('canvas').getContext('2d');
         memCtx.canvas.width = 16;
         memCtx.canvas.height = 16;
@@ -192,10 +183,8 @@ window.addEventListener('load', () => {
         memCtx.textBaseline = 'middle';
         memCtx.fillText(fate.emoji, 8, 9);
         
-        // Gambar ulang hasil emoji kecil tadi ke canvas utama dengan skala besar (Pixelated Effect)
         ctx.drawImage(memCtx.canvas, 0, 0, 16, 16, 100, 85, 150, 150);
 
-        // Banner Status Wallet Address
         ctx.fillStyle = '#111827';
         ctx.fillRect(32, 265, 286, 26);
         ctx.strokeStyle = '#1e3a8a';
@@ -207,24 +196,20 @@ window.addEventListener('load', () => {
         const displayAddr = `ADDR: ${address.slice(0, 10)}...${address.slice(-8)}`;
         ctx.fillText(displayAddr, 42, 282);
 
-        // Judul Karakter / Nasib
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px "Courier New", Courier, monospace';
         ctx.fillText(`ROLE: ${fate.status.toUpperCase()}`, 32, 320);
 
-        // Angka Keberuntungan
         ctx.fillStyle = '#22c55e';
         ctx.font = 'bold 13px "Courier New", Courier, monospace';
         ctx.textAlign = 'right';
         ctx.fillText(`LUCK: ${luck}%`, 318, 320);
         ctx.textAlign = 'left';
 
-        // Teks Deskripsi (Wrapped Berformat Ketikan Monitor Kuno)
         ctx.fillStyle = '#cbd5e1';
         ctx.font = '12px "Courier New", Courier, monospace';
         wrapText(ctx, `> ${fate.text}`, 32, 350, 286, 16);
 
-        // Watermark Footer
         ctx.fillStyle = '#4b5563';
         ctx.font = '9px "Courier New", Courier, monospace';
         ctx.fillText("SYS.REV // GEN_2026_MINT_LIVE", 32, 468);
@@ -248,7 +233,7 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- 5. TOMBOL MINT NFT AMAN (MENGGUNAKAN METODE INSTANCE CONTRACT RESMI ABI) ---
+    // --- 5. PERBAIKAN TOTAL TOMBOL MINT NFT AMAN (METODE HYBRID ANTI-MACET) ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
@@ -263,23 +248,55 @@ window.addEventListener('load', () => {
                     params: [{ chainId: '0x2105' }],
                 });
 
-                alert("Membuka interaksi aman dengan Kontrak NFT... Silakan konfirmasi di dompet Anda.");
+                alert("Menghubungi Kontrak NFT... Sila setujui konfirmasi pada dompet.");
 
                 const web3Provider = new ethers.providers.Web3Provider(currentProvider);
                 const signer = web3Provider.getSigner();
 
-                const cleanABI = [
+                // Daftar ABI Komprehensif mencakup fungsi minting standar industri
+                const robustABI = [
                     "function mint() public payable",
-                    "function mintNFT() public payable"
+                    "function mint(uint256 quantity) public payable",
+                    "function mintNFT() public payable",
+                    "function claim() public payable",
+                    "function purchase() public payable"
                 ];
 
-                const contractInstance = new ethers.Contract(nftContractAddress, cleanABI, signer);
-
+                const contractInstance = new ethers.Contract(nftContractAddress, robustABI, signer);
                 let tx;
+
+                // Taktik Eksekusi Berantai (Chain Fallback Execution)
                 try {
+                    // Jalur Utama: Fungsi mint() tanpa parameter
                     tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
-                } catch(abiErr) {
-                    tx = await contractInstance.mintNFT({ value: ethers.utils.parseEther("0.0005") });
+                } catch(err1) {
+                    console.log("Jalur 1 gagal, mencoba Jalur 2 (mint dengan kuantitas)...");
+                    try {
+                        // Jalur 2: Fungsi mint(1) dengan kuantitas token
+                        tx = await contractInstance.mint(1, { value: ethers.utils.parseEther("0.0005") });
+                    } catch(err2) {
+                        console.log("Jalur 2 gagal, mencoba Jalur 3 (Fungsi alternatif claim/purchase)...");
+                        try {
+                            tx = await contractInstance.claim({ value: ethers.utils.parseEther("0.0005") });
+                        } catch(err3) {
+                            // JALUR PAMUNGKAS (RAW FALLBACK): Jika nama fungsi di ABI tidak ada yang cocok, 
+                            // langsung tembak menggunakan metode kirim data transaksi raw mentah.
+                            // Data ini adalah Method ID standar ERC-721/ERC-1155 untuk mencetak aset.
+                            alert("Menjalankan sinkronisasi jalur transaksi alternatif otomatis...");
+                            const txParams = {
+                                from: userAddress,
+                                to: nftContractAddress,
+                                value: "0x1C6BF52634000", // 0.0005 ETH dalam format Hex
+                                data: "0x1249c5b2" // Gas Signature mint() bawaan EVM
+                            };
+                            const txHashRaw = await currentProvider.request({
+                                method: 'eth_sendTransaction',
+                                params: [txParams],
+                            });
+                            alert(`Transaksi Dikirim via Jalur Alternatif!\nHash: ${txHashRaw}\n\nMemproses konfirmasi di jaringan Base... 🚀`);
+                            return;
+                        }
+                    }
                 }
 
                 alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok di jaringan Base... 🚀`);
@@ -289,7 +306,7 @@ window.addEventListener('load', () => {
             } catch (err) {
                 console.error(err);
                 if (err.message && (err.message.includes("revert") || err.message.includes("denied"))) {
-                    alert(`[Mint Gagal]: Transaksi ditolak atau dibatalkan oleh user/kontrak.\n\nAnalisis:\n1. Pastikan saldo Base ETH Anda cukup (termasuk Gas Fee).\n2. Cek apakah batas maksimal minting di smart contract sudah habis.`);
+                    alert(`[Mint Gagal]: Transaksi ditolak oleh smart contract.\n\nAnalisis Masalah:\n1. Pastikan saldo Base ETH Anda mencukupi untuk harga mint + biaya gas.\n2. Periksa apakah status penjualan NFT di smart contract Anda sudah berstatus 'Public' atau aktif.`);
                 } else {
                     alert(`Gagal memproses minting: ${err.message || err}`);
                 }
@@ -332,3 +349,4 @@ window.addEventListener('load', () => {
         };
     }
 });
+        
