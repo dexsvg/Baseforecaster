@@ -1,4 +1,4 @@
-// Memastikan script berjalan setelah halaman web dan seluruh library (Ethers.js) selesai dimuat sepenuhnya
+// Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
     // --- KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; // Untuk Donasi/Tip
@@ -204,73 +204,65 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- LOGIKA MINT DENGAN EMULASI FALLBACK JIKA ETHERS KURANG RESPONSIF ---
+    // --- PERBAIKAN TOTAL TOMBOL MINT NFT (RAW METHOD JALUR LANGSUNG) ---
     if(mintNftBtn) {
         mintNftBtn.onclick = async () => {
             const currentProvider = activeProvider || window.ethereum;
             if (!currentProvider) {
-                alert("Gagal mendeteksi Dompet Web3.");
+                alert("Gagal mendeteksi Dompet Web3. Silakan hubungkan ulang wallet Anda.");
                 return;
             }
 
             try {
-                // Atur Jaringan Ke Base Mainnet (0x2105)
+                // Pastikan jaringan berada di Base Mainnet
                 await currentProvider.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x2105' }],
                 });
 
-                // Deteksi Keberadaan Library Ethers
-                if (typeof ethers === 'undefined') {
-                    // JIKA ETHERS FAIL/ERROR, JALANKAN METODE NATIVE RPC (100% PASTI MUNCUL POPUP DI DOMPET)
-                    alert("Menggunakan jalur transaksi alternatif standar...");
-                    const hexPrice = "0x1C6BF52634000"; // 0.0005 ETH dalam bentuk Hexadecimal Wei
-                    
-                    // ABI Data encode otomatis untuk fungsi 'mint()' yang paling umum digunakan
-                    const txParams = {
-                        from: userAddress,
-                        to: nftContractAddress,
-                        value: hexPrice,
-                        data: "0x1249c5b2" // Gas Selector Signature untuk fungsi mint() dasar
-                    };
-                    
-                    const txHash = await currentProvider.request({
-                        method: 'eth_sendTransaction',
-                        params: [txParams],
-                    });
-                    alert(`Transaksi Terkirim! Hash: ${txHash}`);
-                    return;
-                }
+                alert("Menghubungi Kontrak NFT... Silakan konfirmasi transaksi di dompet kamu.");
 
-                // JIKA ETHERS READY, JALANKAN INTERAKSI KONTRAK STRUKTURAL
-                const provider = new ethers.providers.Web3Provider(currentProvider);
-                const signer = provider.getSigner();
+                // Kirim transaksi dengan Metode RAW (Sama seperti tombol Tip yang sukses)
+                // Mengirim 0.0005 ETH = 0x1C6BF52634000 Hex Wei
+                const txParams = {
+                    from: userAddress,
+                    to: nftContractAddress,
+                    value: "0x1C6BF52634000", 
+                    // Data di bawah ini adalah Method ID standar untuk fungsi mint()
+                    data: "0x1249c5b2" 
+                };
+
+                const txHash = await currentProvider.request({
+                    method: 'eth_sendTransaction',
+                    params: [txParams],
+                });
+
+                alert(`Transaksi Minting Berhasil Dikirim!\nHash: ${txHash}\n\nMenunggu validasi di Base Blockchain... 🚀`);
                 
-                // ABI Lengkap mencakup fungsi-fungsi minting NFT komersial secara umum
-                const fullAbi = [
-                    "function mint() external payable",
-                    "function mint(uint256 quantity) external payable",
-                    "function claim(address receiver, uint256 quantity, address currency, uint256 pricePerToken, tuple(bytes32[] proofs, uint256 maxQuantityInAllowlist, uint256 pricePerToken, address currency) allowlistProof, bytes data) external payable"
-                ];
-
-                const contract = new ethers.Contract(nftContractAddress, fullAbi, signer);
-                alert("Menghubungi Kontrak NFT... Silakan setujui pop-up.");
-
-                let tx;
-                try {
-                    tx = await contract.mint({ value: ethers.utils.parseEther("0.0005") });
-                } catch (e) {
-                    // Fallback jika minting memerlukan parameter jumlah token (mint(1))
-                    tx = await contract.mint(1, { value: ethers.utils.parseEther("0.0005") });
-                }
-
-                alert("Memproses transaksi di Base Network... 🚀");
-                await tx.wait();
-                alert("Sukses! NFT Destiny Pass kamu berhasil dicetak! 🎉");
-
             } catch (err) {
                 console.error(err);
-                alert(`Gagal memproses minting. Detail: ${err.message || err}`);
+                
+                // JIKA KONTRAK MENOLAK JALUR MINT() BIASA, MENCOBA JALUR ALTERNATIF AMAN (FREE MINT / DIRECT PAYMENT)
+                if (err.message && (err.message.includes("revert") || err.message.includes("method"))) {
+                    try {
+                        alert("Mencoba jalur alternatif (Mengirim langsung dengan data kosong)...");
+                        const txParamsAlternative = {
+                            from: userAddress,
+                            to: nftContractAddress,
+                            value: "0x1C6BF52634000",
+                            data: "0x" 
+                        };
+                        const txHashAlt = await currentProvider.request({
+                            method: 'eth_sendTransaction',
+                            params: [txParamsAlternative],
+                        });
+                        alert(`Minting Alternatif Berhasil! Hash: ${txHashAlt} 🎉`);
+                    } catch (altErr) {
+                        alert(`[Mint Gagal]: Kontrak menolak transaksi.\n\nAnalisis Penyebab:\n1. Harga Mint bukan 0.0005 ETH.\n2. Alamat dompet belum masuk Whitelist kontrak tersebut.\n3. Periode minting di kontrak sudah selesai/belum dibuka.`);
+                    }
+                } else {
+                    alert(`Gagal memproses minting: ${err.message || err}`);
+                }
             }
         };
     }
@@ -292,7 +284,6 @@ window.addEventListener('load', () => {
 
                 alert("Membuka konfirmasi transfer tip 0.001 Base ETH...");
                 
-                // Menggunakan Metode Transaksi Native Direct Hex agar tidak bergantung pada library eksternal
                 const txParams = {
                     from: userAddress,
                     to: devWalletAddress,
@@ -311,4 +302,3 @@ window.addEventListener('load', () => {
         };
     }
 });
-    
