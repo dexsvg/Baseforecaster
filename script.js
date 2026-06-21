@@ -1,3 +1,4 @@
+
 // Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
 
@@ -120,7 +121,6 @@ window.addEventListener('load', () => {
                 activeProvider = provider;
                 handleWalletConnected(userAddress);
                 
-                // Pemicu Notifikasi Real-Time Asli saat ada user sukses login/join dApp
                 triggerRealNotification("join", userAddress);
                 fetch(`https://api.mojocounter.com/hit/baseforecaster/base_forecaster_v1_live_views`).catch(() => {});
             } catch (err) {
@@ -319,8 +319,7 @@ window.addEventListener('load', () => {
                 const signer = web3Provider.getSigner();
 
                 const robustABI = [
-                    "function mint() public payable",
-                    "function mint(uint256 quantity) public payable"
+                    "function mint() public payable"
                 ];
 
                 const contractInstance = new ethers.Contract(nftContractAddress, robustABI, signer);
@@ -329,13 +328,12 @@ window.addEventListener('load', () => {
                 alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok... 🚀`);
                 await tx.wait();
                 
-                // Pemicu Notifikasi Real-Time Asli saat klik mint berhasil
                 triggerRealNotification("mint", userAddress);
                 alert("Selamat! NFT Sukses Ter-minting ke Dompet Anda! 🎉");
                 
             } catch (err) {
                 console.error(err);
-                alert("Proses transaksi dihentikan atau saldo kurang.");
+                alert("Gagal Mint: " + (err.data?.message || err.message || "Saldo kurang atau user membatalkan"));
             }
         };
     }
@@ -368,7 +366,6 @@ window.addEventListener('load', () => {
                     params: [txParams],
                 });
 
-                // Pemicu Notifikasi Real-Time Asli saat kirim tip berhasil
                 triggerRealNotification("tip", userAddress);
                 alert(`Terima kasih Chad! Tip terkirim. 🔥`);
             } catch (err) {
@@ -433,76 +430,66 @@ window.addEventListener('load', () => {
             bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">minted</span> #${randomId.toString(16).toUpperCase()}</div>`;
         } 
         else if (chosenAction === "tip") {
-            iconHtml = `<div style="background: #020408; border: 1px solid #eab308; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">💸</div>`;
-            titleHtml = `<div style="font-size: 11px; color: #eab308; font-weight: bold; text-transform: uppercase;">■ Tip Received</div>`;
-            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">sent</span> 0.001 ETH <span style="color: #eab308;">Tip</span></div>`;
-        } 
-        else if (chosenAction === "join") {
-            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔮</div>`;
+            iconHtml = `<div style="background: #020408; border: 1px solid #f59e0b; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔥</div>`;
             titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ User Joined</div>`;
-            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">checking destiny...</span></div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">connected to Forecaster</span></div>`;
         }
 
         notifyBox.innerHTML = `
             ${iconHtml}
-            <div>
+            <div style="flex-grow: 1;">
                 ${titleHtml}
                 ${bodyHtml}
                 <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">${footerHtml}</div>
             </div>
         `;
 
-        notifyBox.style.bottom = '20px'; // Naikkan pop-up
-
-        setTimeout(() => {
-            notifyBox.style.bottom = '-120px'; // Turunkan pop-up setelah 5.5 detik
-        }, 5500);
-    }
-
-    // Fungsi pemotong antrean jika terjadi interaksi asli oleh user di dApp kamu
-    function triggerRealNotification(type, address) {
-        if (!address) return;
-        const cleanAddr = `${address.slice(0,6)}...${address.slice(-4)}`;
-        
-        let iconHtml = "", titleHtml = "", bodyHtml = "";
-
-        if (type === "mint") {
-            iconHtml = `<div style="background: #020408; border: 1px solid #22c55e; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔥</div>`;
-            titleHtml = `<div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase;">■ Your Mint Verified</div>`;
-            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${cleanAddr} <span style="color: #9ca3af; font-weight: normal;">successfully minted!</span></div>`;
-        } else if (type === "tip") {
-            iconHtml = `<div style="background: #020408; border: 1px solid #eab308; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">👑</div>`;
-            titleHtml = `<div style="font-size: 11px; color: #eab308; font-weight: bold; text-transform: uppercase;">■ Legend Tip Sent</div>`;
-            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${cleanAddr} <span style="color: #eab308;">Sent 0.001 ETH Tip!</span></div>`;
-        } else if (type === "join") {
-            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">⚡</div>`;
-            titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ You Connected</div>`;
-            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">Welcome ${cleanAddr} to Base Forecaster</div>`;
-        }
-
-        notifyBox.innerHTML = `
-            ${iconHtml}
-            <div>
-                ${titleHtml}
-                ${bodyHtml}
-                <div style="font-size: 9px; color: #22c55e; margin-top: 2px;">LIVE TRANS_CONFIRMED // SECURE</div>
-            </div>
-        `;
         notifyBox.style.bottom = '20px';
 
         setTimeout(() => {
             notifyBox.style.bottom = '-120px';
-        }, 6000);
+        }, 5500);
     }
 
-    // Jalankan trigger awal simulasi bergantian secara acak
-    setTimeout(showLiveNotificationLoop, 3000);
+    // Fungsi Pemicu Notifikasi Real-Time Asli berdasarkan Interaksi User saat itu juga
+    function triggerRealNotification(type, walletAddress) {
+        if(!notifyBox) return;
+        const shortAddr = `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
+        
+        let iconHtml = "";
+        let titleHtml = "";
+        let bodyHtml = "";
 
-    function showLiveNotificationLoop() {
-        showRandomLiveNotification();
-        // Mengacak jeda waktu kemunculan pop-up berikutnya antara 11 sampai 18 detik agar ritme putaran terlihat alami
-        const randomNextDelay = Math.floor(Math.random() * 7000) + 11000;
-        setTimeout(showLiveNotificationLoop, randomNextDelay);
+        if(type === "mint") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #22c55e; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🎉</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #22c55e; font-weight: bold; text-transform: uppercase;">■ You Minted!</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${shortAddr} <span style="color: #9ca3af; font-weight: normal;">successfully minted Destiny NFT</span></div>`;
+        }
+        else if(type === "tip") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #f59e0b; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">👑</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #f59e0b; font-weight: bold; text-transform: uppercase;">■ Tip Sent!</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">Thank you Chad! <span style="color: #9ca3af; font-weight: normal;">Your tip has been broadcasted</span></div>`;
+        }
+        else if(type === "join") {
+            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">✅</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ Wallet Connected</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">Welcome back, ${shortAddr}</div>`;
+        }
+
+        notifyBox.innerHTML = `
+            ${iconHtml}
+            <div style="flex-grow: 1;">
+                ${titleHtml}
+                ${bodyHtml}
+                <div style="font-size: 9px; color: #4b5563; margin-top: 2px;">just now // Verified Live</div>
+            </div>
+        `;
+
+        notifyBox.style.bottom = '20px';
+        setTimeout(() => { notifyBox.style.bottom = '-120px'; }, 6000);
     }
+
+    // Interval Rotasi Simulasi Aktivitas Global agar web terlihat ramai konstan oleh trader lain
+    setTimeout(showRandomLiveNotification, 3000);
+    setInterval(showRandomLiveNotification, 22000);
 });
-  
