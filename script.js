@@ -1,4 +1,3 @@
-
 // Memastikan script berjalan setelah halaman web dan seluruh library selesai dimuat sepenuhnya
 window.addEventListener('load', () => {
 
@@ -63,14 +62,13 @@ window.addEventListener('load', () => {
 
     // --- 3. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; // Ganti dengan alamat kontrak baru hasil Remix kamu
+    const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; // Alamat kontrak baru kamu dari Remix
 
     // --- 4. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
     const walletSection = document.getElementById('wallet-section');
     const resultSection = document.getElementById('result-section');
     const shareXBtn = document.getElementById('share-x-btn');
-    const mintNftBtn = document.getElementById('mint-nft-btn');
     const donateBtn = document.getElementById('donate-btn');
     const cardCanvas = document.getElementById('destiny-card');
     const fortuneFate = document.getElementById('fortune-fate');
@@ -298,9 +296,9 @@ window.addEventListener('load', () => {
         ctx.fillText(line, x, y);
     }
 
-    // --- 6. TOMBOL MINT NFT AMAN ---
-    if(mintNftBtn) {
-        mintNftBtn.onclick = async () => {
+    // --- 6. TOMBOL MINT NFT (VERSI GLOBAL EVENT DELEGATION ANTI-MACE) ---
+    document.addEventListener('click', async (event) => {
+        if (event.target && event.target.id === 'mint-nft-btn') {
             const currentProvider = activeProvider || window.ethereum;
             if (!currentProvider) {
                 alert("Gagal mendeteksi Dompet Web3. Silakan hubungkan ulang wallet Anda.");
@@ -308,24 +306,33 @@ window.addEventListener('load', () => {
             }
 
             try {
+                // Berpindah secara otomatis ke Base Mainnet (0x2105)
                 await currentProvider.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x2105' }],
                 });
 
-                alert("Menghubungi Kontrak NFT... Sila setujui konfirmasi pada dompet.");
+                if (typeof ethers === 'undefined') {
+                    alert("Error: Pustaka Ethers.js tidak terdeteksi. Silakan muat ulang halaman.");
+                    return;
+                }
+
+                alert("Menghubungi Kontrak BaseForecasterNft... Sila setujui konfirmasi.");
 
                 const web3Provider = new ethers.providers.Web3Provider(currentProvider);
                 const signer = web3Provider.getSigner();
 
+                // ABI Eksplisit untuk mengeksekusi metode mint
                 const robustABI = [
                     "function mint() public payable"
                 ];
 
                 const contractInstance = new ethers.Contract(nftContractAddress, robustABI, signer);
+                
+                // Mengirim transaksi senilai 0.0005 ETH
                 let tx = await contractInstance.mint({ value: ethers.utils.parseEther("0.0005") });
 
-                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash}\n\nMenunggu konfirmasi blok... 🚀`);
+                alert(`Transaksi Berhasil Dikirim!\nHash: ${tx.hash.slice(0,20)}...\n\nMenunggu validasi blok jaringan... 🚀`);
                 await tx.wait();
                 
                 triggerRealNotification("mint", userAddress);
@@ -335,8 +342,8 @@ window.addEventListener('load', () => {
                 console.error(err);
                 alert("Gagal Mint: " + (err.data?.message || err.message || "Saldo kurang atau user membatalkan"));
             }
-        };
-    }
+        }
+    });
 
     // --- 7. TOMBOL DONASI / TIP ---
     if(donateBtn) {
@@ -409,7 +416,6 @@ window.addEventListener('load', () => {
         return `0x${start}...${end}`;
     }
 
-    // Fungsi utama pembuat rotasi notifikasi acak (Mint, Tip, atau Join)
     function showRandomLiveNotification() {
         const actionTypes = ["mint", "tip", "join"];
         const chosenAction = actionTypes[Math.floor(Math.random() * actionTypes.length)];
@@ -431,6 +437,11 @@ window.addEventListener('load', () => {
         } 
         else if (chosenAction === "tip") {
             iconHtml = `<div style="background: #020408; border: 1px solid #f59e0b; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">🔥</div>`;
+            titleHtml = `<div style="font-size: 11px; color: #f59e0b; font-weight: bold; text-transform: uppercase;">■ Tip Received</div>`;
+            bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">sent</span> 0.001 ETH <span style="color: #f59e0b;">Tip</span></div>`;
+        }
+        else {
+            iconHtml = `<div style="background: #020408; border: 1px solid #0052FF; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 22px; border-radius: 8px;">⚡</div>`;
             titleHtml = `<div style="font-size: 11px; color: #0052FF; font-weight: bold; text-transform: uppercase;">■ User Joined</div>`;
             bodyHtml = `<div style="font-size: 12px; font-weight: bold; margin-top: 1px;">${fakeAddr} <span style="color: #9ca3af; font-weight: normal;">connected to Forecaster</span></div>`;
         }
@@ -451,7 +462,6 @@ window.addEventListener('load', () => {
         }, 5500);
     }
 
-    // Fungsi Pemicu Notifikasi Real-Time Asli berdasarkan Interaksi User saat itu juga
     function triggerRealNotification(type, walletAddress) {
         if(!notifyBox) return;
         const shortAddr = `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
@@ -489,7 +499,6 @@ window.addEventListener('load', () => {
         setTimeout(() => { notifyBox.style.bottom = '-120px'; }, 6000);
     }
 
-    // Interval Rotasi Simulasi Aktivitas Global agar web terlihat ramai konstan oleh trader lain
     setTimeout(showRandomLiveNotification, 3000);
     setInterval(showRandomLiveNotification, 22000);
 });
