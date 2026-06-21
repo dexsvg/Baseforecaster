@@ -62,7 +62,7 @@ window.addEventListener('load', () => {
 
     // --- 3. KONFIGURASI ALAMAT RESMI ---
     const devWalletAddress = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-    const nftContractAddress = "0x5693B08eD075012E42caCeAB11AA53b07f227e35"; // Ganti dengan alamat kontrak baru hasil Remix kamu
+    const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; // Ganti dengan alamat kontrak baru hasil Remix kamu
 
     // --- 4. ELEMENT SELECTOR ---
     const connectBtn = document.getElementById('connect-btn');
