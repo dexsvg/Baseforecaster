@@ -1,25 +1,25 @@
 /**
- * Base Forecaster - Core Logic Script
- * Berfungsi penuh untuk kalkulasi takdir, manajemen wallet, dan pencetakan NFT.
+ * Base Forecaster - Core Logic Script (Global English Version)
+ * Fully functional for destiny calculation, wallet management, and NFT minting.
  */
 
 // ==========================================
 // 1. CONFIGURATION & GLOBAL VARIABLES
 // ==========================================
-// GANTI alamat di bawah ini dengan alamat Smart Contract NFT Anda yang valid di Base Mainnet
+// Automatically matches your deployed contract from Remix: 0x26E...13950
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 
 let userAddress = "";
 let isConnected = false;
 
-// Kumpulan ramalan nasib (Destiny Library) berdasarkan hash wallet
+// Destiny Library based on wallet address hash (Translated to English)
 const fateLibrary = [
-    { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Hexadecimal wallet Anda selaras dengan pergerakan likuiditas raksasa. Anda ditakdirkan untuk memimpin tren pasar, mengumpulkan aset murni, dan keluar tepat sebelum badai rugpull melanda.", score: 98 },
-    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", text: "Portofolio Anda penuh dengan bekas luka pertempuran meme-coin. Namun, struktur alamat Anda menunjukkan ketahanan mutlak. Satu target 100x sedang menunggu eksekusi klik Anda.", score: 74 },
-    { fate: "DUSTING ATTACK TARGET", emoji: "⚠️", text: "Sinyal peringatan bergetar di dalam rantai blok Anda. Dompet Anda rentan terhadap token palsu dan dusting attack. Bersihkan jejak digital Anda dan jangan sembarang klik klaim airdrop bodong.", score: 21 },
-    { fate: "GENERATIONAL WEALTH", emoji: "👑", text: "Takdir yang sangat langka! Angka awal dan akhir dari address Anda mengunci simpul kekayaan abadi di jaringan Base. Pegang aset utama Anda, masa depan cerah menanti.", score: 95 },
-    { fate: "THE ETERNAL HOLDER", emoji: "💎", text: "Tangan berlian (Diamond Hands) sejati. Anda tidak pernah goyah oleh koreksi pasar sedalam apa pun. Rantai Base mencatat loyalitas Anda, imbalan staking besar akan segera datang.", score: 85 },
-    { fate: "LIQUIDITY PROVIDER DOOM", emoji: "📉", text: "Berhati-hatilah saat memasukkan dana ke dalam pool imbal hasil (yield farming) yang tidak jelas. Kerugian tidak permanen (impermanent loss) mengintai dompet Anda jika terlalu serakah.", score: 42 }
+    { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your wallet's hexadecimal structure aligns with massive liquidity movements. You are destined to lead market trends, accumulate pristine assets, and exit safely right before the storm of a rugpull hits.", score: 98 },
+    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", text: "Your portfolio is filled with the battle scars of meme-coin wars. However, your address framework indicates absolute resilience. A 100x target is waiting for your next execution click.", score: 74 },
+    { fate: "DUSTING ATTACK TARGET", emoji: "⚠️", text: "Warning signals are vibrating within your blockchain data nodes. Your wallet appears vulnerable to malicious tokens and dusting attacks. Clean up your digital footprint and avoid clicking random airdrop claims.", score: 21 },
+    { fate: "GENERATIONAL WEALTH", emoji: "👑", text: "An extremely rare cosmic configuration! The prefix and suffix of your address secure an eternal wealth knot on the Base network. Keep a strong grip on your core assets; a magnificent future awaits.", score: 95 },
+    { fate: "THE ETERNAL HOLDER", emoji: "💎", text: "True Diamond Hands. You never falter, no matter how deep the market correction goes. The Base ledger remembers your absolute loyalty, and great staking rewards are bound to manifest soon.", score: 85 },
+    { fate: "LIQUIDITY PROVIDER DOOM", emoji: "📉", text: "Exercise extreme caution when deploying capital into obscure high-yield farming pools. Impermanent loss is lurking within your wallet parameters if greed takes over your strategy.", score: 42 }
 ];
 
 // ==========================================
@@ -30,25 +30,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
-    // Jalankan counter pemandu estetika di footer
     setupViewCounter();
     
-    // Pasang event listener utama untuk tombol koneksi wallet
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
         connectBtn.addEventListener("click", openWalletModal);
     }
 
-    // Pasang penutup modal
     const closeModalBtn = document.getElementById("close-modal-btn");
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", closeWalletModal);
     }
 
-    // Sambungkan tombol pilihan di dalam modal langsung ke fungsi eksekusi
     setupModalButtons();
-    
-    // Aktifkan listener bypass untuk tombol MINT NFT
     setupUniversalMintButton();
 }
 
@@ -82,11 +76,10 @@ function setupModalButtons() {
 // 4. CORE WEB3 WALLET CONNECTION
 // ==========================================
 async function connectWallet() {
-    // Deteksi berlapis untuk dApp browser seluler (Bitget, OKX, MetaMask, Coinbase)
     const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum;
     
     if (!provider) {
-        alert("Dompet Web3 tidak terdeteksi! Jika Anda menggunakan HP, silakan buka situs ini dari dalam Menu dApp Browser aplikasi Bitget Wallet, OKX Wallet, atau MetaMask.");
+        alert("Web3 Wallet not detected! If you are on a mobile device, please open this website from inside the dApp Browser of Bitget Wallet, OKX Wallet, Coinbase Wallet, or MetaMask.");
         return;
     }
 
@@ -94,7 +87,6 @@ async function connectWallet() {
         const connectBtn = document.getElementById("connect-btn");
         if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
 
-        // Minta izin akses alamat wallet
         const accounts = await provider.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
         isConnected = true;
@@ -105,16 +97,14 @@ async function connectWallet() {
             connectBtn.classList.add("bg-slate-800", "border", "border-blue-500/40");
         }
 
-        // Tampilkan bagian hasil kalkulasi takdir
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
 
-        // Proses pembuatan takdir unik berdasarkan address
         generateDestiny(userAddress);
 
     } catch (error) {
         console.error(error);
-        alert("Koneksi dibatalkan atau terjadi kesalahan: " + error.message);
+        alert("Connection cancelled or error occurred: " + error.message);
         const connectBtn = document.getElementById("connect-btn");
         if (connectBtn) connectBtn.innerHTML = "🔮 Connect Wallet";
     }
@@ -124,34 +114,27 @@ async function connectWallet() {
 // 5. DETERMINISTIC DESTINY ENGINE & CANVAS
 // ==========================================
 function generateDestiny(address) {
-    // Membuat angka seed unik (deterministik) dari string hex wallet
     let cleanAddress = address.toLowerCase().replace("0x", "");
     let seed = 0;
     for (let i = 0; i < cleanAddress.length; i++) {
         seed += cleanAddress.charCodeAt(i);
     }
 
-    // Pilih index ramalan berdasarkan sisa bagi seed
     const fateIndex = seed % fateLibrary.length;
     const selectedFate = fateLibrary[fateIndex];
-    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); // Score 5 - 100%
+    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5));
 
-    // Update teks UI reguler
     document.getElementById("fortune-fate").innerText = selectedFate.fate;
     document.getElementById("fortune-text").innerText = selectedFate.text;
     document.getElementById("fortune-emoji").innerText = selectedFate.emoji;
     document.getElementById("fortune-emoji").classList.remove("hidden");
     document.getElementById("fortune-text").parentElement.classList.remove("hidden");
     
-    // Update progress bar keberuntungan
     document.getElementById("luck-score").innerText = `${finalLuckScore}%`;
     document.getElementById("luck-bar").style.width = `${finalLuckScore}%`;
     document.getElementById("seed-anchor").innerText = `#${seed}`;
 
-    // Render Gambar Kartu Takdir Estetik ke Canvas HTML5 (Gold-Blue Theme)
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
-    
-    // Atur aksi tombol share Twitter
     setupTwitterShare(selectedFate, finalLuckScore);
 }
 
@@ -160,51 +143,50 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Background utama - Gradasi Biru Tua Kegelapan
+    // 1. Background Gradient - Deep Dark Blue Celestial Theme
     let bgGrad = ctx.createLinearGradient(0, 0, 0, 500);
-    bgGrad.addColorStop(0, "#020617"); // slate-950
-    bgGrad.addColorStop(0.5, "#0f172a"); // slate-900
-    bgGrad.addColorStop(1, "#1e1b4b"); // indigo-950
+    bgGrad.addColorStop(0, "#020617"); 
+    bgGrad.addColorStop(0.5, "#0f172a"); 
+    bgGrad.addColorStop(1, "#1e1b4b"); 
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 2. Efek Efek Pendaran Cahaya (Glow di Tengah)
+    // 2. Radial Glow Effect
     let glowGrad = ctx.createRadialGradient(175, 220, 10, 175, 220, 180);
-    glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); // blue-600
+    glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); 
     glowGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 3. Frame Tipis Luar Emas (Gold Luxury Border)
+    // 3. Border Luxury Gold-Blue Gradient
     ctx.lineWidth = 4;
     let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
-    goldGrad.addColorStop(0, "#f59e0b"); // amber-500
-    goldGrad.addColorStop(0.5, "#d97706"); // amber-600
-    goldGrad.addColorStop(1, "#2563eb"); // blue-600 (Perpaduan warna ekosistem)
+    goldGrad.addColorStop(0, "#f59e0b"); 
+    goldGrad.addColorStop(0.5, "#d97706"); 
+    goldGrad.addColorStop(1, "#2563eb"); 
     ctx.strokeStyle = goldGrad;
     ctx.strokeRect(10, 10, 330, 480);
 
-    // Inner frame aksen kartu tarot
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(245, 158, 11, 0.3)";
     ctx.strokeRect(16, 16, 318, 468);
 
-    // 4. Header Nama dApp
+    // 4. Header Text
     ctx.fillStyle = "#94a3b8";
     ctx.font = "bold 10px monospace";
     ctx.textAlign = "center";
     ctx.fillText("BASE FORECASTER CORES", 175, 42);
 
-    // 5. Gambar Ilustrasi Besar / Emoji Takdir
+    // 5. Destiny Emoji
     ctx.font = "72px serif";
     ctx.fillText(fateObj.emoji, 175, 130);
 
-    // 6. Judul Takdir Dompet
-    ctx.fillStyle = "#38bdf8"; // sky-400
+    // 6. Title
+    ctx.fillStyle = "#38bdf8"; 
     ctx.font = "bold 20px sans-serif";
     ctx.fillText(fateObj.fate, 175, 195);
 
-    // 7. Garis Pembatas Ornamen
+    // 7. Decorative Divider
     ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
@@ -212,14 +194,13 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.lineTo(270, 215);
     ctx.stroke();
 
-    // Titik tengah hiasan
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
     ctx.arc(175, 215, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // 8. Blok Deskripsi Teks (Word Wrapping Otomatis)
-    ctx.fillStyle = "#cbd5e1"; // slate-300
+    // 8. Description Word Wrapping
+    ctx.fillStyle = "#cbd5e1"; 
     ctx.font = "italic 12px serif";
     const words = fateObj.text.split(" ");
     let line = "";
@@ -240,8 +221,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
-    // 9. Informasi Detail Status Parameter di bawah kartu
-    // Kotak Parameter
+    // 9. Parameters Panel Box
     ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
     ctx.fillRect(30, 390, 290, 65);
     ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
@@ -251,10 +231,10 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.font = "11px monospace";
     ctx.fillStyle = "#94a3b8";
     ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 410);
-    ctx.fillText(`LUCK    : ${score}% LEVEL DEGEN`, 45, 427);
+    ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 427);
     ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 444);
 
-    // 10. Watermark kecil Keaslian Dokumen
+    // 10. Watermark
     ctx.textAlign = "center";
     ctx.font = "9px monospace";
     ctx.fillStyle = "#475569";
@@ -268,10 +248,10 @@ function setupTwitterShare(fateObj, score) {
     shareBtn.onclick = (e) => {
         e.preventDefault();
         const tweetText = encodeURIComponent(
-            `🔮 Hasil ramalan nasib wallet Base saya baru saja keluar!\n\n` +
-            `Takdir: ${fateObj.fate} ${fateObj.emoji}\n` +
+            `🔮 My Base wallet crystal ball just revealed my destiny!\n\n` +
+            `Fate: ${fateObj.fate} ${fateObj.emoji}\n` +
             `Degen Luck Score: ${score}%\n\n` +
-            `Cek takdir rantai dompet hexadecimal mu sekarang di Base Forecaster! 🔵✨`
+            `Discover your hexadecimal chain destiny right now on Base Forecaster! 🔵✨`
         );
         const twitterUrl = `https://twitter.com/intent/tweet?text=${tweetText}`;
         window.open(twitterUrl, "_blank");
@@ -285,36 +265,32 @@ function setupUniversalMintButton() {
     const mintBtnEl = document.getElementById("mint-nft-btn");
     if (!mintBtnEl) return;
 
-    // Kloning tombol untuk menghapus sisa event-listener ganda yang menumpuk
     const newMintBtn = mintBtnEl.cloneNode(true);
     mintBtnEl.parentNode.replaceChild(newMintBtn, mintBtnEl);
 
     newMintBtn.addEventListener("click", async (e) => {
         e.preventDefault();
 
-        // Kumpulkan semua pintu masuk provider Web3 dompet mobile/ekstensi
         const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum || (window.coinbaseWalletExtension ? window.coinbaseWalletExtension : null);
 
         if (!provider) {
-            alert("Provider Web3 tidak ditemukan. Silakan jalankan web ini langsung dari dalam Dompet Web3 / dApp Browser HP Anda.");
+            alert("Web3 Provider not found. Please open this app inside your crypto wallet dApp browser.");
             return;
         }
 
         try {
-            // Validasi apakah akun sudah terikat sempurna
             const accounts = await provider.request({ method: "eth_requestAccounts" });
             if (!accounts || accounts.length === 0) {
-                alert("Gagal membaca alamat akun. Pastikan dompet Anda tidak terkunci.");
+                alert("Failed to read active wallet address. Please unlock your wallet application.");
                 return;
             }
             const activeUserAddr = accounts[0];
 
-            // Paksa pemindahan rantai ke Base Jaringan Utama (Hex: 0x2105 = 8453)
+            // Force Switch Network to Base Mainnet (Hex: 0x2105)
             await provider.request({
                 method: "wallet_switchEthereumChain",
                 params: [{ chainId: "0x2105" }],
             }).catch(async (switchError) => {
-                // Kode 4902 berarti jaringan Base belum ada di daftar user, tambahkan otomatis
                 if (switchError.code === 4902) {
                     await provider.request({
                         method: "wallet_addEthereumChain",
@@ -329,54 +305,55 @@ function setupUniversalMintButton() {
                 }
             });
 
-            alert("Koneksi Base Terbuka! Mempersiapkan transaksi pencetakan NFT...");
+            alert("Connected to Base Network! Preparing NFT minting contract pipeline...");
 
-            // ----------------------------------------------------
-            // ENGINE JALUR 1: DETEKSI DAN EKSEKUSI JIKA ETHERS V6 AKTIF
-            // ----------------------------------------------------
+            // Precise Smart Contract ABIs covering all variants found in your code
+            const comprehensiveABI = [
+                "function mint() public payable",
+                "function mintNFT() public payable",
+                "function mint(uint256 quantity) public payable"
+            ];
+
+            // --- PROTOCOL PATHWAY 1: ETHERS.JS V6 DETECT ---
             if (window.ethers && window.ethers.BrowserProvider) {
                 const browserProto = new window.ethers.BrowserProvider(provider);
                 const signer = await browserProto.getSigner();
-                const contract = new window.ethers.Contract(nftContractAddress, ["function mint() public payable"], signer);
+                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
                 
                 const tx = await contract.mint({
                     value: window.ethers.parseEther("0.0005"),
-                    gasLimit: 150000 // Limit longgar agar aman
+                    gasLimit: 160000
                 });
-                alert("Transaksi Dikirim (v6)! Hash: " + tx.hash);
+                alert("Transaction Submitted! Hash: " + tx.hash);
                 await tx.wait();
-                alert("Selamat! NFT Anda sukses ter-minting di jaringan Base! 🎉");
+                alert("Success! Your Base Forecaster Destiny NFT has been minted! 🎉");
             } 
-            // ----------------------------------------------------
-            // ENGINE JALUR 2: DETEKSI DAN EKSEKUSI JIKA ETHERS V5 AKTIF
-            // ----------------------------------------------------
+            // --- PROTOCOL PATHWAY 2: ETHERS.JS V5 DETECT ---
             else if (window.ethers && window.ethers.providers) {
                 const web3Proto = new window.ethers.providers.Web3Provider(provider);
                 const signer = web3Proto.getSigner();
-                const contract = new window.ethers.Contract(nftContractAddress, ["function mint() public payable"], signer);
+                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
                 
                 const tx = await contract.mint({
                     value: window.ethers.utils.parseEther("0.0005"),
-                    gasLimit: window.ethers.utils.hexlify(150000)
+                    gasLimit: window.ethers.utils.hexlify(160000)
                 });
-                alert("Transaksi Dikirim (v5)! Hash: " + tx.hash);
+                alert("Transaction Submitted! Hash: " + tx.hash);
                 await tx.wait();
-                alert("Selamat! NFT Anda sukses ter-minting di jaringan Base! 🎉");
+                alert("Success! Your Base Forecaster Destiny NFT has been minted! 🎉");
             } 
-            // ----------------------------------------------------
-            // JALUR DARURAT SAKTI (DIRECT RPC BYPASS): 
-            // Jika Library Ethers gagal dimuat / diblokir oleh sistem dompet bawaan
-            // ----------------------------------------------------
+            // --- HARDCORE EMERGENCY PATHWAY: DIRECT RPC CALL (NO ETHERS AT ALL) ---
             else {
-                alert("Pustaka Ethers.js tidak merespons sempurna. Mengaktifkan Mode Transaksi Langsung (Direct RPC Bypass)...");
+                alert("Ethers library binding frozen. Launching Direct RPC Data Stream...");
                 
-                const txData = "0x1249c5b8"; // Kepten data hex dari panggilan fungsi "mint()" kosong tanpa argumen
+                // standard function selector hash for mint()
+                const txData = "0x1249c5b8"; 
                 const txParams = {
                     from: activeUserAddr,
                     to: nftContractAddress,
-                    value: "0x1c6bf52634000", // Nilai nominal 0.0005 ETH dalam format Hex Wei
+                    value: "0x1c6bf52634000", // 0.0005 ETH in Hex Wei format
                     data: txData,
-                    chainId: "0x2105" // Jaringan Base Mainnet
+                    chainId: "0x2105"
                 };
 
                 const txHash = await provider.request({
@@ -384,19 +361,19 @@ function setupUniversalMintButton() {
                     params: [txParams],
                 });
                 
-                alert("Transaksi Pintas Berhasil Dikirim!\nHash: " + txHash + "\n\nSilakan cek status beberapa saat lagi di wallet.");
+                alert("Emergency Bypass Transaction Sent!\nHash: " + txHash + "\n\nCheck your wallet portfolio or block explorer shortly.");
             }
 
         } catch (error) {
             console.error(error);
-            const msg = error.data?.message || error.message || "User menolak konfirmasi kontrak atau saldo Base ETH Anda kurang.";
-            alert("Gagal Eksekusi Mint: " + msg);
+            const msg = error.data?.message || error.message || "User denied transaction or insufficient Base ETH balance.";
+            alert("Minting Failed: " + msg);
         }
     });
 }
 
 // ==========================================
-// 7. SISTEM DONASI / TIP PENGEMBANG
+// 7. DEVELOPER DONATION / TIP SYSTEM
 // ==========================================
 const donateBtnEl = document.getElementById("donate-btn");
 if (donateBtnEl) {
@@ -407,13 +384,12 @@ if (donateBtnEl) {
 
         try {
             const accounts = await provider.request({ method: "eth_requestAccounts" });
-            // Alamat tujuan tip (Bisa diganti ke address pengembang pilihan Anda)
             const devAddress = "0x1395066A5bEFA739A06112C785C088f7b764D9f1"; 
             
             const txParams = {
                 from: accounts[0],
                 to: devAddress,
-                value: "0x38d7ea4c68000", // Senilai 0.001 ETH dalam format Hex Wei
+                value: "0x38d7ea4c68000", // 0.001 ETH
                 chainId: "0x2105"
             };
 
@@ -421,9 +397,9 @@ if (donateBtnEl) {
                 method: "eth_sendTransaction",
                 params: [txParams],
             });
-            alert("Terima kasih banyak atas tip yang Anda kirimkan! Semoga rezeki Anda dilipatgandakan! 💸 Hash: " + txHash);
+            alert("Thank you so much for the support tip! 💸 Hash: " + txHash);
         } catch (err) {
-            alert("Batal mengirim tip: " + err.message);
+            alert("Tip canceled: " + err.message);
         }
     };
 }
@@ -435,7 +411,6 @@ function setupViewCounter() {
     const counterEl = document.getElementById("view-counter");
     if (!counterEl) return;
     
-    // Simulasi counter realistik yang tersimpan di memori browser lokal
     let baseViews = localStorage.getItem("base_forecaster_views");
     if (!baseViews) {
         baseViews = Math.floor(Math.random() * 4000) + 12500;
@@ -444,5 +419,5 @@ function setupViewCounter() {
     }
     localStorage.setItem("base_forecaster_views", baseViews);
     counterEl.innerText = Number(baseViews).toLocaleString("en-US");
-                                 }
-                
+                          }
+            
