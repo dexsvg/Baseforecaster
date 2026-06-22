@@ -11,6 +11,7 @@ const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950";
 
 let userAddress = "";
 let isConnected = false;
+let appLogoImg = null; // Holds the preloaded branding identity image
 
 // Destiny Library based on wallet address hash
 const fateLibrary = [
@@ -34,6 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
+    // Preload your branding identity image first
+    setupAppLogo();
+
     // Run auxiliary real-time simulation counters (Safely with fallback checks)
     setupViewCounter();
     setupMintCounter();
@@ -59,6 +63,21 @@ function initApp() {
 
     // Activate the Developer Tip System
     setupTipSystem();
+}
+
+/**
+ * Preloads the uploaded Crystal Ball logo image so it's ready for Canvas drawing
+ */
+function setupAppLogo() {
+    appLogoImg = new Image();
+    // REPLACE '1000050193.png' with the actual path/filename of your uploaded crystal ball logo image
+    appLogoImg.src = "1000050193.png"; 
+    appLogoImg.onload = () => {
+        console.log("dApp Branding Identity Logo loaded successfully.");
+    };
+    appLogoImg.onerror = () => {
+        console.error("Failed to load branding logo image. Check the file path.");
+    };
 }
 
 // ==========================================
@@ -170,6 +189,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
+    // 1. Core Background - Deep Cosmic Dark Blue Gradient
     let bgGrad = ctx.createLinearGradient(0, 0, 0, 500);
     bgGrad.addColorStop(0, "#020617"); 
     bgGrad.addColorStop(0.5, "#0f172a"); 
@@ -177,12 +197,14 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 350, 500);
 
+    // 2. Center Radial Glow Effect
     let glowGrad = ctx.createRadialGradient(175, 220, 10, 175, 220, 180);
     glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); 
     glowGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, 350, 500);
 
+    // 3. Luxury Gold Outer Border Framework
     ctx.lineWidth = 4;
     let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
     goldGrad.addColorStop(0, "#f59e0b"); 
@@ -191,41 +213,54 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.strokeStyle = goldGrad;
     ctx.strokeRect(10, 10, 330, 480);
 
+    // Inner subtle card border
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(245, 158, 11, 0.3)";
     ctx.strokeRect(16, 16, 318, 468);
 
+    // 4. Branding Identity Image Injection (Draws the uploaded Crystal Ball Logo)
+    if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) {
+        // Renders identity logo cleanly at the center-top header bounds
+        ctx.drawImage(appLogoImg, 155, 28, 40, 40);
+    }
+
+    // 5. Header App Branding Text (Shifted down slightly to fit under logo)
     ctx.fillStyle = "#94a3b8";
-    ctx.font = "bold 10px monospace";
+    ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("BASE FORECASTER CORES", 175, 42);
+    ctx.fillText("BASE FORECASTER CORES", 175, 82);
 
-    ctx.font = "72px serif";
-    ctx.fillText(fateObj.emoji, 175, 130);
+    // 6. Large Core Destiny Illustration / Emoji
+    ctx.font = "64px serif";
+    ctx.fillText(fateObj.emoji, 175, 155);
 
+    // 7. Destiny Title
     ctx.fillStyle = "#38bdf8"; 
-    ctx.font = "bold 20px sans-serif";
-    ctx.fillText(fateObj.fate, 175, 195);
+    ctx.font = "bold 19px sans-serif";
+    ctx.fillText(fateObj.fate, 175, 210);
 
+    // 8. Ornamental Separator Line
     ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
-    ctx.moveTo(80, 215);
-    ctx.lineTo(270, 215);
+    ctx.moveTo(80, 225);
+    ctx.lineTo(270, 225);
     ctx.stroke();
 
+    // Center jewel bead
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
-    ctx.arc(175, 215, 4, 0, Math.PI * 2);
+    ctx.arc(175, 225, 4, 0, Math.PI * 2);
     ctx.fill();
 
+    // 9. Description Word Wrapping Engine
     ctx.fillStyle = "#cbd5e1"; 
-    ctx.font = "italic 12px serif";
+    ctx.font = "italic 11.5px serif";
     const words = fateObj.text.split(" ");
     let line = "";
-    let y = 245;
+    let y = 252;
     const maxWidth = 270;
-    const lineHeight = 18;
+    const lineHeight = 17;
 
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
@@ -240,22 +275,24 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
+    // 10. Parameters Panel Meta Details Box
     ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
-    ctx.fillRect(30, 390, 290, 65);
+    ctx.fillRect(30, 395, 290, 62);
     ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
-    ctx.strokeRect(30, 390, 290, 65);
+    ctx.strokeRect(30, 395, 290, 62);
 
     ctx.textAlign = "left";
-    ctx.font = "11px monospace";
+    ctx.font = "10.5px monospace";
     ctx.fillStyle = "#94a3b8";
-    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 410);
-    ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 427);
-    ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 444);
+    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 413);
+    ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
+    ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
 
+    // 11. Integrity Verification Micro Watermark
     ctx.textAlign = "center";
     ctx.font = "9px monospace";
     ctx.fillStyle = "#475569";
-    ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 478);
+    ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 480);
 }
 
 function setupTwitterShare(fateObj, score) {
@@ -425,7 +462,7 @@ function setupTipSystem() {
 // ==========================================
 function setupMintCounter() {
     const mintCounterEl = document.getElementById("mint-counter");
-    if (!mintCounterEl) return; // Protected from stopping if element doesn't exist
+    if (!mintCounterEl) return; 
 
     let currentMints = localStorage.getItem("base_forecaster_mints");
     if (!currentMints) {
@@ -453,7 +490,7 @@ function incrementMintCounter() {
 
 function setupViewCounter() {
     const counterEl = document.getElementById("view-counter");
-    if (!counterEl) return; // Protected from stopping if element doesn't exist
+    if (!counterEl) return; 
     
     let baseViews = localStorage.getItem("base_forecaster_views");
     if (!baseViews) {
@@ -465,32 +502,4 @@ function setupViewCounter() {
     counterEl.innerText = Number(baseViews).toLocaleString("en-US");
 }
 
-// ==========================================
-// 9. LIVE POP-UP MINT NOTIFICATION LOOP
-// ==========================================
-function startLiveNotificationLoop() {
-    const liveNotifEl = document.getElementById("live-notification");
-    const liveTextEl = document.getElementById("live-notif-text");
-    if (!liveNotifEl || !liveTextEl) return;
-
-    const showNextNotification = () => {
-        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-        const randomFate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
-        
-        liveTextEl.innerHTML = `🎉 <strong>${randomName}</strong> just minted their Destiny NFT! Fate obtained: <span class="text-blue-400 font-bold">${randomFate}</span>`;
-        
-        liveNotifEl.classList.remove("hidden", "translate-y-10", "opacity-0");
-        liveNotifEl.classList.add("translate-y-0", "opacity-100");
-
-        setTimeout(() => {
-            liveNotifEl.classList.remove("translate-y-0", "opacity-100");
-            liveNotifEl.classList.add("translate-y-10", "opacity-0");
-        }, 4000);
-
-        const nextInterval = Math.floor(Math.random() * 8000) + 7000;
-        setTimeout(showNextNotification, nextInterval);
-    };
-
-    setTimeout(showNextNotification, 3000);
-            }
-        
+// ===
