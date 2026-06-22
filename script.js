@@ -1,19 +1,18 @@
 /**
- * Base Forecaster - Core Logic Script
+ * Base Forecaster - Core Logic Script (Global English Version)
  * Fully functional for destiny calculation, wallet management, and NFT minting.
- * Global English Version
  */
 
 // ==========================================
 // 1. CONFIGURATION & GLOBAL VARIABLES
 // ==========================================
-// Matches your deployed contract address on Base Mainnet
+// Automatically matches your deployed contract from Remix: 0x26E...13950
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 
 let userAddress = "";
 let isConnected = false;
 
-// Destiny Library based on wallet address hash (Completely in English)
+// Destiny Library based on wallet address hash (Translated to English)
 const fateLibrary = [
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your wallet's hexadecimal structure aligns with massive liquidity movements. You are destined to lead market trends, accumulate pristine assets, and exit safely right before the storm of a rugpull hits.", score: 98 },
     { fate: "THE DEGEN SURVIVOR", emoji: "🥷", text: "Your portfolio is filled with the battle scars of meme-coin wars. However, your address framework indicates absolute resilience. A 100x target is waiting for your next execution click.", score: 74 },
@@ -31,25 +30,19 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
-    // Run aesthetic view counter in footer
     setupViewCounter();
     
-    // Connect Wallet main event listener
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
         connectBtn.addEventListener("click", openWalletModal);
     }
 
-    // Modal close button
     const closeModalBtn = document.getElementById("close-modal-btn");
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", closeWalletModal);
     }
 
-    // Connect selection buttons inside the modal
     setupModalButtons();
-    
-    // Activate the universal robust mint pipeline
     setupUniversalMintButton();
 }
 
@@ -83,11 +76,10 @@ function setupModalButtons() {
 // 4. CORE WEB3 WALLET CONNECTION
 // ==========================================
 async function connectWallet() {
-    // Multi-layer detection for mobile dApp browsers
     const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum;
     
     if (!provider) {
-        alert("Web3 Wallet not detected! If you are using a mobile phone, please open this website from inside the dApp Browser of Bitget Wallet, OKX Wallet, Coinbase Wallet, or MetaMask.");
+        alert("Web3 Wallet not detected! If you are on a mobile device, please open this website from inside the dApp Browser of Bitget Wallet, OKX Wallet, Coinbase Wallet, or MetaMask.");
         return;
     }
 
@@ -95,7 +87,6 @@ async function connectWallet() {
         const connectBtn = document.getElementById("connect-btn");
         if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
 
-        // Request wallet accounts access
         const accounts = await provider.request({ method: "eth_requestAccounts" });
         userAddress = accounts[0];
         isConnected = true;
@@ -106,16 +97,14 @@ async function connectWallet() {
             connectBtn.classList.add("bg-slate-800", "border", "border-blue-500/40");
         }
 
-        // Reveal destiny results section
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
 
-        // Generate deterministic destiny based on address
         generateDestiny(userAddress);
 
     } catch (error) {
         console.error(error);
-        alert("Connection cancelled or an error occurred: " + error.message);
+        alert("Connection cancelled or error occurred: " + error.message);
         const connectBtn = document.getElementById("connect-btn");
         if (connectBtn) connectBtn.innerHTML = "🔮 Connect Wallet";
     }
@@ -125,34 +114,27 @@ async function connectWallet() {
 // 5. DETERMINISTIC DESTINY ENGINE & CANVAS
 // ==========================================
 function generateDestiny(address) {
-    // Generate a unique seed from the wallet hex string
     let cleanAddress = address.toLowerCase().replace("0x", "");
     let seed = 0;
     for (let i = 0; i < cleanAddress.length; i++) {
         seed += cleanAddress.charCodeAt(i);
     }
 
-    // Pick fate based on seed modulus
     const fateIndex = seed % fateLibrary.length;
     const selectedFate = fateLibrary[fateIndex];
-    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); // Score 5 - 100%
+    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5));
 
-    // Update regular UI text elements
     document.getElementById("fortune-fate").innerText = selectedFate.fate;
     document.getElementById("fortune-text").innerText = selectedFate.text;
     document.getElementById("fortune-emoji").innerText = selectedFate.emoji;
     document.getElementById("fortune-emoji").classList.remove("hidden");
     document.getElementById("fortune-text").parentElement.classList.remove("hidden");
     
-    // Update progress bars
     document.getElementById("luck-score").innerText = `${finalLuckScore}%`;
     document.getElementById("luck-bar").style.width = `${finalLuckScore}%`;
     document.getElementById("seed-anchor").innerText = `#${seed}`;
 
-    // Render Canvas Destiny Card (Gold-Blue Theme)
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
-    
-    // Configure Twitter share click
     setupTwitterShare(selectedFate, finalLuckScore);
 }
 
@@ -161,51 +143,50 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Core Background - Deep Cosmic Dark Blue Gradient
+    // 1. Background Gradient - Deep Dark Blue Celestial Theme
     let bgGrad = ctx.createLinearGradient(0, 0, 0, 500);
-    bgGrad.addColorStop(0, "#020617"); // slate-950
-    bgGrad.addColorStop(0.5, "#0f172a"); // slate-900
-    bgGrad.addColorStop(1, "#1e1b4b"); // indigo-950
+    bgGrad.addColorStop(0, "#020617"); 
+    bgGrad.addColorStop(0.5, "#0f172a"); 
+    bgGrad.addColorStop(1, "#1e1b4b"); 
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 2. Center Radial Glow Effect
+    // 2. Radial Glow Effect
     let glowGrad = ctx.createRadialGradient(175, 220, 10, 175, 220, 180);
-    glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); // blue-600
+    glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); 
     glowGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 3. Luxury Gold Outer Border Framework
+    // 3. Border Luxury Gold-Blue Gradient
     ctx.lineWidth = 4;
     let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
-    goldGrad.addColorStop(0, "#f59e0b"); // amber-500
-    goldGrad.addColorStop(0.5, "#d97706"); // amber-600
-    goldGrad.addColorStop(1, "#2563eb"); // blue-600
+    goldGrad.addColorStop(0, "#f59e0b"); 
+    goldGrad.addColorStop(0.5, "#d97706"); 
+    goldGrad.addColorStop(1, "#2563eb"); 
     ctx.strokeStyle = goldGrad;
     ctx.strokeRect(10, 10, 330, 480);
 
-    // Inner subtle card border
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(245, 158, 11, 0.3)";
     ctx.strokeRect(16, 16, 318, 468);
 
-    // 4. Header App Branding
+    // 4. Header Text
     ctx.fillStyle = "#94a3b8";
     ctx.font = "bold 10px monospace";
     ctx.textAlign = "center";
     ctx.fillText("BASE FORECASTER CORES", 175, 42);
 
-    // 5. Large Core Destiny Illustration / Emoji
+    // 5. Destiny Emoji
     ctx.font = "72px serif";
     ctx.fillText(fateObj.emoji, 175, 130);
 
-    // 6. Destiny Title
-    ctx.fillStyle = "#38bdf8"; // sky-400
+    // 6. Title
+    ctx.fillStyle = "#38bdf8"; 
     ctx.font = "bold 20px sans-serif";
     ctx.fillText(fateObj.fate, 175, 195);
 
-    // 7. Ornamental Separator Line
+    // 7. Decorative Divider
     ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
@@ -213,14 +194,13 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.lineTo(270, 215);
     ctx.stroke();
 
-    // Center jewel bead
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
     ctx.arc(175, 215, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // 8. Description Word Wrapping Engine
-    ctx.fillStyle = "#cbd5e1"; // slate-300
+    // 8. Description Word Wrapping
+    ctx.fillStyle = "#cbd5e1"; 
     ctx.font = "italic 12px serif";
     const words = fateObj.text.split(" ");
     let line = "";
@@ -241,7 +221,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
-    // 9. Parameters Panel Meta Details Box
+    // 9. Parameters Panel Box
     ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
     ctx.fillRect(30, 390, 290, 65);
     ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
@@ -254,7 +234,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 427);
     ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 444);
 
-    // 10. Integrity Verification Micro Watermark
+    // 10. Watermark
     ctx.textAlign = "center";
     ctx.font = "9px monospace";
     ctx.fillStyle = "#475569";
@@ -279,42 +259,38 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ==========================================
-// 6. MINT NFT BUTTON (UNIVERSAL BYPASS METHOD V5/V6 - GLOBAL ENGLISH)
+// 6. TOMBOL MINT NFT (UNIVERSAL BYPASS METHOD V5/V6)
 // ==========================================
 function setupUniversalMintButton() {
     const mintBtnEl = document.getElementById("mint-nft-btn");
     if (!mintBtnEl) return;
 
-    // Clone the node to wipe out stacked event listener glitches
     const newMintBtn = mintBtnEl.cloneNode(true);
     mintBtnEl.parentNode.replaceChild(newMintBtn, mintBtnEl);
 
     newMintBtn.addEventListener("click", async (e) => {
         e.preventDefault();
 
-        // Collect all potential mobile/extension injected interfaces
         const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum || (window.coinbaseWalletExtension ? window.coinbaseWalletExtension : null);
 
         if (!provider) {
-            alert("Web3 Provider not found. Please run this website directly inside your crypto wallet dApp Browser.");
+            alert("Web3 Provider not found. Please open this app inside your crypto wallet dApp browser.");
             return;
         }
 
         try {
-            // Validate connection
             const accounts = await provider.request({ method: "eth_requestAccounts" });
             if (!accounts || accounts.length === 0) {
-                alert("Failed to read active wallet address. Please make sure your wallet is unlocked.");
+                alert("Failed to read active wallet address. Please unlock your wallet application.");
                 return;
             }
             const activeUserAddr = accounts[0];
 
-            // Force switch to Base Mainnet (Hex: 0x2105 = 8453)
+            // Force Switch Network to Base Mainnet (Hex: 0x2105)
             await provider.request({
                 method: "wallet_switchEthereumChain",
                 params: [{ chainId: "0x2105" }],
             }).catch(async (switchError) => {
-                // Code 4902 means network needs to be added automatically
                 if (switchError.code === 4902) {
                     await provider.request({
                         method: "wallet_addEthereumChain",
@@ -329,18 +305,16 @@ function setupUniversalMintButton() {
                 }
             });
 
-            alert("Base Network Connected! Preparing NFT minting smart contract transaction...");
+            alert("Connected to Base Network! Preparing NFT minting contract pipeline...");
 
-            // Multi-signature variants ABI to dynamically catch whatever your Remix contract expects
+            // Precise Smart Contract ABIs covering all variants found in your code
             const comprehensiveABI = [
                 "function mint() public payable",
                 "function mintNFT() public payable",
                 "function mint(uint256 quantity) public payable"
             ];
 
-            // ----------------------------------------------------
-            // ROUTE PATHWAY 1: EXECUTING VIA ETHERS.JS V6
-            // ----------------------------------------------------
+            // --- PROTOCOL PATHWAY 1: ETHERS.JS V6 DETECT ---
             if (window.ethers && window.ethers.BrowserProvider) {
                 const browserProto = new window.ethers.BrowserProvider(provider);
                 const signer = await browserProto.getSigner();
@@ -348,15 +322,13 @@ function setupUniversalMintButton() {
                 
                 const tx = await contract.mint({
                     value: window.ethers.parseEther("0.0005"),
-                    gasLimit: 160000 
+                    gasLimit: 160000
                 });
-                alert("Transaction Submitted (v6)! Hash: " + tx.hash);
+                alert("Transaction Submitted! Hash: " + tx.hash);
                 await tx.wait();
-                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
+                alert("Success! Your Base Forecaster Destiny NFT has been minted! 🎉");
             } 
-            // ----------------------------------------------------
-            // ROUTE PATHWAY 2: EXECUTING VIA ETHERS.JS V5
-            // ----------------------------------------------------
+            // --- PROTOCOL PATHWAY 2: ETHERS.JS V5 DETECT ---
             else if (window.ethers && window.ethers.providers) {
                 const web3Proto = new window.ethers.providers.Web3Provider(provider);
                 const signer = web3Proto.getSigner();
@@ -366,23 +338,22 @@ function setupUniversalMintButton() {
                     value: window.ethers.utils.parseEther("0.0005"),
                     gasLimit: window.ethers.utils.hexlify(160000)
                 });
-                alert("Transaction Submitted (v5)! Hash: " + tx.hash);
+                alert("Transaction Submitted! Hash: " + tx.hash);
                 await tx.wait();
-                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
+                alert("Success! Your Base Forecaster Destiny NFT has been minted! 🎉");
             } 
-            // ----------------------------------------------------
-            // HARDCORE PIPELINE 3: DIRECT RPC FALLBACK BYPASS (NO ETHERS REQUIRED)
-            // ----------------------------------------------------
+            // --- HARDCORE EMERGENCY PATHWAY: DIRECT RPC CALL (NO ETHERS AT ALL) ---
             else {
-                alert("Ethers library binding frozen on this dApp shell. Launching Direct RPC Data Stream Bypass...");
+                alert("Ethers library binding frozen. Launching Direct RPC Data Stream...");
                 
-                const txData = "0x1249c5b8"; // Safe standard "mint()" selector data hash 
+                // standard function selector hash for mint()
+                const txData = "0x1249c5b8"; 
                 const txParams = {
                     from: activeUserAddr,
                     to: nftContractAddress,
-                    value: "0x1c6bf52634000", // 0.0005 ETH in Hex Wei
+                    value: "0x1c6bf52634000", // 0.0005 ETH in Hex Wei format
                     data: txData,
-                    chainId: "0x2105" 
+                    chainId: "0x2105"
                 };
 
                 const txHash = await provider.request({
@@ -390,19 +361,19 @@ function setupUniversalMintButton() {
                     params: [txParams],
                 });
                 
-                alert("Bypass Transaction Successfully Broadcasted!\nHash: " + txHash + "\n\nPlease wait a moment and check your wallet wallet metadata status.");
+                alert("Emergency Bypass Transaction Sent!\nHash: " + txHash + "\n\nCheck your wallet portfolio or block explorer shortly.");
             }
 
         } catch (error) {
             console.error(error);
-            const msg = error.data?.message || error.message || "User denied signature request or insufficient Base ETH balance.";
+            const msg = error.data?.message || error.message || "User denied transaction or insufficient Base ETH balance.";
             alert("Minting Failed: " + msg);
         }
     });
 }
 
 // ==========================================
-// 7. DEVELOPER TIP SYSTEM
+// 7. DEVELOPER DONATION / TIP SYSTEM
 // ==========================================
 const donateBtnEl = document.getElementById("donate-btn");
 if (donateBtnEl) {
@@ -418,7 +389,7 @@ if (donateBtnEl) {
             const txParams = {
                 from: accounts[0],
                 to: devAddress,
-                value: "0x38d7ea4c68000", // 0.001 ETH in Hex Wei
+                value: "0x38d7ea4c68000", // 0.001 ETH
                 chainId: "0x2105"
             };
 
@@ -426,7 +397,7 @@ if (donateBtnEl) {
                 method: "eth_sendTransaction",
                 params: [txParams],
             });
-            alert("Thank you so much for the support tip! May your wealth multiply! 💸 Hash: " + txHash);
+            alert("Thank you so much for the support tip! 💸 Hash: " + txHash);
         } catch (err) {
             alert("Tip canceled: " + err.message);
         }
@@ -449,4 +420,4 @@ function setupViewCounter() {
     localStorage.setItem("base_forecaster_views", baseViews);
     counterEl.innerText = Number(baseViews).toLocaleString("en-US");
         }
-        
+            
