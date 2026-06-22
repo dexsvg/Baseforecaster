@@ -293,37 +293,48 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ==========================================
-// 6. MINT NFT BUTTON (UNIVERSAL BYPASS METHOD V5/V6)
+// 6. MINT NFT BUTTON (REWORKED & FULL REPAIR)
 // ==========================================
 function setupUniversalMintButton() {
     const mintBtnEl = document.getElementById("mint-nft-btn");
-    if (!mintBtnEl) return;
+    if (!mintBtnEl) {
+        console.warn("Tombol #mint-nft-btn tidak ditemukan di HTML.");
+        return;
+    }
 
-    const newMintBtn = mintBtnEl.cloneNode(true);
-    mintBtnEl.parentNode.replaceChild(newMintBtn, mintBtnEl);
+    // Bersihkan listener lama dengan menghapus atribut onclick (aman tanpa cloneNode)
+    mintBtnEl.onclick = null;
 
-    newMintBtn.addEventListener("click", async (e) => {
+    // Pasang Event Listener Klik Baru yang Kuat
+    mintBtnEl.addEventListener("click", async (e) => {
         e.preventDefault();
+        console.log("Tombol Mint diklik. Memulai proses Web3...");
 
-        const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum || (window.coinbaseWalletExtension ? window.coinbaseWalletExtension : null);
+        // Deteksi Provider Dompet Aktif
+        const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum || window.coinbaseWalletExtension;
 
         if (!provider) {
-            alert("Web3 Provider not found. Please run this website directly inside your crypto wallet dApp Browser.");
+            alert("Web3 Wallet tidak ditemukan! Jika kamu menggunakan HP, buka website ini dari dalam Browser dApp Aplikasi OKX Wallet, Bitget Wallet, atau MetaMask.");
             return;
         }
 
         try {
+            // 1. Minta akses alamat wallet
             const accounts = await provider.request({ method: "eth_requestAccounts" });
             if (!accounts || accounts.length === 0) {
-                alert("Failed to read active wallet address. Please make sure your wallet is unlocked.");
+                alert("Gagal membaca alamat wallet. Pastikan wallet kamu sudah di-unlock.");
                 return;
             }
             const activeUserAddr = accounts[0];
 
-            await provider.request({
-                method: "wallet_switchEthereumChain",
-                params: [{ chainId: "0x2105" }],
-            }).catch(async (switchError) => {
+            // 2. Paksa pindah/tambah jaringan ke Base Mainnet (Chain ID: 0x2105)
+            try {
+                await provider.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: "0x2105" }],
+                });
+            } catch (switchError) {
+                // Code 4902 berarti jaringan Base belum ada di wallet, maka kita tambahkan otomatis
                 if (switchError.code === 4902) {
                     await provider.request({
                         method: "wallet_addEthereumChain",
@@ -335,74 +346,58 @@ function setupUniversalMintButton() {
                             blockExplorerUrls: ["https://basescan.org"]
                         }]
                     });
+                } else {
+                    throw switchError;
                 }
+            }
+
+            // Ubah text tombol biar user tahu proses sedang berjalan
+            const originalText = mintBtnEl.innerHTML;
+            mintBtnEl.innerHTML = "⏳ Processing Mint...";
+            mintBtnEl.disabled = true;
+
+            // 3. METODE UTAMA: Eksekusi Direct RPC Data Stream (Paling Stabil & Universal untuk Semua Wallet)
+            // Menggunakan signature hash dari fungsi standard mint() -> "0x1249c5b8"
+            // Value: 0.0005 ETH -> Konversi Hex: "0x1c6bf52634000"
+            const txParams = {
+                from: activeUserAddr,
+                to: nftContractAddress,
+                value: "0x1c6bf52634000", 
+                data: "0x1249c5b8", 
+                chainId: "0x2105"
+            };
+
+            console.log("Mengirim transaksi langsung ke blockchain via RPC...", txParams);
+
+            const txHash = await provider.request({
+                method: "eth_sendTransaction",
+                params: [txParams],
             });
+            
+            // Kembalikan status tombol
+            mintBtnEl.innerHTML = originalText;
+            mintBtnEl.disabled = false;
 
-            alert("Base Network Connected! Preparing NFT minting smart contract transaction...");
-
-            const comprehensiveABI = [
-                "function mint() public payable",
-                "function mintNFT() public payable",
-                "function mint(uint256 quantity) public payable"
-            ];
-
-            if (window.ethers && window.ethers.BrowserProvider) {
-                const browserProto = new window.ethers.BrowserProvider(provider);
-                const signer = await browserProto.getSigner();
-                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
-                
-                const tx = await contract.mint({
-                    value: window.ethers.parseEther("0.0005"),
-                    gasLimit: 160000 
-                });
-                alert("Transaction Submitted (v6)! Hash: " + tx.hash);
-                await tx.wait();
-                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
-                incrementMintCounter();
-            } 
-            else if (window.ethers && window.ethers.providers) {
-                const web3Proto = new window.ethers.providers.Web3Provider(provider);
-                const signer = web3Proto.getSigner();
-                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
-                
-                const tx = await contract.mint({
-                    value: window.ethers.utils.parseEther("0.0005"),
-                    gasLimit: window.ethers.utils.hexlify(160000)
-                });
-                alert("Transaction Submitted (v5)! Hash: " + tx.hash);
-                await tx.wait();
-                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
-                incrementMintCounter();
-            } 
-            else {
-                alert("Ethers library binding frozen on this dApp shell. Launching Direct RPC Data Stream Bypass...");
-                
-                const txData = "0x1249c5b8"; 
-                const txParams = {
-                    from: activeUserAddr,
-                    to: nftContractAddress,
-                    value: "0x1c6bf52634000", 
-                    data: txData,
-                    chainId: "0x2105" 
-                };
-
-                const txHash = await provider.request({
-                    method: "eth_sendTransaction",
-                    params: [txParams],
-                });
-                
-                alert("Bypass Transaction Successfully Broadcasted!\nHash: " + txHash + "\n\nPlease wait a moment and check your wallet status.");
+            alert("Transaksi Berhasil Dikirim!\nHash: " + txHash + "\n\nSilakan cek wallet kamu dalam beberapa detik untuk melihat NFT takdirmu!");
+            
+            // Naikkan angka counter minting secara lokal
+            if (typeof incrementMintCounter === "function") {
                 incrementMintCounter();
             }
 
         } catch (error) {
-            console.error(error);
-            const msg = error.data?.message || error.message || "User denied signature request or insufficient Base ETH balance.";
-            alert("Minting Failed: " + msg);
+            console.error("Detail Error Minting:", error);
+            
+            // Kembalikan status tombol jika error
+            mintBtnEl.innerHTML = "🔮 Mint Destiny NFT (0.0005 ETH)";
+            mintBtnEl.disabled = false;
+
+            const msg = error.data?.message || error.message || "User menolak transaksi atau saldo Base ETH tidak mencukupi.";
+            alert("Minting Gagal: " + msg);
         }
     });
-}
-
+        }
+                
 // ==========================================
 // 7. DEVELOPER TIP SYSTEM
 // ==========================================
