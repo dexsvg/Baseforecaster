@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function initApp() {
-    // Run auxiliary real-time simulation counters
+    // Run auxiliary real-time simulation counters (Safely with fallback checks)
     setupViewCounter();
     setupMintCounter();
     startLiveNotificationLoop();
@@ -139,15 +139,27 @@ function generateDestiny(address) {
     const selectedFate = fateLibrary[fateIndex];
     const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
 
-    document.getElementById("fortune-fate").innerText = selectedFate.fate;
-    document.getElementById("fortune-text").innerText = selectedFate.text;
-    document.getElementById("fortune-emoji").innerText = selectedFate.emoji;
-    document.getElementById("fortune-emoji").classList.remove("hidden");
-    document.getElementById("fortune-text").parentElement.classList.remove("hidden");
+    const fateEl = document.getElementById("fortune-fate");
+    const textEl = document.getElementById("fortune-text");
+    const emojiEl = document.getElementById("fortune-emoji");
+
+    if (fateEl) fateEl.innerText = selectedFate.fate;
+    if (textEl) {
+        textEl.innerText = selectedFate.text;
+        if (textEl.parentElement) textEl.parentElement.classList.remove("hidden");
+    }
+    if (emojiEl) {
+        emojiEl.innerText = selectedFate.emoji;
+        emojiEl.classList.remove("hidden");
+    }
     
-    document.getElementById("luck-score").innerText = `${finalLuckScore}%`;
-    document.getElementById("luck-bar").style.width = `${finalLuckScore}%`;
-    document.getElementById("seed-anchor").innerText = `#${seed}`;
+    const scoreEl = document.getElementById("luck-score");
+    const barEl = document.getElementById("luck-bar");
+    const seedEl = document.getElementById("seed-anchor");
+
+    if (scoreEl) scoreEl.innerText = `${finalLuckScore}%`;
+    if (barEl) barEl.style.width = `${finalLuckScore}%`;
+    if (seedEl) seedEl.innerText = `#${seed}`;
 
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
     setupTwitterShare(selectedFate, finalLuckScore);
@@ -280,4 +292,205 @@ function setupUniversalMintButton() {
 
         if (!provider) {
             alert("Web3 Provider not found. Please run this website directly inside your crypto wallet dApp Browser.");
-            return
+            return;
+        }
+
+        try {
+            const accounts = await provider.request({ method: "eth_requestAccounts" });
+            if (!accounts || accounts.length === 0) {
+                alert("Failed to read active wallet address. Please make sure your wallet is unlocked.");
+                return;
+            }
+            const activeUserAddr = accounts[0];
+
+            await provider.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: "0x2105" }],
+            }).catch(async (switchError) => {
+                if (switchError.code === 4902) {
+                    await provider.request({
+                        method: "wallet_addEthereumChain",
+                        params: [{
+                            chainId: "0x2105",
+                            chainName: "Base",
+                            nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                            rpcUrls: ["https://mainnet.base.org"],
+                            blockExplorerUrls: ["https://basescan.org"]
+                        }]
+                    });
+                }
+            });
+
+            alert("Base Network Connected! Preparing NFT minting smart contract transaction...");
+
+            const comprehensiveABI = [
+                "function mint() public payable",
+                "function mintNFT() public payable",
+                "function mint(uint256 quantity) public payable"
+            ];
+
+            if (window.ethers && window.ethers.BrowserProvider) {
+                const browserProto = new window.ethers.BrowserProvider(provider);
+                const signer = await browserProto.getSigner();
+                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
+                
+                const tx = await contract.mint({
+                    value: window.ethers.parseEther("0.0005"),
+                    gasLimit: 160000 
+                });
+                alert("Transaction Submitted (v6)! Hash: " + tx.hash);
+                await tx.wait();
+                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
+                incrementMintCounter();
+            } 
+            else if (window.ethers && window.ethers.providers) {
+                const web3Proto = new window.ethers.providers.Web3Provider(provider);
+                const signer = web3Proto.getSigner();
+                const contract = new window.ethers.Contract(nftContractAddress, comprehensiveABI, signer);
+                
+                const tx = await contract.mint({
+                    value: window.ethers.utils.parseEther("0.0005"),
+                    gasLimit: window.ethers.utils.hexlify(160000)
+                });
+                alert("Transaction Submitted (v5)! Hash: " + tx.hash);
+                await tx.wait();
+                alert("Success! Your Base Forecaster Destiny NFT has been successfully minted! 🎉");
+                incrementMintCounter();
+            } 
+            else {
+                alert("Ethers library binding frozen on this dApp shell. Launching Direct RPC Data Stream Bypass...");
+                
+                const txData = "0x1249c5b8"; 
+                const txParams = {
+                    from: activeUserAddr,
+                    to: nftContractAddress,
+                    value: "0x1c6bf52634000", 
+                    data: txData,
+                    chainId: "0x2105" 
+                };
+
+                const txHash = await provider.request({
+                    method: "eth_sendTransaction",
+                    params: [txParams],
+                });
+                
+                alert("Bypass Transaction Successfully Broadcasted!\nHash: " + txHash + "\n\nPlease wait a moment and check your wallet status.");
+                incrementMintCounter();
+            }
+
+        } catch (error) {
+            console.error(error);
+            const msg = error.data?.message || error.message || "User denied signature request or insufficient Base ETH balance.";
+            alert("Minting Failed: " + msg);
+        }
+    });
+}
+
+// ==========================================
+// 7. DEVELOPER TIP SYSTEM
+// ==========================================
+function setupTipSystem() {
+    const donateBtnEl = document.getElementById("donate-btn");
+    if (!donateBtnEl) return;
+
+    donateBtnEl.onclick = async (e) => {
+        e.preventDefault();
+        const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum;
+        if (!provider) return;
+
+        try {
+            const accounts = await provider.request({ method: "eth_requestAccounts" });
+            const devAddress = "0x1395066A5bEFA739A06112C785C088f7b764D9f1"; 
+            
+            const txParams = {
+                from: accounts[0],
+                to: devAddress,
+                value: "0x38d7ea4c68000", 
+                chainId: "0x2105"
+            };
+
+            const txHash = await provider.request({
+                method: "eth_sendTransaction",
+                params: [txParams],
+            });
+            alert("Thank you so much for the support tip! May your wealth multiply! 💸 Hash: " + txHash);
+        } catch (err) {
+            alert("Tip canceled: " + err.message);
+        }
+    };
+}
+
+// ==========================================
+// 8. TOTAL MINT QUANTITY COUNTER SYSTEM
+// ==========================================
+function setupMintCounter() {
+    const mintCounterEl = document.getElementById("mint-counter");
+    if (!mintCounterEl) return; // Protected from stopping if element doesn't exist
+
+    let currentMints = localStorage.getItem("base_forecaster_mints");
+    if (!currentMints) {
+        currentMints = Math.floor(Math.random() * 150) + 780; 
+    }
+    localStorage.setItem("base_forecaster_mints", currentMints);
+    mintCounterEl.innerText = Number(currentMints).toLocaleString("en-US");
+
+    setInterval(() => {
+        if (Math.random() > 0.6) {
+            incrementMintCounter();
+        }
+    }, 9000);
+}
+
+function incrementMintCounter() {
+    const mintCounterEl = document.getElementById("mint-counter");
+    if (!mintCounterEl) return;
+
+    let currentMints = parseInt(localStorage.getItem("base_forecaster_mints")) || 800;
+    currentMints += 1;
+    localStorage.setItem("base_forecaster_mints", currentMints);
+    mintCounterEl.innerText = Number(currentMints).toLocaleString("en-US");
+}
+
+function setupViewCounter() {
+    const counterEl = document.getElementById("view-counter");
+    if (!counterEl) return; // Protected from stopping if element doesn't exist
+    
+    let baseViews = localStorage.getItem("base_forecaster_views");
+    if (!baseViews) {
+        baseViews = Math.floor(Math.random() * 4000) + 12500;
+    } else {
+        baseViews = parseInt(baseViews) + Math.floor(Math.random() * 3) + 1;
+    }
+    localStorage.setItem("base_forecaster_views", baseViews);
+    counterEl.innerText = Number(baseViews).toLocaleString("en-US");
+}
+
+// ==========================================
+// 9. LIVE POP-UP MINT NOTIFICATION LOOP
+// ==========================================
+function startLiveNotificationLoop() {
+    const liveNotifEl = document.getElementById("live-notification");
+    const liveTextEl = document.getElementById("live-notif-text");
+    if (!liveNotifEl || !liveTextEl) return;
+
+    const showNextNotification = () => {
+        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const randomFate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+        
+        liveTextEl.innerHTML = `🎉 <strong>${randomName}</strong> just minted their Destiny NFT! Fate obtained: <span class="text-blue-400 font-bold">${randomFate}</span>`;
+        
+        liveNotifEl.classList.remove("hidden", "translate-y-10", "opacity-0");
+        liveNotifEl.classList.add("translate-y-0", "opacity-100");
+
+        setTimeout(() => {
+            liveNotifEl.classList.remove("translate-y-0", "opacity-100");
+            liveNotifEl.classList.add("translate-y-10", "opacity-0");
+        }, 4000);
+
+        const nextInterval = Math.floor(Math.random() * 8000) + 7000;
+        setTimeout(showNextNotification, nextInterval);
+    };
+
+    setTimeout(showNextNotification, 3000);
+            }
+        
