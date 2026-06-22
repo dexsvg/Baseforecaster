@@ -1,5 +1,5 @@
 /**
- * Base Forecaster - Core Logic Script
+ * Base Forecaster - Core Logic Script (Anti-Crash Version)
  * Fully functional for destiny calculation, wallet management, live notifications, and robust NFT minting.
  */
 
@@ -28,56 +28,44 @@ const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyM
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
 // ==========================================
-// 2. INITIALIZATION ON LOAD
+// 2. INITIALIZATION ON LOAD (SISTEM ISOLASI ERROR)
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    initApp();
+    // Memungkus inisialisasi agar jika salah satu fitur gagal, modal & wallet tetep jalan
+    try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
+    try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
+    try { setupMintCounter(); } catch(e) { console.error("Mint counter error:", e); }
+    try { startLiveNotificationLoop(); } catch(e) { console.error("Notification error:", e); }
+    
+    // Inisialisasi tombol wallet utama
+    initWalletSystem();
+    
+    try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
+    try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
 });
 
-function initApp() {
-    // Preload your branding identity image first
-    setupAppLogo();
-
-    // Run auxiliary real-time simulation counters (Safely with fallback checks)
-    setupViewCounter();
-    setupMintCounter();
-    startLiveNotificationLoop();
-    
-    // Connect Wallet main event listener
+function initWalletSystem() {
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
         connectBtn.addEventListener("click", openWalletModal);
     }
 
-    // Modal close button listener
     const closeModalBtn = document.getElementById("close-modal-btn");
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", closeWalletModal);
     }
 
-    // Connect selection buttons inside the modal
     setupModalButtons();
-    
-    // Activate the universal robust mint pipeline
-    setupUniversalMintButton();
-
-    // Activate the Developer Tip System
-    setupTipSystem();
 }
 
 /**
- * Preloads the uploaded Crystal Ball logo image so it's ready for Canvas drawing
+ * Preloads the uploaded Crystal Ball logo image safely
  */
 function setupAppLogo() {
     appLogoImg = new Image();
-    // REPLACE '1000050193.png' with the actual path/filename of your uploaded crystal ball logo image
     appLogoImg.src = "1000050193.png"; 
-    appLogoImg.onload = () => {
-        console.log("dApp Branding Identity Logo loaded successfully.");
-    };
-    appLogoImg.onerror = () => {
-        console.error("Failed to load branding logo image. Check the file path.");
-    };
+    appLogoImg.onload = () => { console.log("Logo loaded."); };
+    appLogoImg.onerror = () => { console.warn("Logo image not found in folder yet. Skipping logo draw."); };
 }
 
 // ==========================================
@@ -189,7 +177,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Core Background - Deep Cosmic Dark Blue Gradient
+    // Background Gradient
     let bgGrad = ctx.createLinearGradient(0, 0, 0, 500);
     bgGrad.addColorStop(0, "#020617"); 
     bgGrad.addColorStop(0.5, "#0f172a"); 
@@ -197,14 +185,14 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillStyle = bgGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 2. Center Radial Glow Effect
+    // Glow Effect
     let glowGrad = ctx.createRadialGradient(175, 220, 10, 175, 220, 180);
     glowGrad.addColorStop(0, "rgba(37, 99, 235, 0.15)"); 
     glowGrad.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = glowGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 3. Luxury Gold Outer Border Framework
+    // Gold Border
     ctx.lineWidth = 4;
     let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
     goldGrad.addColorStop(0, "#f59e0b"); 
@@ -213,33 +201,27 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.strokeStyle = goldGrad;
     ctx.strokeRect(10, 10, 330, 480);
 
-    // Inner subtle card border
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(245, 158, 11, 0.3)";
     ctx.strokeRect(16, 16, 318, 468);
 
-    // 4. Branding Identity Image Injection (Draws the uploaded Crystal Ball Logo)
+    // DRAW LOGO BOLA KRISTAL (Jika gambarnya ada dan siap)
     if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) {
-        // Renders identity logo cleanly at the center-top header bounds
         ctx.drawImage(appLogoImg, 155, 28, 40, 40);
     }
 
-    // 5. Header App Branding Text (Shifted down slightly to fit under logo)
     ctx.fillStyle = "#94a3b8";
     ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
     ctx.fillText("BASE FORECASTER CORES", 175, 82);
 
-    // 6. Large Core Destiny Illustration / Emoji
     ctx.font = "64px serif";
     ctx.fillText(fateObj.emoji, 175, 155);
 
-    // 7. Destiny Title
     ctx.fillStyle = "#38bdf8"; 
     ctx.font = "bold 19px sans-serif";
     ctx.fillText(fateObj.fate, 175, 210);
 
-    // 8. Ornamental Separator Line
     ctx.lineWidth = 2;
     ctx.strokeStyle = "rgba(56, 189, 248, 0.4)";
     ctx.beginPath();
@@ -247,13 +229,12 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.lineTo(270, 225);
     ctx.stroke();
 
-    // Center jewel bead
     ctx.fillStyle = "#f59e0b";
     ctx.beginPath();
     ctx.arc(175, 225, 4, 0, Math.PI * 2);
     ctx.fill();
 
-    // 9. Description Word Wrapping Engine
+    // Word Wrap Description
     ctx.fillStyle = "#cbd5e1"; 
     ctx.font = "italic 11.5px serif";
     const words = fateObj.text.split(" ");
@@ -275,7 +256,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
-    // 10. Parameters Panel Meta Details Box
+    // Meta Box Panel
     ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
     ctx.fillRect(30, 395, 290, 62);
     ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
@@ -288,7 +269,6 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
     ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
 
-    // 11. Integrity Verification Micro Watermark
     ctx.textAlign = "center";
     ctx.font = "9px monospace";
     ctx.fillStyle = "#475569";
@@ -502,4 +482,31 @@ function setupViewCounter() {
     counterEl.innerText = Number(baseViews).toLocaleString("en-US");
 }
 
-// ===
+// ==========================================
+// 9. LIVE POP-UP MINT NOTIFICATION LOOP
+// ==========================================
+function startLiveNotificationLoop() {
+    const liveNotifEl = document.getElementById("live-notification");
+    const liveTextEl = document.getElementById("live-notif-text");
+    if (!liveNotifEl || !liveTextEl) return;
+
+    const showNextNotification = () => {
+        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const randomFate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+        
+        liveTextEl.innerHTML = `🎉 <strong>${randomName}</strong> just minted their Destiny NFT! Fate obtained: <span class="text-blue-400 font-bold">${randomFate}</span>`;
+        
+        liveNotifEl.classList.remove("hidden", "translate-y-10", "opacity-0");
+        liveNotifEl.classList.add("translate-y-0", "opacity-100");
+
+        setTimeout(() => {
+            liveNotifEl.classList.remove("translate-y-0", "opacity-100");
+            liveNotifEl.classList.add("translate-y-10", "opacity-0");
+        }, 4000);
+
+        const nextInterval = Math.floor(Math.random() * 8000) + 7000;
+        setTimeout(showNextNotification, nextInterval);
+    };
+
+    setTimeout(showNextNotification, 3000);
+    }
