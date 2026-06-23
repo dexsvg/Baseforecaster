@@ -1,12 +1,13 @@
 /**
- * Base Forecaster - Core Logic Script (Integrated Premium Version)
- * Fully functional for destiny calculation, wallet management, live notifications, confetti, and robust NFT minting.
+ * Base Forecaster - Core Logic Script (Ultimate AI Edition)
+ * Fully functional with Destiny calculation, Daily Rewards, AI Advisor Auditor, and Chatbot.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 let userAddress = "";
 let isConnected = false;
 let appLogoImg = null;
+let currentFateGlobal = null; // Menyimpan data ramalan aktif untuk rujukan AI
 
 const fateLibrary = [
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your hexadecimal wallet aligns with massive liquidity movements. You are destined to lead market trends, accumulate pristine assets, and exit safely right before the storm of a rugpull hits.", score: 98 },
@@ -26,13 +27,46 @@ document.addEventListener("DOMContentLoaded", () => {
     try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
     try { setupMintCounter(); } catch(e) { console.error("Mint counter error:", e); }
     try { startLiveNotificationLoop(); } catch(e) { console.error("Notification error:", e); }
+    try { setupDailyLogin(); } catch(e) { console.error("Daily system error:", e); }
     
-    // Aktifkan sistem tombol dompet
     initWalletSystem();
     
     try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
+    try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
 });
+
+// ==========================================
+// FITUR BARU 1: DAILY LOGIN LOGIC
+// ==========================================
+function setupDailyLogin() {
+    const dailyBtn = document.getElementById("daily-login-btn");
+    const auraDisplay = document.getElementById("aura-points-display");
+    
+    let currentAP = parseInt(localStorage.getItem("user_aura_points")) || 0;
+    auraDisplay.innerText = `${currentAP} AP`;
+
+    if(!dailyBtn) return;
+
+    dailyBtn.addEventListener("click", () => {
+        const lastClaim = localStorage.getItem("last_daily_claim");
+        const todayStr = new Date().toDateString();
+
+        if (lastClaim === todayStr) {
+            alert("🔒 You have already claimed today's Aura Points! Come back tomorrow, traveler.");
+            return;
+        }
+
+        // Tambah AP & Simpan Tanggal
+        currentAP += 50;
+        localStorage.setItem("user_aura_points", currentAP);
+        localStorage.setItem("last_daily_claim", todayStr);
+        
+        auraDisplay.innerText = `${currentAP} AP`;
+        triggerPremiumConfetti();
+        alert("📆 Daily login success! +50 Aura Points added to your hexadecimal anchor.");
+    });
+}
 
 // ==========================================
 // KENDALI MODAL & TOMBOL CONNECT WALLET
@@ -58,7 +92,6 @@ function closeWalletModal() {
 }
 
 function setupModalButtons() {
-    // Tombol-tombol pilihan dompet di dalam pop-up modal
     const wallets = ["choose-okx", "choose-metamask"];
     wallets.forEach(id => {
         const btn = document.getElementById(id);
@@ -70,7 +103,6 @@ function setupModalButtons() {
         }
     });
 
-    // Tombol Integrasi Khusus Coinbase Smart Wallet
     const coinbaseSmartBtn = document.getElementById("choose-coinbase-smart");
     if (coinbaseSmartBtn) {
         coinbaseSmartBtn.addEventListener("click", () => {
@@ -158,6 +190,7 @@ function generateDestiny(address) {
 
     const fateIndex = seed % fateLibrary.length;
     const selectedFate = fateLibrary[fateIndex];
+    currentFateGlobal = selectedFate; // Set data global untuk rujukan AI
     const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
 
     document.getElementById("fortune-fate").innerText = selectedFate.fate;
@@ -175,138 +208,139 @@ function generateDestiny(address) {
 
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
     setupTwitterShare(selectedFate, finalLuckScore);
+
+    // Jalankan Audit Advisor AI secara otomatis sesaat setelah koneksi
+    generateAIWalletAdvice(selectedFate, finalLuckScore);
 }
 
+// ==========================================
+// FITUR BARU 2: WALLET CHECKER AI ADVISOR LOGIC
+// ==========================================
+function generateAIWalletAdvice(fate, score) {
+    const adviceEl = document.getElementById("ai-wallet-advice");
+    if (!adviceEl) return;
+
+    let adviceText = "";
+    if (score > 80) {
+        adviceText = "📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Advice: You have strong momentum, deploy assets to Base ecosystem LPs or consider minting to seal your anchor.";
+    } else if (score >= 40) {
+        adviceText = "📊 [AI AUDIT]: Moderate risk footprint detected. Your transaction velocity suggests slight panic selling in past cycles. Advice: Avoid chasing green candles on hyper-risky meme tokens tonight. Stabilize your gas threshold.";
+    } else {
+        adviceText = "🚨 [AI AUDIT]: Vulnerability Vector Active. Your hash pattern indicates weak resistance against dusting vectors. Advice: DO NOT interact with unverified airdrop items inside your gallery. Move core funds to cold vault storage.";
+    }
+
+    adviceEl.innerText = adviceText;
+    adviceEl.classList.remove("italic", "text-slate-400");
+    adviceEl.classList.add("text-slate-200");
+}
+
+// ==========================================
+// FITUR BARU 3: DESTINY AI CHAT LOGIC (ENGINE JAWABAN ORACLE)
+// ==========================================
+function setupAIChatSystem() {
+    const sendBtn = document.getElementById("ai-chat-send-btn");
+    const chatInput = document.getElementById("ai-chat-input");
+    const chatLogs = document.getElementById("ai-chat-logs");
+
+    if (!sendBtn || !chatInput || !chatLogs) return;
+
+    const handleChatSubmit = () => {
+        const query = chatInput.value.trim();
+        if (!query) return;
+
+        // Cetak chat user
+        chatLogs.innerHTML += `<div class="bg-blue-950/40 p-2 rounded-xl text-right"><strong>You:</strong> ${query}</div>`;
+        chatInput.value = "";
+        chatLogs.scrollTop = chatLogs.scrollHeight;
+
+        // Logika berpikir AI (Simulasi Delay)
+        setTimeout(() => {
+            let aiResponse = "The stars are cloudy. Re-word your invocation, mortal.";
+            const fateName = currentFateGlobal ? currentFateGlobal.fate : "THE MYSTIC BLANK";
+            const fateScore = currentFateGlobal ? currentFateGlobal.score : 50;
+
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes("rich") || lowerQuery.includes("kaya") || lowerQuery.includes("cuan")) {
+                aiResponse = `🔮 Based on your profile **${fateName}**, financial alignment is volatile. Your luck score is ${fateScore}%. If you mint your card, the deterministic metadata code might stabilize your long-term yield portfolio.`;
+            } else if (lowerQuery.includes("mint") || lowerQuery.includes("nft")) {
+                aiResponse = "🪙 Minting the Destiny NFT creates an permanent cryptographic record of your alignment score on Base. It protects you from negative blockchain anomalies.";
+            } else if (lowerQuery.includes("rug") || lowerQuery.includes("scam") || lowerQuery.includes("aman")) {
+                aiResponse = `🛡️ Oracle warning scan: Your score is ${fateScore}%. Always check contract codes on BaseScan before clicking approve. Do not buy contracts without locked liquidity pools!`;
+            } else {
+                aiResponse = `✨ Regarding "${query}": Your address structure resonates deeply with **${fateName}**. The Oracle suggests holding your native assets and keeping your gas threshold steady for the next 24 hours.`;
+            }
+
+            chatLogs.innerHTML += `<div class="text-slate-300 bg-slate-900/60 p-2 rounded-xl"><strong>Oracle AI:</strong> ${aiResponse}</div>`;
+            chatLogs.scrollTop = chatLogs.scrollHeight;
+        }, 800);
+    };
+
+    sendBtn.addEventListener("click", handleChatSubmit);
+    chatInput.addEventListener("keypress", (e) => { if (e.key === "Enter") handleChatSubmit(); });
+}
+
+// ==========================================
+// DRAW CANVAS, TWITTER, MINT & DATA SYSTEMS
+// ==========================================
 function drawDestinyCard(fateObj, score, address, seed) {
     const canvas = document.getElementById("destiny-card");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
     let bgGrad = ctx.createLinearGradient(0, 0, 0, 500);
-    bgGrad.addColorStop(0, "#020617"); 
-    bgGrad.addColorStop(0.5, "#0f172a"); 
-    bgGrad.addColorStop(1, "#1e1b4b"); 
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 350, 500);
+    bgGrad.addColorStop(0, "#020617"); bgGrad.addColorStop(0.5, "#0f172a"); bgGrad.addColorStop(1, "#1e1b4b"); 
+    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, 350, 500);
 
     ctx.lineWidth = 4;
     let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
-    goldGrad.addColorStop(0, "#f59e0b"); 
-    goldGrad.addColorStop(1, "#2563eb"); 
-    ctx.strokeStyle = goldGrad;
-    ctx.strokeRect(10, 10, 330, 480);
+    goldGrad.addColorStop(0, "#f59e0b"); goldGrad.addColorStop(1, "#2563eb"); 
+    ctx.strokeStyle = goldGrad; ctx.strokeRect(10, 10, 330, 480);
 
-    if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) {
-        ctx.drawImage(appLogoImg, 155, 28, 40, 40);
-    }
+    if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) { ctx.drawImage(appLogoImg, 155, 28, 40, 40); }
+    ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; ctx.fillText("BASE FORECASTER CORES", 175, 82);
+    ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 155);
+    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; ctx.fillText(fateObj.fate, 175, 210);
 
-    ctx.fillStyle = "#94a3b8";
-    ctx.font = "bold 9px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("BASE FORECASTER CORES", 175, 82);
-
-    ctx.font = "64px serif";
-    ctx.fillText(fateObj.emoji, 175, 155);
-
-    ctx.fillStyle = "#38bdf8"; 
-    ctx.font = "bold 19px sans-serif";
-    ctx.fillText(fateObj.fate, 175, 210);
-
-    ctx.fillStyle = "#cbd5e1"; 
-    ctx.font = "italic 11.5px serif";
-    const words = fateObj.text.split(" ");
-    let line = "";
-    let y = 252;
+    ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11.5px serif";
+    const words = fateObj.text.split(" "); let line = ""; let y = 252;
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
-        if (ctx.measureText(testLine).width > 270 && n > 0) {
-            ctx.fillText(line, 175, y);
-            line = words[n] + " ";
-            y += 17;
-        } else { line = testLine; }
+        if (ctx.measureText(testLine).width > 270 && n > 0) { ctx.fillText(line, 175, y); line = words[n] + " "; y += 17; } else { line = testLine; }
     }
     ctx.fillText(line, 175, y);
 
-    ctx.fillStyle = "rgba(15, 23, 42, 0.6)";
-    ctx.fillRect(30, 395, 290, 62);
-    ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
-    ctx.strokeRect(30, 395, 290, 62);
-
-    ctx.textAlign = "left";
-    ctx.font = "10.5px monospace";
-    ctx.fillStyle = "#94a3b8";
+    ctx.fillStyle = "rgba(15, 23, 42, 0.6)"; ctx.fillRect(30, 395, 290, 62);
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.2)"; ctx.strokeRect(30, 395, 290, 62);
+    ctx.textAlign = "left"; ctx.font = "10.5px monospace"; ctx.fillStyle = "#94a3b8";
     ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 413);
     ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
     ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
-
-    ctx.textAlign = "center";
-    ctx.font = "9px monospace";
-    ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 480);
+    ctx.textAlign = "center"; ctx.font = "9px monospace"; ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 480);
 }
 
-// ==========================================
-// FITUR INTERAKSI & TRANSAKSI (MINT/TIP)
-// ==========================================
 async function setupUniversalMintButton() {
     const mintBtnEl = document.getElementById("mint-nft-btn");
     if (!mintBtnEl) return;
-
     mintBtnEl.addEventListener("click", async (e) => {
         e.preventDefault();
         const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum;
-        if (!provider) {
-            alert("Web3 Wallet not found!");
-            return;
-        }
+        if (!provider) { alert("Web3 Wallet not found!"); return; }
         try {
             const accounts = await provider.request({ method: "eth_requestAccounts" });
-            const activeUserAddr = accounts[0];
-
-            try {
-                await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] });
-            } catch (switchError) {
-                if (switchError.code === 4902) {
-                    await provider.request({
-                        method: "wallet_addEthereumChain",
-                        params: [{
-                            chainId: "0x2105",
-                            chainName: "Base",
-                            nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
-                            rpcUrls: ["https://mainnet.base.org"],
-                            blockExplorerUrls: ["https://basescan.org"]
-                        }]
-                    });
-                } else { throw switchError; }
+            try { await provider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x2105" }] }); } catch (se) {
+                if (se.code === 4902) {
+                    await provider.request({ method: "wallet_addEthereumChain", params: [{ chainId: "0x2105", chainName: "Base", nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 }, rpcUrls: ["https://mainnet.base.org"], blockExplorerUrls: ["https://basescan.org"] }] });
+                } else { throw se; }
             }
-
             const originalText = mintBtnEl.innerHTML;
-            mintBtnEl.innerHTML = "⏳ Processing Mint...";
-            mintBtnEl.disabled = true;
-
-            const txHash = await provider.request({
-                method: "eth_sendTransaction",
-                params: [{
-                    from: activeUserAddr,
-                    to: nftContractAddress,
-                    value: "0x1c6bf52634000", 
-                    data: "0x1249c5b8", 
-                    chainId: "0x2105"
-                }],
-            });
-            
-            mintBtnEl.innerHTML = originalText;
-            mintBtnEl.disabled = false;
-            
-            // MEMICU ANIMASI CONFETTI KARENA BERHASIL
+            mintBtnEl.innerHTML = "⏳ Processing Mint..."; mintBtnEl.disabled = true;
+            const txHash = await provider.request({ method: "eth_sendTransaction", params: [{ from: accounts[0], to: nftContractAddress, value: "0x1c6bf52634000", data: "0x1249c5b8", chainId: "0x2105" }] });
+            mintBtnEl.innerHTML = originalText; mintBtnEl.disabled = false;
             triggerPremiumConfetti();
-            
             alert("Transaction Sent! Hash: " + txHash);
             incrementMintCounter();
-        } catch (error) {
-            mintBtnEl.innerHTML = "🪙 Mint NFT (0.0005 ETH)";
-            mintBtnEl.disabled = false;
-            alert("Minting Failed: " + (error.message || error));
-        }
+        } catch (error) { mintBtnEl.innerHTML = "🪙 Mint NFT (0.0005 ETH)"; mintBtnEl.disabled = false; alert("Minting Failed: " + (error.message || error)); }
     });
 }
 
@@ -326,17 +360,8 @@ function setupTipSystem() {
         if (!provider) return;
         try {
             const accounts = await provider.request({ method: "eth_requestAccounts" });
-            await provider.request({
-                method: "eth_sendTransaction",
-                params: [{
-                    from: accounts[0],
-                    to: "0x1395066A5bEFA739A06112C785C088f7b764D9f1", 
-                    value: "0x38d7ea4c68000", 
-                    chainId: "0x2105"
-                }]
-            });
-            triggerPremiumConfetti();
-            alert("Thank you for the tip! 💸");
+            await provider.request({ method: "eth_sendTransaction", params: [{ from: accounts[0], to: "0x1395066A5bEFA739A06112C785C088f7b764D9f1", value: "0x38d7ea4c68000", chainId: "0x2105" }] });
+            triggerPremiumConfetti(); alert("Thank you for the tip! 💸");
         } catch (err) { alert("Tip canceled."); }
     };
 }
@@ -351,69 +376,35 @@ function setupTwitterShare(fateObj, score) {
     };
 }
 
-// ==========================================
-// SIMULASI SOSIAL & DATA COUNTER (REAL-TIME FOMO)
-// ==========================================
-function setupAppLogo() {
-    appLogoImg = new Image();
-    appLogoImg.src = "1000050193.png"; 
-    appLogoImg.onload = () => { console.log("Logo loaded."); };
-    appLogoImg.onerror = () => { console.warn("Logo image not found yet. Skipping logo draw."); };
-}
-
+function setupAppLogo() { appLogoImg = new Image(); appLogoImg.src = "1000050193.png"; }
 function setupMintCounter() {
-    const mintCounterEl = document.getElementById("mint-counter");
-    if (!mintCounterEl) return; 
-    let currentMints = localStorage.getItem("base_forecaster_mints") || Math.floor(Math.random() * 150) + 780;
-    localStorage.setItem("base_forecaster_mints", currentMints);
-    mintCounterEl.innerText = Number(currentMints).toLocaleString("en-US");
-
+    const mc = document.getElementById("mint-counter"); if (!mc) return;
+    let cm = localStorage.getItem("base_forecaster_mints") || Math.floor(Math.random() * 150) + 780;
+    localStorage.setItem("base_forecaster_mints", cm); mc.innerText = Number(cm).toLocaleString("en-US");
     setInterval(() => { if (Math.random() > 0.6) incrementMintCounter(); }, 9000);
 }
-
 function incrementMintCounter() {
-    const mintCounterEl = document.getElementById("mint-counter");
-    if (!mintCounterEl) return;
-    let currentMints = parseInt(localStorage.getItem("base_forecaster_mints")) || 800;
-    currentMints += 1;
-    localStorage.setItem("base_forecaster_mints", currentMints);
-    mintCounterEl.innerText = Number(currentMints).toLocaleString("en-US");
+    const mc = document.getElementById("mint-counter"); if (!mc) return;
+    let cm = parseInt(localStorage.getItem("base_forecaster_mints")) || 800; cm += 1;
+    localStorage.setItem("base_forecaster_mints", cm); mc.innerText = Number(cm).toLocaleString("en-US");
 }
-
 function setupViewCounter() {
-    const counterEl = document.getElementById("view-counter");
-    if (!counterEl) return; 
-    let baseViews = localStorage.getItem("base_forecaster_views") || Math.floor(Math.random() * 4000) + 12500;
-    baseViews = parseInt(baseViews) + Math.floor(Math.random() * 3) + 1;
-    localStorage.setItem("base_forecaster_views", baseViews);
-    counterEl.innerText = Number(baseViews).toLocaleString("en-US");
+    const cv = document.getElementById("view-counter"); if (!cv) return;
+    let bv = localStorage.getItem("base_forecaster_views") || Math.floor(Math.random() * 4000) + 12500;
+    bv = parseInt(bv) + Math.floor(Math.random() * 3) + 1; localStorage.setItem("base_forecaster_views", bv);
+    cv.innerText = Number(bv).toLocaleString("en-US");
 }
-
 function startLiveNotificationLoop() {
-    const liveNotifEl = document.getElementById("live-notification");
-    const liveTextEl = document.getElementById("live-notif-text");
-    if (!liveNotifEl || !liveTextEl) return;
-
-    const showNextNotification = () => {
-        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-        const randomFate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
-        
-        liveTextEl.innerHTML = `🎉 <strong>${randomName}</strong> just minted their Destiny NFT! <br>Fate: <span class="text-amber-400 font-bold">${randomFate}</span>`;
-        
-        liveNotifEl.classList.remove("hidden");
-        setTimeout(() => {
-            liveNotifEl.classList.remove("translate-y-[-100px]", "opacity-0");
-            liveNotifEl.classList.add("translate-y-0", "opacity-100");
-        }, 100);
-
-        setTimeout(() => {
-            liveNotifEl.classList.remove("translate-y-0", "opacity-100");
-            liveNotifEl.classList.add("translate-y-[-100px]", "opacity-0");
-        }, 4000);
-
-        setTimeout(showNextNotification, Math.floor(Math.random() * 8000) + 9000);
+    const ln = document.getElementById("live-notification"); const lt = document.getElementById("live-notif-text");
+    if (!ln || !lt) return;
+    const sn = () => {
+        const rn = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const rf = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+        lt.innerHTML = `🎉 <strong>${rn}</strong> just minted their Destiny NFT! <br>Fate: <span class="text-amber-400 font-bold">${rf}</span>`;
+        ln.classList.remove("hidden");
+        setTimeout(() => { ln.classList.remove("translate-y-[-100px]", "opacity-0"); ln.classList.add("translate-y-0", "opacity-100"); }, 100);
+        setTimeout(() => { ln.classList.remove("translate-y-0", "opacity-100"); ln.classList.add("translate-y-[-100px]", "opacity-0"); }, 4000);
+        setTimeout(sn, Math.floor(Math.random() * 8000) + 9000);
     };
-
-    setTimeout(showNextNotification, 3000);
-                                                }
-        
+    setTimeout(sn, 3000);
+}
