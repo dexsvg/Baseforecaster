@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Forecaster - Your Wallet's Destiny</title>
+    <title>Base Forecaster - Ultimate AI Edition</title>
     
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APb29g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD9bW1g/Q0NAP0NDQD9HR0Q/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A7u7uD97e3g/Y2NgP2NjYD+7u7g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,6 +28,16 @@
             <h1 class="text-3xl font-extrabold tracking-wider text-neon-matrix">
                 BASE FORECASTER
             </h1>
+        </div>
+
+        <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-2xl p-2.5 mb-4 text-left">
+            <div class="font-mono text-[11px]">
+                <span class="text-slate-400 block">🔮 Your Aura Points:</span>
+                <span id="aura-points-display" class="font-bold text-cyan-400 text-sm">0 AP</span>
+            </div>
+            <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md shadow-blue-600/20">
+                📆 Claim Daily AP
+            </button>
         </div>
 
         <div class="mb-4 inline-block bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-amber-400">
@@ -88,6 +98,33 @@
                     <span class="text-lg mb-0.5">🪙</span>
                     <span class="text-[10px] font-bold text-amber-400 group-hover:scale-105 transition-all">Mint NFT (0.0005 ETH)</span>
                 </button>
+            </div>
+
+            <div class="bg-slate-950 border border-blue-500/30 rounded-2xl p-3.5 text-left mb-5">
+                <div class="flex items-center gap-1.5 mb-2 text-cyan-400 text-xs font-bold tracking-wider uppercase">
+                    <span>🛡️</span> AI Wallet Auditor Advisor
+                </div>
+                <p id="ai-wallet-advice" class="text-[11px] text-slate-400 leading-relaxed italic">
+                    Connecting to security protocols... Mating address sequence history...
+                </p>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-850 rounded-2xl p-3.5 text-left mb-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold font-mono tracking-wide text-slate-300">🧙‍♂️ Ask Oracle AI Assistant</span>
+                </div>
+                
+                <div id="ai-chat-logs" class="max-h-[140px] overflow-y-auto mb-3 space-y-2 pr-1 text-[11px] scrollbar-thin">
+                    <div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl">
+                        <strong>Oracle AI:</strong> Greetings, traveler. I know the secrets of your address hash. Ask me anything about your fortune, destiny, or next crypto move!
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="ai-chat-input" placeholder="Will I get rich? Ask the oracle..." class="w-full bg-slate-900 border border-slate-800 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all">
+                    <button id="ai-chat-send-btn" class="bg-blue-600 hover:bg-blue-500 px-3 rounded-xl text-xs font-bold transition-all">Ask</button>
+                </div>
             </div>
 
             <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2">
@@ -169,11 +206,11 @@
             </div>
         </div>
         <div class="text-[10px] text-slate-600 font-mono">
-            Built on Base • Ultimate Monetized Build
+            Built on Base • Ultimate AI Edition
         </div>
     </footer>
 
     <script src="script.js"></script>
 </body>
                     </html>
-                    
+    
