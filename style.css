@@ -14,3 +14,35 @@ html, body {
     scroll-behavior: smooth;
 }
 
+/* --- LAPISAN TEMA MATRIX (TIDAK MERUSAK KODE LAMA) --- */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+
+:root {
+    --matrix-cyan: #00f3ff;
+}
+
+/* Mengubah font utama dApp menjadi monospaced ala coding */
+body {
+    font-family: 'Courier Prime', monospace !important;
+    background-color: #020205 !important;
+}
+
+/* Pola grid garis sirkuit transparan di latar belakang */
+.matrix-grid-bg {
+    background-image: 
+        linear-gradient(rgba(0, 243, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 243, 255, 0.04) 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* Efek teks bercahaya cyan */
+.text-neon-matrix {
+    color: var(--matrix-cyan) !important;
+    text-shadow: 0 0 5px rgba(0, 243, 255, 0.6), 0 0 10px rgba(0, 243, 255, 0.4);
+}
+
+/* Efek garis pendaran pada border kotak */
+.border-neon-matrix {
+    border-color: rgba(0, 243, 255, 0.4) !important;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+}
