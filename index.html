@@ -211,6 +211,27 @@
     </footer>
 
     <script src="script.js"></script>
+    <!-- Bottom Navigation Bar -->
+<div class="fixed bottom-0 left-0 right-0 h-20 bg-black/80 backdrop-blur-lg border-t border-white/10 flex justify-around items-center z-50">
+    <button onclick="navigate('home')" class="flex flex-col items-center text-gray-400 hover:text-white">
+        <span>🏠</span><span class="text-[10px]">Home</span>
+    </button>
+    <button onclick="navigate('staking')" class="flex flex-col items-center text-gray-400 hover:text-white">
+        <span>⚡</span><span class="text-[10px]">Staking</span>
+    </button>
+    
+    <!-- Tombol Utama (Floating) -->
+    <button onclick="triggerMainAction()" class="relative -top-6 bg-yellow-400 p-4 rounded-full shadow-[0_0_20px_rgba(250,204,21,0.5)]">
+        🙏
+    </button>
+
+    <button onclick="navigate('glow')" class="flex flex-col items-center text-gray-400 hover:text-white">
+        <span>✨</span><span class="text-[10px]">Glow</span>
+    </button>
+    <button onclick="navigate('wheel')" class="flex flex-col items-center text-gray-400 hover:text-white">
+        <span>🎡</span><span class="text-[10px]">Wheel</span>
+    </button>
+</div>
 </body>
                     </html>
     
