@@ -503,15 +503,24 @@ function startLiveNotificationLoop() {
 // --- NAVIGASI & MAIN ACTION ---
 
 function navigate(page) {
-    console.log("Navigating to: " + page);
-    
-    // Opsional: Jika Anda ingin membuat sistem ganti halaman sederhana
-    // Anda bisa menyembunyikan semua section dan hanya menampilkan yang dipilih
-    // Contoh:
-    // document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
-    // document.getElementById(page + '-section').classList.remove('hidden');
-    
-    alert("Navigasi ke halaman: " + page + " (Fitur ini sedang dalam pengembangan, Bro!)");
+    const actions = {
+        'home': () => { 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+        },
+        'airdrop': () => { 
+            alert("🔥 Airdrop Quest: Daily login active! Keep checking back for more tasks."); 
+        },
+        'nfts': () => { 
+            alert("🖼️ Your Destiny NFT Gallery is loading... (Coming Soon!)"); 
+        },
+        'ranks': () => { 
+            alert("🏆 Top 10 Forecasters: Currently tracking active minters..."); 
+        }
+    };
+
+    if (actions[page]) {
+        actions[page]();
+    }
 }
 
 function triggerMainAction() {
