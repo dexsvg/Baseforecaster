@@ -46,3 +46,6 @@ body {
     border-color: rgba(0, 243, 255, 0.4) !important;
     box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
 }
+body {
+    padding-bottom: 80px; /* Biar konten bawah gak ketutup navbar */
+}
