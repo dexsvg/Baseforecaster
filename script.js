@@ -446,17 +446,57 @@ function setupViewCounter() {
     bv = parseInt(bv) + Math.floor(Math.random() * 3) + 1; localStorage.setItem("base_forecaster_views", bv);
     cv.innerText = Number(bv).toLocaleString("en-US");
 }
+// Data pendukung untuk variasi notifikasi
+const eventTypes = ["MINT", "NEW_USER", "TIP"];
+
 function startLiveNotificationLoop() {
-    const ln = document.getElementById("live-notification"); const lt = document.getElementById("live-notif-text");
+    const ln = document.getElementById("live-notification"); 
+    const lt = document.getElementById("live-notif-text");
     if (!ln || !lt) return;
+
     const sn = () => {
-        const rn = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-        const rf = fakeFates[Math.floor(Math.random() * fakeFates.length)];
-        lt.innerHTML = `🎉 <strong>${rn}</strong> just minted their Destiny NFT! <br>Fate: <span class="text-amber-400 font-bold">${rf}</span>`;
+        // Generate alamat acak bergaya 0x...
+        const randomAddr = "0x" + Math.random().toString(16).slice(2, 8).toUpperCase() + "..." + Math.random().toString(16).slice(2, 6).toUpperCase();
+        const randomName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const event = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+        
+        let message = "";
+        let icon = "✨";
+
+        switch(event) {
+            case "MINT":
+                const rf = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+                message = `🎉 <strong>${randomName} (${randomAddr})</strong> just minted: <span class="text-amber-400 font-bold">${rf}</span>`;
+                icon = "🪙";
+                break;
+            case "NEW_USER":
+                message = `🚀 Welcome to the portal, <strong>${randomName} (${randomAddr})</strong>! Ready to see your destiny?`;
+                icon = "🛸";
+                break;
+            case "TIP":
+                message = `💸 Huge thanks to <strong>${randomName} (${randomAddr})</strong> for the 0.001 ETH tip!`;
+                icon = "🔥";
+                break;
+        }
+
+        lt.innerHTML = `<span class="mr-2">${icon}</span> ${message}`;
+        
+        // Animasi muncul
         ln.classList.remove("hidden");
-        setTimeout(() => { ln.classList.remove("translate-y-[-100px]", "opacity-0"); ln.classList.add("translate-y-0", "opacity-100"); }, 100);
-        setTimeout(() => { ln.classList.remove("translate-y-0", "opacity-100"); ln.classList.add("translate-y-[-100px]", "opacity-0"); }, 4000);
-        setTimeout(sn, Math.floor(Math.random() * 8000) + 9000);
+        setTimeout(() => { 
+            ln.classList.remove("translate-y-[-100px]", "opacity-0"); 
+            ln.classList.add("translate-y-0", "opacity-100"); 
+        }, 100);
+
+        // Animasi hilang
+        setTimeout(() => { 
+            ln.classList.remove("translate-y-0", "opacity-100"); 
+            ln.classList.add("translate-y-[-100px]", "opacity-0"); 
+        }, 4000);
+
+        // Loop berikutnya dengan interval acak
+        setTimeout(sn, Math.floor(Math.random() * 6000) + 5000);
     };
-    setTimeout(sn, 3000);
+
+    setTimeout(sn, 2000);
 }
