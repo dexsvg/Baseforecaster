@@ -500,3 +500,30 @@ function startLiveNotificationLoop() {
 
     setTimeout(sn, 2000);
 }
+// --- NAVIGASI & MAIN ACTION ---
+
+function navigate(page) {
+    console.log("Navigating to: " + page);
+    
+    // Opsional: Jika Anda ingin membuat sistem ganti halaman sederhana
+    // Anda bisa menyembunyikan semua section dan hanya menampilkan yang dipilih
+    // Contoh:
+    // document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+    // document.getElementById(page + '-section').classList.remove('hidden');
+    
+    alert("Navigasi ke halaman: " + page + " (Fitur ini sedang dalam pengembangan, Bro!)");
+}
+
+function triggerMainAction() {
+    // Tombol tengah otomatis memanggil fungsi ramalan utama
+    // Cek apakah user sudah konek wallet
+    if (!isConnected) {
+        openWalletModal(); // Buka modal kalau belum konek
+    } else {
+        // Jika sudah konek, jalankan ramalan
+        generateDestiny(userAddress);
+        // Efek getar untuk HP
+        if (navigator.vibrate) navigator.vibrate(100);
+    }
+}
+
