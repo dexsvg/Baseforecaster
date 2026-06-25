@@ -56,3 +56,39 @@ body {
 .animate-spin-slow {
     animation: spin-slow 10s linear infinite;
 }
+#destiny-card, .destiny-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    
+    /* Kombinasi 3 Lapisan Efek Latar Belakang */
+    background: 
+        /* Lapisan 1: Pendaran Cahaya Biru/Ungu di Tengah (Radial Glow) */
+        radial-gradient(circle at 50% 40%, rgba(29, 78, 216, 0.25) 0%, rgba(15, 23, 42, 0) 60%),
+        /* Lapisan 2: Pola Grid Digital Cyberpunk */
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        /* Lapisan 3: Warna Dasar Super Dark Slate */
+        #0b1329;
+        
+    /* Ukuran Grid Kotak-Kotak Kecil */
+    background-size: 100% 100%, 20px 20px, 20px 20px, 100% 100%;
+    
+    /* Menambahkan border luar halus agar kartu memisahkan diri dari background utama web */
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 10px 30px rgba(0, 0, 0, 0.5);
+    
+    transition: all 0.3s ease;
+}
+
+/* Tambahkan efek cahaya tipis menyala di bagian atas kartu (Top Highlight) */
+#destiny-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    z-index: 2;
+}
