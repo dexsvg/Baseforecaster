@@ -11,6 +11,9 @@ let currentFateGlobal = null; // Menyimpan data ramalan aktif untuk rujukan AI
 let currentGlowColor = "rgba(56, 189, 248, 0.04)"; // Default grid color (Neon Cyan)
 let currentFrameColor = null; // Menyimpan kustomisasi border emas/biru
 
+// Perbaikan Bug 1: Deklarasi eventTypes yang tadinya hilang
+const eventTypes = ["MINT", "NEW_USER", "TIP"];
+
 const fateLibrary = [
     // [1-10] THE GOD TIER (Score 90-100)
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
@@ -256,7 +259,6 @@ function generateDestiny(address) {
     document.getElementById("luck-bar").style.width = `${finalLuckScore}%`;
     document.getElementById("seed-anchor").innerText = `#${seed}`;
 
-    // Jalankan fungsi rendering canvas tunggal yang sudah dioptimasi
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
     setupTwitterShare(selectedFate, finalLuckScore);
     generateAIWalletAdvice(selectedFate, finalLuckScore);
@@ -290,7 +292,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke();
     }
 
-    // 3. Frame Border Luar Gradasi Emas-Biru Base (Bisa dinonaktifkan jika memilih tema glow lain)
+    // 3. Frame Border Luar Gradasi Emas-Biru Base
     ctx.lineWidth = 4;
     if (currentFrameColor) {
         ctx.strokeStyle = currentFrameColor;
@@ -539,16 +541,19 @@ function navigate(page) {
     if (page === 'home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (page === 'glow') {
-        document.getElementById('modal-glow').style.display = 'flex';
+        const target = document.getElementById('modal-glow');
+        if(target) { target.style.display = 'flex'; target.classList.remove('hidden'); }
     } else if (page === 'wheel') {
-        document.getElementById('modal-wheel').style.display = 'flex';
+        const target = document.getElementById('modal-wheel');
+        if(target) { target.style.display = 'flex'; target.classList.remove('hidden'); }
     } else if (page === 'ranks') {
         alert("🏆 Ranks Update: Sistem kalkulasi top wallet berdasarkan aktivitas pencetakan NFT sedang berjalan secara on-chain!");
     }
 }
 
 function closeModal(modalId) {
-    document.getElementById('modal-' + modalId).style.display = 'none';
+    const target = document.getElementById('modal-' + modalId);
+    if(target) { target.style.display = 'none'; target.classList.add('hidden'); }
 }
 
 // Fitur Kustomisasi Glow Aura (Beneran Render ke Canvas!)
@@ -575,7 +580,7 @@ function applyGlow(type) {
     closeModal('glow');
 }
 
-// Fitur Spin the Wheel Gacha
+// Fitur Spin the Wheel Gacha (Perbaikan Animasi Putar Halus & Berhenti Permanen)
 function spinTheWheel() {
     const wheelGraphic = document.getElementById('wheel-graphic');
     const btnSpin = document.getElementById('btn-spin');
@@ -586,17 +591,19 @@ function spinTheWheel() {
     if(resultText) resultText.classList.add('hidden');
     
     if(wheelGraphic) {
-        wheelGraphic.style.transform = 'rotate(1440deg)';
-        wheelGraphic.style.transition = 'transform 3s ease-out';
+        // Berputar acak di atas 4 putaran penuh (1440 derajat + bonus derajat acak)
+        const randomStopDegree = 1440 + Math.floor(Math.random() * 360);
+        wheelGraphic.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.3, 1)';
+        wheelGraphic.style.transform = `rotate(${randomStopDegree}deg)`;
     }
     
     setTimeout(() => {
         const prizes = [
-            "Selamat! Anda mendapatkan +200 Aura Points (AP)",
-            "Zonk! Coba lagi besok, Degen!",
-            "Jackpot! Diskon Minting NFT 50%",
-            "Selamat! Anda mendapatkan +500 Aura Points (AP)",
-            "Aura Kartu Langka Terbuka!"
+            "Selamat! Anda mendapatkan +200 Aura Points (AP) 🔮",
+            "Zonk! Coba lagi besok, Degen! 📉",
+            "Jackpot! Diskon Minting NFT 50% 💎",
+            "Selamat! Anda mendapatkan +500 Aura Points (AP) 👑",
+            "Aura Kartu Langka Terbuka! ✨"
         ];
         
         const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
@@ -606,10 +613,7 @@ function spinTheWheel() {
             resultText.classList.remove('hidden');
         }
         
+        // Buka tombol kembali
         btnSpin.disabled = false;
-        if(wheelGraphic) {
-            wheelGraphic.style.transform = 'none';
-            wheelGraphic.style.transition = 'none';
-        }
     }, 3000);
-                }
+}
