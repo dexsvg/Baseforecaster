@@ -84,6 +84,18 @@ document.addEventListener("DOMContentLoaded", () => {
     try { setupMintCounter(); } catch(e) { console.error("Mint counter error:", e); }
     try { startLiveNotificationLoop(); } catch(e) { console.error("Notification error:", e); }
     try { setupDailyLogin(); } catch(e) { console.error("Daily system error:", e); }
+    // --- ADD THIS INSIDE YOUR EVENT INITIALIZATION LOOPS ---
+const lookupBtn = document.getElementById("external-target-btn");
+if (lookupBtn) {
+    lookupBtn.addEventListener("click", lookupExternalTarget);
+}
+
+const lookupInput = document.getElementById("external-target-input");
+if (lookupInput) {
+    lookupInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") lookupExternalTarget();
+    });
+}
     
     initWalletSystem();
     
