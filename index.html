@@ -130,6 +130,27 @@
                         <strong>Oracle AI:</strong> Greetings, traveler. I know the secrets of your address hash. Ask me anything about your fortune, destiny, or next crypto move!
                     </div>
                 </div>
+                <!-- EXTERNAL LOOKUP MODULE TEMPLATE (English Profile) -->
+<div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4">
+    <div>
+        <h3 class="text-sm font-bold text-slate-200 tracking-wide">🔮 SECURE ORACLE STALKER</h3>
+        <p class="text-[11px] text-slate-400">Scan external smart contract tokens or track influencer wallet addresses to compute their cosmic matrix alignment.</p>
+    </div>
+    
+    <div class="flex space-x-2">
+        <input type="text" id="external-target-input" 
+               placeholder="Enter 0x address or token symbol (e.g., BRETT, DENT, 0x71C...)" 
+               class="bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 monospace" />
+        <button id="external-target-btn" 
+                class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-lg shadow-cyan-950/30">
+            Scan
+        </button>
+    </div>
+
+    <!-- Tempat hasil ramalan unik bakal muncul otomatis setelah tombol Scan diklik -->
+    <div id="external-target-result" class="hidden mt-2"></div>
+</div>
+                
 
                 <div class="flex gap-2">
                     <input type="text" id="ai-chat-input" placeholder="Will I get rich? Ask the oracle..." class="w-full bg-slate-900 border border-slate-800 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600 outline-none transition-all">
