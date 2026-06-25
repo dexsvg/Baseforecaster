@@ -362,7 +362,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
 }
 
 // ==========================================
-// FEATURE: SMART WALLET AUDITOR AI ADVISOR
+// FEATURE: SMART WALLET AUDITOR AI ADVISOR (FIXED SYNTAX)
 // ==========================================
 function generateAIWalletAdvice(fate, score) {
     const adviceEl = document.getElementById("ai-wallet-advice");
@@ -371,10 +371,10 @@ function generateAIWalletAdvice(fate, score) {
     let adviceText = "";
     if (score > 80) {
         adviceText = "📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Advice: You have strong momentum, deploy assets to Base ecosystem LPs or consider minting to seal your anchor.";
-    } else if (score >= 40) {
+    } else if (score > 50) {
         adviceText = "📊 [AI AUDIT]: Moderate risk footprint detected. Your transaction velocity suggests slight panic selling in past cycles. Advice: Avoid chasing green candles on hyper-risky meme tokens tonight. Stabilize your gas threshold.";
     } else {
-        adviceText = "🚨 [AI AUDIT]: Vulnerability Vector Active. Your hash pattern indicates weak resistance against dusting vectors.Advice: DO NOT interact with unverified airdrop items inside your gallery. Move core funds to cold vault storage.";
+        adviceText = "🚨 [AI AUDIT]: Vulnerability Vector Active. Your hash pattern indicates weak resistance against dusting vectors. Advice: DO NOT interact with unverified airdrop items inside your gallery. Move core funds to cold vault storage.";
     }
 
     adviceEl.innerText = adviceText;
@@ -472,7 +472,7 @@ function setupTwitterShare(fateObj, score) {
     if (!shareBtn) return;
     shareBtn.onclick = (e) => {
         e.preventDefault();
-        const tweetText = encodeURIComponent(`🔮 My Base wallet crystal ball just revealed my destiny!\n\nFate: ${fateObj.fate} ${fateObj.emoji}\nDegen Luck Score: ${score}%\n\nDiscover yours now on Base Forecaster! 🔵✨`);
+        const tweetText = encodeURIComponent(`🔮 My Base wallet crystal ball just revealed my destiny!\n\nFate: ${fateObj.fate} ${fateObj.emoji}\nDegen Luck Score: ${score}%\n\nDiscover yours now on Base Forecaster! https://baseforecaster.vercel.app/ 🔵✨`);
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
     };
 }
@@ -568,7 +568,6 @@ function closeModal(modalId) {
     if(target) { target.style.display = 'none'; target.classList.add('hidden'); }
 }
 
-// Glow Aura Customization Feature (Triggers real-time Canvas Re-render)
 function applyGlow(type) {
     if (!isConnected || !currentFateGlobal) {
         alert("Please securely connect your Web3 node wallet and generate your destiny first, Anon!");
@@ -576,13 +575,11 @@ function applyGlow(type) {
         return;
     }
 
-    // Modifies visual grid canvas parameters
     if (type === 'neon') { currentGlowColor = "rgba(6, 182, 212, 0.15)"; currentFrameColor = "#06b6d4"; }
     if (type === 'gold') { currentGlowColor = "rgba(245, 158, 11, 0.15)"; currentFrameColor = "#f59e0b"; }
     if (type === 'matrix') { currentGlowColor = "rgba(34, 197, 94, 0.15)"; currentFrameColor = "#22c55e"; }
     if (type === 'ruby') { currentGlowColor = "rgba(244, 63, 94, 0.15)"; currentFrameColor = "#f43f5e"; }
 
-    // Instant re-draw compilation loops
     let cleanAddress = userAddress.toLowerCase().replace("0x", "");
     let seed = 0; for (let i = 0; i < cleanAddress.length; i++) { seed += cleanAddress.charCodeAt(i); }
     const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5));
@@ -592,7 +589,6 @@ function applyGlow(type) {
     closeModal('glow');
 }
 
-// Spin the Wheel Luck Engine Gacha Simulations
 function spinTheWheel() {
     const wheelGraphic = document.getElementById('wheel-graphic');
     const btnSpin = document.getElementById('btn-spin');
@@ -603,7 +599,6 @@ function spinTheWheel() {
     if(resultText) resultText.classList.add('hidden');
     
     if(wheelGraphic) {
-        // Smooth random rotations loops setup
         const randomStopDegree = 1440 + Math.floor(Math.random() * 360);
         wheelGraphic.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.3, 1)';
         wheelGraphic.style.transform = `rotate(${randomStopDegree}deg)`;
@@ -627,7 +622,8 @@ function spinTheWheel() {
         
         btnSpin.disabled = false;
     }, 3000);
-                }
+}
+
 // ==========================================
 // FEATURE: EXTERNAL TARGET FORECASTER (WALLETS / TOKENS)
 // ==========================================
@@ -643,26 +639,22 @@ function lookupExternalTarget() {
     const rawTarget = targetInput.value.trim();
     let cleanTarget = rawTarget.toLowerCase().replace("0x", "");
     
-    // Create a unique deterministic seed for this specific target
-    let targetSeed = 777; // Custom offset for external lookup chaos
+    let targetSeed = 777; 
     for (let i = 0; i < cleanTarget.length; i++) {
         targetSeed += cleanTarget.charCodeAt(i) * (i + 1);
     }
 
-    // Pick unique fate and luck score based on target seed
     const fateIndex = targetSeed % fateLibrary.length;
     const selectedFate = fateLibrary[fateIndex];
     const targetLuckScore = Math.min(100, Math.max(5, (targetSeed % 95) + 5));
 
-    // Determine type for clean display styling
     const isWallet = rawTarget.startsWith("0x") && rawTarget.length === 42;
     const targetTypeLabel = isWallet ? "🎯 WALLET TARGET AUDIT" : "🪙 TOKEN TARGET FORECAST";
 
-    // Reveal the hidden result card box with tailored English template
     if (resultDisplay) {
         resultDisplay.classList.remove("hidden");
         resultDisplay.innerHTML = `
-            <div class="border border-slate-700/60 bg-slate-950/80 p-4 rounded-xl space-y-3 animate-fade-in">
+            <div class="border border-slate-700/60 bg-slate-950/80 p-4 rounded-xl space-y-3">
                 <div class="flex justify-between items-center border-b border-slate-800 pb-2">
                     <span class="text-[10px] monospace text-cyan-400 font-bold bg-cyan-950/40 px-2 py-0.5 rounded-md border border-cyan-500/20">${targetTypeLabel}</span>
                     <span class="text-[10px] text-slate-500 monospace">SEED: #EXT${targetSeed}</span>
@@ -692,7 +684,6 @@ function lookupExternalTarget() {
     }
 }
 
-// Special separate share prompt for stalked items
 function shareExternalToX(target, fateName, score, emoji) {
     const tweetText = encodeURIComponent(`🔮 Just used BaseForecaster to audit a specific target on @base!\n\nTarget: ${target}\nPredicted Fate: ${fateName} ${emoji}\nLuck Capability: ${score}%\n\nScan any wallet or token address instantly: https://baseforecaster.vercel.app/ 🔵✨`);
     window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
