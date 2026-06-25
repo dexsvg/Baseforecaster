@@ -616,3 +616,73 @@ function spinTheWheel() {
         btnSpin.disabled = false;
     }, 3000);
                 }
+// ==========================================
+// FEATURE: EXTERNAL TARGET FORECASTER (WALLETS / TOKENS)
+// ==========================================
+function lookupExternalTarget() {
+    const targetInput = document.getElementById("external-target-input");
+    const resultDisplay = document.getElementById("external-target-result");
+    
+    if (!targetInput || !targetInput.value.trim()) {
+        alert("Please enter a valid wallet address or token symbol first, Anon!");
+        return;
+    }
+
+    const rawTarget = targetInput.value.trim();
+    let cleanTarget = rawTarget.toLowerCase().replace("0x", "");
+    
+    // Create a unique deterministic seed for this specific target
+    let targetSeed = 777; // Custom offset for external lookup chaos
+    for (let i = 0; i < cleanTarget.length; i++) {
+        targetSeed += cleanTarget.charCodeAt(i) * (i + 1);
+    }
+
+    // Pick unique fate and luck score based on target seed
+    const fateIndex = targetSeed % fateLibrary.length;
+    const selectedFate = fateLibrary[fateIndex];
+    const targetLuckScore = Math.min(100, Math.max(5, (targetSeed % 95) + 5));
+
+    // Determine type for clean display styling
+    const isWallet = rawTarget.startsWith("0x") && rawTarget.length === 42;
+    const targetTypeLabel = isWallet ? "🎯 WALLET TARGET AUDIT" : "🪙 TOKEN TARGET FORECAST";
+
+    // Reveal the hidden result card box with tailored English template
+    if (resultDisplay) {
+        resultDisplay.classList.remove("hidden");
+        resultDisplay.innerHTML = `
+            <div class="border border-slate-700/60 bg-slate-950/80 p-4 rounded-xl space-y-3 animate-fade-in">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                    <span class="text-[10px] monospace text-cyan-400 font-bold bg-cyan-950/40 px-2 py-0.5 rounded-md border border-cyan-500/20">${targetTypeLabel}</span>
+                    <span class="text-[10px] text-slate-500 monospace">SEED: #EXT${targetSeed}</span>
+                </div>
+                
+                <div class="flex items-center space-x-3">
+                    <div class="text-3xl">${selectedFate.emoji}</div>
+                    <div>
+                        <h4 class="text-slate-200 font-bold text-sm tracking-wide">${selectedFate.fate}</h4>
+                        <p class="text-xs text-amber-400 font-semibold monospace">Target Luck Capability: ${targetLuckScore}%</p>
+                    </div>
+                </div>
+
+                <p class="text-xs text-slate-400 italic bg-slate-900/40 p-2.5 rounded-lg border border-slate-800/50 leading-relaxed">
+                    "${selectedFate.text}"
+                </p>
+
+                <div class="pt-1 flex justify-between items-center text-[10px] text-slate-500 monospace">
+                    <span class="truncate max-w-[180px]">QUERY: ${rawTarget}</span>
+                    <button onclick="shareExternalToX('${rawTarget}', '${selectedFate.fate}', ${targetLuckScore}, '${selectedFate.emoji}')" 
+                            class="text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 font-bold transition-all">
+                        <span>Share Scan to X</span> ➜
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Special separate share prompt for stalked items
+function shareExternalToX(target, fateName, score, emoji) {
+    const tweetText = encodeURIComponent(`🔮 Just used BaseForecaster to audit a specific target on @base!\n\nTarget: ${target}\nPredicted Fate: ${fateName} ${emoji}\nLuck Capability: ${score}%\n\nScan any wallet or token address instantly: [INSERT LINK DAPP] 🔵✨`);
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
+}
+
