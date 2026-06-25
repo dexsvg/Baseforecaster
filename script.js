@@ -7,11 +7,11 @@ const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950";
 let userAddress = "";
 let isConnected = false;
 let appLogoImg = null;
-let currentFateGlobal = null; // Menyimpan data ramalan aktif untuk rujukan AI
+let currentFateGlobal = null; // Stores active forecasting data for AI reference
 let currentGlowColor = "rgba(56, 189, 248, 0.04)"; // Default grid color (Neon Cyan)
-let currentFrameColor = null; // Menyimpan kustomisasi border emas/biru
+let currentFrameColor = null; // Stores frame custom colors (gold/blue/etc)
 
-// Perbaikan Bug 1: Deklarasi eventTypes yang tadinya hilang
+// Bug Fix 1: Declaring previously missing eventTypes array
 const eventTypes = ["MINT", "NEW_USER", "TIP"];
 
 const fateLibrary = [
@@ -77,7 +77,7 @@ const fateLibrary = [
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
-// Pemicu Awal Saat dApp Dimuat
+// App Initialization On Load
 document.addEventListener("DOMContentLoaded", () => {
     try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
     try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
@@ -93,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// FITUR: DAILY LOGIN LOGIC
+// FEATURE: DAILY LOGIN LOGIC (English Updated)
 // ==========================================
 function setupDailyLogin() {
     const dailyBtn = document.getElementById("daily-login-btn");
@@ -124,7 +124,7 @@ function setupDailyLogin() {
 }
 
 // ==========================================
-// KENDALI MODAL & TOMBOL CONNECT WALLET
+// MODAL CONTROLLER & WALLET CONNECT TRIGGERS
 // ==========================================
 function initWalletSystem() {
     const connectBtn = document.getElementById("connect-btn");
@@ -168,12 +168,12 @@ function setupModalButtons() {
 }
 
 // ==========================================
-// LOGIKA KONEKSI DOMPET WEB3
+// WEB3 WALLET CONNECTION CORE LOGIC
 // ==========================================
 async function connectWallet() {
     const provider = window.ethereum || window.okxwallet || window.bitkeep?.ethereum;
     if (!provider) {
-        alert("Web3 Wallet not detected! Please open from inside dApp Browser.");
+        alert("Web3 Wallet not detected! Please open from inside your dApp Browser.");
         return;
     }
     try {
@@ -205,7 +205,7 @@ async function connectWallet() {
 async function connectCoinbaseSmartWallet() {
     const provider = window.ethereum?.isCoinbaseWallet ? window.ethereum : window.coinbaseWalletExtension;
     if (!provider) {
-        alert("Untuk login instan via Email, harap buka dApp ini dari Coinbase Wallet App.");
+        alert("For instant Login via Email, please launch this dApp from inside the Coinbase Wallet App.");
         return;
     }
     try {
@@ -233,7 +233,7 @@ async function connectCoinbaseSmartWallet() {
 }
 
 // ==========================================
-// GENERASI RAMALAN & TRIGGER DRAW
+// DESTINY ENGINE GENERATION & RENDERING
 // ==========================================
 function generateDestiny(address) {
     let cleanAddress = address.toLowerCase().replace("0x", "");
@@ -265,14 +265,14 @@ function generateDestiny(address) {
 }
 
 // ==========================================
-// RENDERING CANVAS PREMIUM (Pola Grid + Latar Gradasi Radial)
+// PREMIUM CANVAS DRAW ENGINE (Radial Background & Grid Lines)
 // ==========================================
 function drawDestinyCard(fateObj, score, address, seed) {
     const canvas = document.getElementById("destiny-card");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Background Gradient Radial (Kedalaman Efek Kaca Buram Gelap)
+    // 1. Radial Background Gradient (Dark Glass Depth Effects)
     let radialGrad = ctx.createRadialGradient(175, 200, 10, 175, 250, 300);
     radialGrad.addColorStop(0, "#1e293b");  
     radialGrad.addColorStop(0.5, "#0f172a"); 
@@ -280,7 +280,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillStyle = radialGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    // 2. Efek Garis Grid Matrix (Warna dinamis mengikuti fitur GLOW)
+    // 2. Matrix Grid Overlay Lines (Colors dynamically match the GLOW module)
     ctx.strokeStyle = currentGlowColor; 
     ctx.lineWidth = 1;
     const gridSize = 20;
@@ -292,7 +292,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke();
     }
 
-    // 3. Frame Border Luar Gradasi Emas-Biru Base
+    // 3. Gold-Blue Base Linear Outer Frame Border
     ctx.lineWidth = 4;
     if (currentFrameColor) {
         ctx.strokeStyle = currentFrameColor;
@@ -304,23 +304,23 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.strokeRect(10, 10, 330, 480);
 
-    // 4. Gambar Logo dApp
+    // 4. Drawing dApp Application Logo Assets
     if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) { 
         ctx.drawImage(appLogoImg, 155, 28, 40, 40); 
     }
     
-    // Teks Header
+    // Header Label Teks
     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
     ctx.fillText("BASE FORECASTER CORES", 175, 82);
     
-    // Emoji Utama Kartu
+    // Card Primary Emoji Graphic Elements
     ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 155);
     
-    // Judul Takdir
+    // Destiny Core Text Headings
     ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
     ctx.fillText(fateObj.fate, 175, 210);
 
-    // 5. Narasi Teks Pembungkus Deskripsi Ramalan
+    // 5. Line Wrapping Narratives Text Format Engine
     ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11.5px serif";
     const words = fateObj.text.split(" "); 
     let line = ""; let y = 252;
@@ -332,7 +332,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
-    // 6. Footer Kotak Informasi Dompet
+    // 6. Secure Wallet Metadatas Information Container Boxes
     ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
     ctx.fillRect(30, 395, 290, 62);
     ctx.strokeStyle = "rgba(56, 189, 248, 0.2)"; 
@@ -350,7 +350,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
 }
 
 // ==========================================
-// FITUR: WALLET AUDITOR ADVISOR AI
+// FEATURE: SMART WALLET AUDITOR AI ADVISOR
 // ==========================================
 function generateAIWalletAdvice(fate, score) {
     const adviceEl = document.getElementById("ai-wallet-advice");
@@ -362,7 +362,7 @@ function generateAIWalletAdvice(fate, score) {
     } else if (score >= 40) {
         adviceText = "📊 [AI AUDIT]: Moderate risk footprint detected. Your transaction velocity suggests slight panic selling in past cycles. Advice: Avoid chasing green candles on hyper-risky meme tokens tonight. Stabilize your gas threshold.";
     } else {
-        adviceText = "🚨 [AI AUDIT]: Vulnerability Vector Active. Your hash pattern indicates weak resistance against dusting vectors. Advice: DO NOT interact with unverified airdrop items inside your gallery. Move core funds to cold vault storage.";
+        adviceText = "🚨 [AI AUDIT]: Vulnerability Vector Active. Your hash pattern indicates weak resistance against dusting vectors.Advice: DO NOT interact with unverified airdrop items inside your gallery. Move core funds to cold vault storage.";
     }
 
     adviceEl.innerText = adviceText;
@@ -370,7 +370,7 @@ function generateAIWalletAdvice(fate, score) {
 }
 
 // ==========================================
-// FITUR: DESTINY AI CHAT LOGIC
+// FEATURE: PRECISE QUANTUM AI ORACLE CHAT
 // ==========================================
 function setupAIChatSystem() {
     const sendBtn = document.getElementById("ai-chat-send-btn");
@@ -396,7 +396,7 @@ function setupAIChatSystem() {
             if (lowerQuery.includes("rich") || lowerQuery.includes("kaya") || lowerQuery.includes("cuan")) {
                 aiResponse = `🔮 Based on your profile **${fateName}**, financial alignment is volatile. Your luck score is ${fateScore}%. If you mint your card, the deterministic metadata code might stabilize your long-term yield portfolio.`;
             } else if (lowerQuery.includes("mint") || lowerQuery.includes("nft")) {
-                aiResponse = "🪙 Minting the Destiny NFT creates an permanent cryptographic record of your alignment score on Base. It protects you from negative blockchain anomalies.";
+                aiResponse = "🪙 Minting the Destiny NFT creates a permanent cryptographic record of your alignment score on Base. It protects you from negative blockchain anomalies.";
             } else if (lowerQuery.includes("rug") || lowerQuery.includes("scam") || lowerQuery.includes("aman")) {
                 aiResponse = `🛡️ Oracle warning scan: Your score is ${fateScore}%. Always check contract codes on BaseScan before clicking approve. Do not buy contracts without locked liquidity pools!`;
             } else {
@@ -413,7 +413,7 @@ function setupAIChatSystem() {
 }
 
 // ==========================================
-// MINT, TIP, & TWITTER SHARE INTERACTIONS
+// SMART WEB3 INTERACTIONS (MINT, TIP, SHARE)
 // ==========================================
 async function setupUniversalMintButton() {
     const mintBtnEl = document.getElementById("mint-nft-btn");
@@ -466,7 +466,7 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ==========================================
-// INFRASTRUKTUR DATA (VIEWS / NOTIF / LOGO)
+// BACKGROUND METRICS INFRASTRUCTURE DATA
 // ==========================================
 function setupAppLogo() { appLogoImg = new Image(); appLogoImg.src = "1000050193.png"; }
 function setupMintCounter() {
@@ -535,7 +535,7 @@ function triggerPremiumConfetti() {
 }
 
 // ==========================================
-// SYSTEMS: NAVIGASI BARU & MODAL LOGIC (GLOW / WHEEL)
+// INFRASTRUCTURES: NAV ROUTERS & MODAL MANAGEMENT (GLOW / WHEEL)
 // ==========================================
 function navigate(page) {
     if (page === 'home') {
@@ -547,7 +547,7 @@ function navigate(page) {
         const target = document.getElementById('modal-wheel');
         if(target) { target.style.display = 'flex'; target.classList.remove('hidden'); }
     } else if (page === 'ranks') {
-        alert("🏆 Ranks Update: Sistem kalkulasi top wallet berdasarkan aktivitas pencetakan NFT sedang berjalan secara on-chain!");
+        alert("🏆 Ranks Update: On-chain top wallet calculations based on NFT minting volume are currently processing!");
     }
 }
 
@@ -556,31 +556,31 @@ function closeModal(modalId) {
     if(target) { target.style.display = 'none'; target.classList.add('hidden'); }
 }
 
-// Fitur Kustomisasi Glow Aura (Beneran Render ke Canvas!)
+// Glow Aura Customization Feature (Triggers real-time Canvas Re-render)
 function applyGlow(type) {
     if (!isConnected || !currentFateGlobal) {
-        alert("Silakan hubungkan dompet Anda dan ramal takdir terlebih dahulu, Bro!");
+        alert("Please securely connect your Web3 node wallet and generate your destiny first, Anon!");
         closeModal('glow');
         return;
     }
 
-    // Ubah variabel global visual warna grid & border canvas
+    // Modifies visual grid canvas parameters
     if (type === 'neon') { currentGlowColor = "rgba(6, 182, 212, 0.15)"; currentFrameColor = "#06b6d4"; }
     if (type === 'gold') { currentGlowColor = "rgba(245, 158, 11, 0.15)"; currentFrameColor = "#f59e0b"; }
     if (type === 'matrix') { currentGlowColor = "rgba(34, 197, 94, 0.15)"; currentFrameColor = "#22c55e"; }
     if (type === 'ruby') { currentGlowColor = "rgba(244, 63, 94, 0.15)"; currentFrameColor = "#f43f5e"; }
 
-    // Re-draw canvas instan dengan style aura baru
+    // Instant re-draw compilation loops
     let cleanAddress = userAddress.toLowerCase().replace("0x", "");
     let seed = 0; for (let i = 0; i < cleanAddress.length; i++) { seed += cleanAddress.charCodeAt(i); }
     const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5));
 
     drawDestinyCard(currentFateGlobal, finalLuckScore, userAddress, seed);
-    alert(`✨ Aura kartu berhasil diubah menjadi ${type.toUpperCase()}!`);
+    alert(`✨ Card Aura successfully calibrated to ${type.toUpperCase()} parameters!`);
     closeModal('glow');
 }
 
-// Fitur Spin the Wheel Gacha (Perbaikan Animasi Putar Halus & Berhenti Permanen)
+// Spin the Wheel Luck Engine Gacha Simulations
 function spinTheWheel() {
     const wheelGraphic = document.getElementById('wheel-graphic');
     const btnSpin = document.getElementById('btn-spin');
@@ -591,7 +591,7 @@ function spinTheWheel() {
     if(resultText) resultText.classList.add('hidden');
     
     if(wheelGraphic) {
-        // Berputar acak di atas 4 putaran penuh (1440 derajat + bonus derajat acak)
+        // Smooth random rotations loops setup
         const randomStopDegree = 1440 + Math.floor(Math.random() * 360);
         wheelGraphic.style.transition = 'transform 3s cubic-bezier(0.1, 0.8, 0.3, 1)';
         wheelGraphic.style.transform = `rotate(${randomStopDegree}deg)`;
@@ -599,11 +599,11 @@ function spinTheWheel() {
     
     setTimeout(() => {
         const prizes = [
-            "Congratulations! You've earned +200 Aura Points (AP) 🔮"
-"Zonk! Try again tomorrow, Degen! 📉" (Catatan: Kata "Zonk" juga bisa diganti dengan "Whammy!" atau "Oof!" jika ingin lebih natural dalam bahasa Inggris).
-"Jackpot! 50% NFT Minting Discount 💎"
-"Congratulations! You've earned +500 Aura Points (AP) 👑"
-"Rare Aura Card Unlocked! ✨"
+            "Success! You secured +200 Aura Points (AP) 🔮",
+            "Better luck next time, Degen! Liquidation avoided. 📉",
+            "Jackpot! Unlocked 50% NFT Minting Discount 💎",
+            "Incredible! You claimed +500 Aura Points (AP) Superpool 👑",
+            "Rare Visual Card Aura Customization Unlocked! ✨"
         ];
         
         const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
@@ -613,7 +613,6 @@ function spinTheWheel() {
             resultText.classList.remove('hidden');
         }
         
-        // Buka tombol kembali
         btnSpin.disabled = false;
     }, 3000);
-}
+                }
