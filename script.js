@@ -599,11 +599,11 @@ function spinTheWheel() {
     
     setTimeout(() => {
         const prizes = [
-            "Selamat! Anda mendapatkan +200 Aura Points (AP) 🔮",
-            "Zonk! Coba lagi besok, Degen! 📉",
-            "Jackpot! Diskon Minting NFT 50% 💎",
-            "Selamat! Anda mendapatkan +500 Aura Points (AP) 👑",
-            "Aura Kartu Langka Terbuka! ✨"
+            "Congratulations! You've earned +200 Aura Points (AP) 🔮"
+"Zonk! Try again tomorrow, Degen! 📉" (Catatan: Kata "Zonk" juga bisa diganti dengan "Whammy!" atau "Oof!" jika ingin lebih natural dalam bahasa Inggris).
+"Jackpot! 50% NFT Minting Discount 💎"
+"Congratulations! You've earned +500 Aura Points (AP) 👑"
+"Rare Aura Card Unlocked! ✨"
         ];
         
         const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
