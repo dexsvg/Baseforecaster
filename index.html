@@ -274,6 +274,52 @@
         <p id="spin-result" class="text-xs mt-3 text-emerald-400 font-bold hidden"></p>
     </div>
 </div>
+  <div id="modal-glow" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
+    <div class="bg-slate-950 border border-neon-matrix p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl relative">
+        <button onclick="closeModal('glow')" class="absolute top-4 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
+        
+        <h3 class="text-neon-matrix font-bold text-lg mb-2">⚡ ENERGIZE CORE AURA</h3>
+        <p class="text-slate-400 text-xs mb-6 font-mono">Pilih panjang gelombang partikel untuk merubah pendaran grid internal kartu takdir Anda.</p>
+        
+        <div class="grid grid-cols-2 gap-3 font-mono text-xs">
+            <button onclick="applyGlow('neon')" class="p-3 bg-slate-900 border border-cyan-500/30 hover:border-cyan-400 text-cyan-400 rounded-xl transition shadow-[0_0_10px_rgba(6,182,212,0.1)]">
+                🔹 CYAN NEON
+            </button>
+            <button onclick="applyGlow('gold')" class="p-3 bg-slate-900 border border-amber-500/30 hover:border-amber-400 text-amber-400 rounded-xl transition shadow-[0_0_10px_rgba(245,158,11,0.1)]">
+                🔸 GOLD LUCK
+            </button>
+            <button onclick="applyGlow('matrix')" class="p-3 bg-slate-900 border border-green-500/30 hover:border-green-400 text-green-400 rounded-xl transition shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                🟢 MATRIX GREEN
+            </button>
+            <button onclick="applyGlow('ruby')" class="p-3 bg-slate-900 border border-rose-500/30 hover:border-rose-400 text-rose-400 rounded-xl transition shadow-[0_0_10px_rgba(244,63,94,0.1)]">
+                🔴 RUBY VECT
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-wheel" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
+    <div class="bg-slate-950 border border-neon-matrix p-6 rounded-2xl w-full max-w-sm text-center shadow-2xl relative">
+        <button onclick="closeModal('wheel')" class="absolute top-4 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
+        
+        <h3 class="text-neon-matrix font-bold text-lg mb-2">🎰 DEGEN SPIN GACHA</h3>
+        <p class="text-slate-400 text-xs mb-6 font-mono">Gunakan sisa gas harian Anda untuk memutar roda takdir kuantum.</p>
+        
+        <div class="w-32 h-32 mx-auto mb-6 relative flex items-center justify-center">
+            <div id="wheel-graphic" class="w-full h-full rounded-full border-4 border-dashed border-neon-matrix flex items-center justify-center text-3xl bg-slate-900 shadow-[0_0_20px_rgba(0,243,255,0.2)]">
+                🔮
+            </div>
+            <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
+        </div>
+
+        <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg font-mono text-sm tracking-wider transition-all transform active:scale-95 disabled:opacity-50">
+            🌀 SPIN THE WHEEL
+        </button>
+        
+        <div id="spin-result" class="hidden mt-4 p-3 bg-slate-900/80 border border-dashed border-cyan-500/30 rounded-xl text-slate-200 text-xs font-mono animate-fade-in">
+            </div>
+    </div>
+</div>
     
 </body>
                     </html>
