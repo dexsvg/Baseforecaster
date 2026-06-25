@@ -259,6 +259,113 @@ function generateDestiny(address) {
     document.getElementById("seed-anchor").innerText = `#${seed}`;
 
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
+    function drawDestinyCard(fateObj, score, address, seed) {
+    const canvas = document.getElementById("destiny-card");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    // 1. MEMBUAT BACKGROUND GRADIENT RADIAL (Cahaya Pendaran di Tengah)
+    // Membuat gradasi lingkaran dari tengah kartu keluar
+    let radialGrad = ctx.createRadialGradient(175, 200, 10, 175, 250, 300);
+    radialGrad.addColorStop(0, "#1e293b");  // Terang di tengah (Slate-800)
+    radialGrad.addColorStop(0.5, "#0f172a"); // Agak gelap di luar tengah (Slate-900)
+    radialGrad.addColorStop(1, "#020617");   // Gelap total di ujung kartu (Slate-950)
+    
+    ctx.fillStyle = radialGrad;
+    ctx.fillRect(0, 0, 350, 500);
+
+    // 2. MEMBUAT EFEK GRID SIBER DIGITAL (GARIS KOTAK-KOTAK)
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.04)"; // Garis biru transparan super tipis
+    ctx.lineWidth = 1;
+    const gridSize = 20; // Ukuran kotak grid
+
+    // Menggambar garis vertikal
+    for (let x = 0; x < 350; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, 500);
+        ctx.stroke();
+    }
+    // Menggambar garis horizontal
+    for (let y = 0; y < 500; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(350, y);
+        ctx.stroke();
+    }
+
+    // 3. BORDER LUAR EMAS-BIRU GRADASI (FRAME KARTU)
+    ctx.lineWidth = 4;
+    let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
+    goldGrad.addColorStop(0, "#f59e0b"); // Emas
+    goldGrad.addColorStop(1, "#2563eb"); // Biru Base
+    ctx.strokeStyle = goldGrad;
+    ctx.strokeRect(10, 10, 330, 480);
+
+    // 4. MENGGAMBAR LOGO DAPP (AURA ORACLE CORES)
+    if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) { 
+        ctx.drawImage(appLogoImg, 155, 28, 40, 40); 
+    }
+    
+    // TEXT: HEADER KARTU
+    ctx.fillStyle = "#94a3b8"; 
+    ctx.font = "bold 9px monospace"; 
+    ctx.textAlign = "center"; 
+    ctx.fillText("BASE FORECASTER CORES", 175, 82);
+    
+    // EMOJI UTAMA
+    ctx.font = "64px serif"; 
+    ctx.fillText(fateObj.emoji, 175, 155);
+    
+    // NAMA NASIB (JUDUL)
+    ctx.fillStyle = "#38bdf8"; 
+    ctx.font = "bold 19px sans-serif"; 
+    ctx.fillText(fateObj.fate, 175, 210);
+
+    // 5. TEXT DESCRIPTION (NARASI RAMALAN)
+    ctx.fillStyle = "#cbd5e1"; 
+    ctx.font = "italic 11.5px serif";
+    const words = fateObj.text.split(" "); 
+    let line = ""; 
+    let y = 252;
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + " ";
+        if (ctx.measureText(testLine).width > 270 && n > 0) { 
+            ctx.fillText(line, 175, y); 
+            line = words[n] + " "; 
+            y += 17; 
+        } else { 
+            line = testLine; 
+        }
+    }
+    ctx.fillText(line, 175, y);
+
+    // 6. KOTAK METADATA DOMPET (FOOTER DATA BOX)
+    ctx.fillStyle = "rgba(15, 23, 42, 0.75)"; // Background box lebih kontras
+    ctx.fillRect(30, 395, 290, 62);
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.2)"; // Border box biru menyala samar
+    ctx.strokeRect(30, 395, 290, 62);
+    
+    // ISI DATA DALAM KOTAK
+    ctx.textAlign = "left"; 
+    ctx.font = "10.5px monospace"; 
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 413);
+    
+    // Level Degen diwarnai biru cyan agar mencolok
+    ctx.fillStyle = "#22d3ee";
+    ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
+    
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
+    
+    // WATERMARK BAWAH
+    ctx.textAlign = "center"; 
+    ctx.font = "9px monospace"; 
+    ctx.fillStyle = "#64748b";
+    ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 480);
+        }
+    
     setupTwitterShare(selectedFate, finalLuckScore);
 
     // Jalankan Audit Advisor AI secara otomatis sesaat setelah koneksi
