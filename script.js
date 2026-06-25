@@ -501,38 +501,75 @@ function startLiveNotificationLoop() {
     setTimeout(sn, 2000);
 }
 // --- NAVIGASI & MAIN ACTION ---
-
 function navigate(page) {
-    const actions = {
-        'home': () => { 
-            window.scrollTo({ top: 0, behavior: 'smooth' }); 
-        },
-        'airdrop': () => { 
-            alert("🔥 Airdrop Quest: Daily login active! Keep checking back for more tasks."); 
-        },
-        'nfts': () => { 
-            alert("🖼️ Your Destiny NFT Gallery is loading... (Coming Soon!)"); 
-        },
-        'ranks': () => { 
-            alert("🏆 Top 10 Forecasters: Currently tracking active minters..."); 
-        }
-    };
-
-    if (actions[page]) {
-        actions[page]();
+    if (page === 'home') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (page === 'glow') {
+        document.getElementById('modal-glow').style.display = 'flex';
+    } else if (page === 'wheel') {
+        document.getElementById('modal-wheel').style.display = 'flex';
+    } else if (page === 'ranks') {
+        alert("🏆 Ranks Update: Sistem kalkulasi top wallet berdasarkan aktivitas pencetakan NFT sedang berjalan secara on-chain!");
     }
 }
 
-function triggerMainAction() {
-    // Tombol tengah otomatis memanggil fungsi ramalan utama
-    // Cek apakah user sudah konek wallet
-    if (!isConnected) {
-        openWalletModal(); // Buka modal kalau belum konek
-    } else {
-        // Jika sudah konek, jalankan ramalan
-        generateDestiny(userAddress);
-        // Efek getar untuk HP
-        if (navigator.vibrate) navigator.vibrate(100);
-    }
+function closeModal(modalId) {
+    document.getElementById('modal-' + modalId).style.display = 'none';
 }
 
+// Fitur Kustomisasi Glow Aura
+function applyGlow(type) {
+    // Asumsi pembungkus kartu takdir Anda memiliki ID 'destiny-card'
+    const card = document.getElementById('destiny-card');
+    if (!card) {
+        alert("Silakan generate ramalan takdir Anda terlebih dahulu sebelum memberi aura visual, Bro!");
+        closeModal('glow');
+        return;
+    }
+    
+    // Reset kelas glow lama
+    card.style.boxShadow = '';
+    
+    // Set glow baru
+    if (type === 'neon') card.style.boxShadow = '0 0 25px rgba(6, 182, 212, 0.7)';
+    if (type === 'gold') card.style.boxShadow = '0 0 25px rgba(245, 158, 11, 0.7)';
+    if (type === 'matrix') card.style.boxShadow = '0 0 25px rgba(34, 197, 94, 0.7)';
+    if (type === 'ruby') card.style.boxShadow = '0 0 25px rgba(244, 63, 94, 0.7)';
+    
+    alert(`✨ Aura kartu berhasil diubah menjadi ${type.toUpperCase()}!`);
+    closeModal('glow');
+}
+
+// Fitur Spin the Wheel Gacha
+function spinTheWheel() {
+    const wheelGraphic = document.getElementById('wheel-graphic');
+    const btnSpin = document.getElementById('btn-spin');
+    const resultText = document.getElementById('spin-result');
+    
+    btnSpin.disabled = true;
+    resultText.classList.add('hidden');
+    
+    // Animasi putar cepat
+    wheelGraphic.style.transform = 'rotate(1440deg)';
+    wheelGraphic.style.transition = 'transform 3s ease-out';
+    
+    setTimeout(() => {
+        const prizes = [
+            "Selamat! Anda mendapatkan +200 Aura Points (AP)",
+            "Zonk! Coba lagi besok, Degen!",
+            "Jackpot! Diskon Minting NFT 50%",
+            "Selamat! Anda mendapatkan +500 Aura Points (AP)",
+            "Aura Kartu Langka Terbuka!"
+        ];
+        
+        const randomPrize = prizes[Math.floor(Math.random() * prizes.length)];
+        
+        resultText.innerText = randomPrize;
+        resultText.classList.remove('hidden');
+        
+        // Reset tombol dan grafis roda
+        btnSpin.disabled = false;
+        wheelGraphic.style.transform = 'none';
+        wheelGraphic.style.transition = 'none';
+    }, 3000);
+}
