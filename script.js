@@ -694,7 +694,6 @@ function lookupExternalTarget() {
 
 // Special separate share prompt for stalked items
 function shareExternalToX(target, fateName, score, emoji) {
-    const tweetText = encodeURIComponent(`🔮 Just used BaseForecaster to audit a specific target on @base!\n\nTarget: ${target}\nPredicted Fate: ${fateName} ${emoji}\nLuck Capability: ${score}%\n\nScan any wallet or token address instantly: https://baseforecaster.vercel.app 🔵✨`);
+    const tweetText = encodeURIComponent(`🔮 Just used BaseForecaster to audit a specific target on @base!\n\nTarget: ${target}\nPredicted Fate: ${fateName} ${emoji}\nLuck Capability: ${score}%\n\nScan any wallet or token address instantly: https://baseforecaster.vercel.app/ 🔵✨`);
     window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
 }
-
