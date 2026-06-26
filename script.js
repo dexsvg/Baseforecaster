@@ -386,8 +386,11 @@ async function fetchRealPolymarketData() {
         container.innerHTML = ""; 
 
         markets.forEach((market) => {
-            // Ini baris baru penentu agar tidak 'undefined' lagi
             const marketTitle = market.question || market.title || "Untitled Market";
+
+            // Mengambil Slug unik untuk membuat link transaksi asli ke Polymarket
+            const marketSlug = market.slug || "";
+            const tradeLink = marketSlug ? `https://polymarket.com/event/${marketSlug}` : "https://polymarket.com";
 
             let priceYes = 50;
             if (market.outcomePrices) {
@@ -424,12 +427,22 @@ async function fetchRealPolymarketData() {
                     <div>🔴 Market NO: <span class="text-rose-400 font-bold">${priceNo}¢</span></div>
                 </div>
 
-                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono">
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono mb-2">
                     <div class="flex justify-between mb-1">
                         <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
                         <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
                     </div>
                     <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">"${aiAnalysis}"</p>
+                </div>
+
+                <!-- TOMBOL TRANSAKSI NYATA (YES / NO) -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <a href="${tradeLink}?outcome=YES" target="_blank" class="text-center p-2 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[11px] font-mono font-bold text-emerald-400 transition-all flex items-center justify-center gap-1">
+                        🟢 Bet YES (${priceYes}¢)
+                    </a>
+                    <a href="${tradeLink}?outcome=NO" target="_blank" class="text-center p-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[11px] font-mono font-bold text-rose-400 transition-all flex items-center justify-center gap-1">
+                        🔴 Bet NO (${priceNo}¢)
+                    </a>
                 </div>
             `;
             container.appendChild(marketCard);
