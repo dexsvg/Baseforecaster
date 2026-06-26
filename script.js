@@ -16,7 +16,6 @@ let currentFrameColor = null;
 const eventTypes = ["MINT", "NEW_USER", "TIP"];
 
 const fateLibrary = [
-    // [1-10] THE GOD TIER (Score 90-100)
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
     { fate: "GENERATIONAL WEALTH", emoji: "👑", text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", score: 95 },
     { fate: "THE BASE CHOSEN ONE", emoji: "🔵", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 },
@@ -27,8 +26,6 @@ const fateLibrary = [
     { fate: "PROTOCOL ARCHITECT", emoji: "🏗️", text: "Your smart contract interactions indicate future dev-level success. Build, don't just trade.", score: 92 },
     { fate: "THE GOLDEN TOUCH", emoji: "✨", text: "Anything you touch turns to blue-chip. The universe favors your transaction history.", score: 96 },
     { fate: "STAKE LORD", emoji: "🏛️", text: "Your rewards are compounding into a mountain. Patience is your greatest power.", score: 90 },
-
-    // [11-25] THE DEGEN BATTLE (Score 60-89)
     { fate: "THE DEGEN SURVIVOR", emoji: "🥷", text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", score: 74 },
     { fate: "MEME LORD", emoji: "🤡", text: "Your portfolio is 90% memes, but you somehow always break even. Respect.", score: 65 },
     { fate: "THE GAS STRATEGIST", emoji: "⛽", text: "You know exactly when to swap to minimize gas. Efficiency is your secret weapon.", score: 78 },
@@ -44,8 +41,6 @@ const fateLibrary = [
     { fate: "THE CHART ADDICT", emoji: "📈", text: "You live by the candles, and tonight, they are favoring your direction.", score: 73 },
     { fate: "THE RE-ENTRY EXPERT", emoji: "🔄", text: "You know when to buy the dip. Your timing is getting significantly better.", score: 83 },
     { fate: "THE PORTFOLIO BALANCER", emoji: "⚖️", text: "Your risk management is top tier. You are built to last in this market.", score: 88 },
-
-    // [26-40] THE CAUTIONARY TALES (Score 30-59)
     { fate: "THE APER", emoji: "🐒", text: "You ape in with everything. Sometimes it works, sometimes it hurts. Chill out, Bro.", score: 45 },
     { fate: "LIQUIDITY PROVIDER DOOM", emoji: "📉", text: "Impermanent loss is lurking. Check your pool allocations immediately.", score: 42 },
     { fate: "THE PANIC SELLER", emoji: "😱", text: "You sold the bottom. Again. Learn to breathe and trust your thesis.", score: 35 },
@@ -61,8 +56,6 @@ const fateLibrary = [
     { fate: "THE UNLUCKY SWAPPER", emoji: "🎰", text: "Every coin you buy drops 10% immediately. Take a break for 24 hours.", score: 36 },
     { fate: "THE HYPE CHASERS", emoji: "📢", text: "You only buy what influencers shill. Think for yourself, Anon.", score: 41 },
     { fate: "THE STABLECOIN HOARDER", emoji: "💵", text: "You are 100% USDC. Safe, but missing out on the actual madness.", score: 55 },
-
-    // [41-50] THE ODD & CHAOTIC (Score 5-29)
     { fate: "DUSTING ATTACK TARGET", emoji: "🪤", text: "Alert! Your address is being scanned by bots. Don't touch ANY random tokens.", score: 21 },
     { fate: "THE MYSTERY ADDRESS", emoji: "❓", text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", score: 25 },
     { fate: "THE PHANTOM TRADER", emoji: "🌫️", text: "Your transactions appear and vanish. Are you even trading, or just testing?", score: 28 },
@@ -99,7 +92,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initWalletSystem();
-    renderNativeForecasterHub(); 
     
     try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
@@ -116,14 +108,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     isConnected = true;
                     localStorage.setItem("user_wallet", userAddress);
                     updateWalletUI(userAddress);
-                    renderNativeForecasterHub();
+                    renderNativeForecasterHub(); // RENDER ULANG SETELAH WAALLET DETECTED
                     const rSec = document.getElementById("result-section");
                     if (rSec) rSec.classList.remove("hidden");
                     generateDestiny(userAddress);
+                } else {
+                    renderNativeForecasterHub(); // Tetap panggil biar nampil keadaan locked
                 }
             } catch (err) {
                 console.log("Auto-detection background trace cleared:", err);
+                renderNativeForecasterHub();
             }
+        } else {
+            renderNativeForecasterHub();
         }
     }, 1000);
 });
@@ -258,7 +255,6 @@ function initWalletSystem() {
         userAddress = savedAddress;
         isConnected = true;
         updateWalletUI(savedAddress);
-        renderNativeForecasterHub();
         generateDestiny(savedAddress);
     }
 }
@@ -306,7 +302,7 @@ async function connectWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub();
+        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
         const rSec = document.getElementById("result-section");
         if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
@@ -322,7 +318,7 @@ async function connectWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub();
+        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -344,7 +340,7 @@ async function connectCoinbaseSmartWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub();
+        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
         const rSec = document.getElementById("result-section");
         if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
@@ -360,7 +356,7 @@ async function connectCoinbaseSmartWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub();
+        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -382,7 +378,7 @@ function updateWalletUI(address) {
 }
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB (SAMAKAN MEKANISME DENGAN TIP SYSTEM - NO INLINE ONCLICK)
+// NATIVE MODULE: FORECASTER HUB (FIXED INJECTION CYCLE)
 // ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
@@ -404,7 +400,7 @@ function renderNativeForecasterHub() {
     container.innerHTML = `
         <div class="space-y-4 text-left">
             
-            <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+            <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🔥 TOKEN IDO PRESALE</span>
                     <span class="text-amber-400 font-mono animate-pulse">● Live Protocol Phase 1</span>
@@ -422,7 +418,7 @@ function renderNativeForecasterHub() {
                 </div>
             </div>
 
-            <div class="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+            <div class="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-3 transition-all">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🎰 LIQUIDITY POOL</span>
                     <span class="text-slate-400 font-mono">Est. APY: 18.5%</span>
@@ -441,7 +437,7 @@ function renderNativeForecasterHub() {
                 </div>
             </div>
 
-            <div class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+            <div class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-4 space-y-3 transition-all">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-amber-950 text-amber-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">👑 VIP UTILITY PASS</span>
                     <span class="text-slate-400 font-mono">Cost: 0.0005 ETH</span>
@@ -461,7 +457,6 @@ function renderNativeForecasterHub() {
 
 // ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
 
-// 1. Pre-Listing Purchase Trigger
 async function executePreListingBuy() {
     const provider = getActiveProvider();
     if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
@@ -497,7 +492,6 @@ async function executePreListingBuy() {
     }
 }
 
-// 2. Micro-Betting Direct Routing Staker
 async function executeBaseBet(option) {
     const provider = getActiveProvider();
     if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
@@ -525,7 +519,6 @@ async function executeBaseBet(option) {
     }
 }
 
-// 3. Premium Access Pass Mint Sequence
 async function executeMintPass() {
     const provider = getActiveProvider();
     if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
@@ -937,18 +930,16 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ====================================================================
-// GLOBAL EVENT DELEGATION (VERSI FIXED - ANTI-LUDRUK DI MOBILE)
+// GLOBAL EVENT DELEGATION
 // ====================================================================
 document.addEventListener("click", function(e) {
-    // 1. Tombol BUY NOW Presale (Sekarang aman walau kena teks/pinggiran tombol)
     const presaleBtn = e.target.closest("#btn-action-presale");
     if (presaleBtn) {
         e.preventDefault();
         executePreListingBuy();
-        return; // stop check biar ga bentrok
+        return;
     }
     
-    // 2. Tombol Stake YES
     const stakeYesBtn = e.target.closest("#btn-action-stake-yes");
     if (stakeYesBtn) {
         e.preventDefault();
@@ -956,7 +947,6 @@ document.addEventListener("click", function(e) {
         return;
     }
     
-    // 3. Tombol Stake NO
     const stakeNoBtn = e.target.closest("#btn-action-stake-no");
     if (stakeNoBtn) {
         e.preventDefault();
@@ -964,7 +954,6 @@ document.addEventListener("click", function(e) {
         return;
     }
     
-    // 4. Tombol MINT PREMIUM ACCESS PASS
     const mintPassBtn = e.target.closest("#btn-action-mint-pass");
     if (mintPassBtn) {
         e.preventDefault();
