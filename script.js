@@ -80,7 +80,7 @@ const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENER
 
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
-// App Initialization On Load
+// App Initialization On Load (PERBAIKAN SYNTAX Selesai di sini)
 document.addEventListener("DOMContentLoaded", () => {
     try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
     try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initWalletSystem();
 });
 
-// Placeholder functions for system setup (add logic if needed)
+// Placeholder functions for system setup
 function setupAppLogo() {}
 function setupViewCounter() {}
 function setupMintCounter() {}
@@ -112,7 +112,7 @@ function initWalletSystem() {}
 
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB (OPTIMIZED FOR MOBILE EVENT INJECTION)
+// NATIVE MODULE: FORECASTER HUB (MENGGUNAKAN ID UNTUK EVENT GLOBAL)
 // ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
@@ -191,10 +191,10 @@ function renderNativeForecasterHub() {
 
 
 // ====================================================================
-// TRANSACTION CORE LOGIC (SAME AS TIP TRANSACTION MECHANISM)
+// NATIVE TRANSACTION CORE (SAMAKAN DENGAN SISTEM TRANSAKSI TIP)
 // ====================================================================
 
-// A. Fungsi untuk Presale $FORECAST
+// 1. Eksekusi Pembelian Presale
 async function executePreListingBuy() {
     if (!isConnected || !userAddress) {
         alert("Silakan hubungkan wallet Anda terlebih dahulu!");
@@ -230,7 +230,7 @@ async function executePreListingBuy() {
     }
 }
 
-// B. Fungsi untuk Staking / Micro-Betting (YES / NO)
+// 2. Eksekusi Staking / Micro-Betting (YES / NO)
 async function executeBaseBet(predictionType) {
     if (!isConnected || !userAddress) {
         alert("Silakan hubungkan wallet Anda terlebih dahulu!");
@@ -259,7 +259,7 @@ async function executeBaseBet(predictionType) {
     }
 }
 
-// C. Fungsi untuk Mint Premium Access Pass
+// 3. Eksekusi Mint Premium Access Pass
 async function executeMintPass() {
     if (!isConnected || !userAddress) {
         alert("Silakan hubungkan wallet Anda terlebih dahulu!");
@@ -290,28 +290,28 @@ async function executeMintPass() {
 
 
 // ====================================================================
-// GLOBAL MOBILE EVENT DELEGATION (ANTI-BLOCKING LAYER)
+// GLOBAL MOBILE EVENT DELEGATION (ANTI-BLOCKING LAYER PALING BAWAH)
 // ====================================================================
 document.addEventListener("click", function(e) {
-    // 1. Deteksi Tombol BUY NOW Presale
+    // A. Deteksi Tombol BUY NOW Presale
     if (e.target && e.target.id === "btn-action-presale") {
         e.preventDefault();
         executePreListingBuy();
     }
     
-    // 2. Deteksi Tombol Stake YES
+    // B. Deteksi Tombol Stake YES
     if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
         e.preventDefault();
         executeBaseBet('YES');
     }
     
-    // 3. Deteksi Tombol Stake NO
+    // C. Deteksi Tombol Stake NO
     if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
         e.preventDefault();
         executeBaseBet('NO');
     }
     
-    // 4. Deteksi Tombol Mint Premium Pass
+    // D. Deteksi Tombol Mint Premium Pass
     if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
         e.preventDefault();
         executeMintPass();
