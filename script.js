@@ -1,9 +1,10 @@
 // ==========================================================================
 // 1. GLOBAL STATE & CONFIGURATION
 // ==========================================================================
+let userWalletAddress = null;
 let userAuraPoints = 0;
 
-// Dummy data ramalan untuk modul Oracle Chat AI jika API eksternal belum siap
+// Dummy data ramalan untuk modul Oracle Chat AI
 const destinyQuotes = [
     "Your hexadecimal alignment reveals a sudden 100x pump in an unexpected low-cap asset. Stay sharp.",
     "A ghost from a previous rugpull is guarding your current liquidity. Maximum safety detected.",
@@ -49,134 +50,104 @@ const topPolymarketData = [
 // 2. INITIALIZATION ON DOM LOAD
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🔮 Base Forecaster Core Engine & Polymarket Bot Initialized.");
+    console.log("🔮 Base Forecaster Core Engine Loaded.");
     
-    // Inisialisasi Counter Palsu/Real untuk Keperluan Visual UI
     setupFakeCounters();
 
-    // Jalankan System Event Listener dengan delay agar browser wallet sempat merender DOM
+    // Jalankan semua sistem setelah delay aman untuk browser Web3 wallet
     setTimeout(() => {
+        initWalletSystem(); 
         initAIChatSystem();
         initOracleStalkerSystem();
         initPolymarketSystem();
-        renderTopPolymarketDashboard();
         initNavigationSystem();
+        
+        // Cek status di awal: Kalau wallet belum connect, handle tampilan polymarket
+        handlePolymarketPrivacy();
     }, 500);
 });
 
 // ==========================================================================
-// 3. CORE MODULE: ORACLE AI ASSISTANT (CHAT)
+// 3. CORE MODULE: WEB3 WALLET CONNECTION SYSTEM
 // ==========================================================================
-function initAIChatSystem() {
-    const chatInput = document.getElementById("ai-chat-input");
-    const sendBtn = document.getElementById("ai-chat-send-btn");
-    const chatLogs = document.getElementById("ai-chat-logs");
-
-    if (!chatInput || !sendBtn || !chatLogs) {
-        console.warn("⚠️ Elemen Oracle AI Chat tidak ditemukan di HTML.");
+function initWalletSystem() {
+    const connectBtn = document.getElementById("connect-wallet-btn");
+    if (!connectBtn) {
+        console.warn("⚠️ Tombol connect-wallet-btn tidak ditemukan di HTML.");
         return;
     }
 
-    const handleSendMessage = () => {
-        const messageText = chatInput.value.trim();
-        if (messageText === "") return;
+    const savedAddress = localStorage.getItem("user_wallet");
+    if (savedAddress) {
+        userWalletAddress = savedAddress;
+        updateWalletUI(savedAddress);
+        // Buka kunci & render Polymarket jika terdeteksi auto-connect
+        handlePolymarketPrivacy();
+    }
 
-        // 1. Tampilkan pesan user ke log chat
-        appendChatMessage("You", messageText, "text-blue-400 bg-slate-900/40");
-        chatInput.value = ""; 
-
-        // 2. Efek loading respons dari Oracle AI
-        setTimeout(() => {
-            const randomReply = destinyQuotes[Math.floor(Math.random() * destinyQuotes.length)];
-            appendChatMessage("Oracle AI", randomReply, "text-emerald-400 bg-slate-900/80 border border-slate-800");
-        }, 800);
-    };
-
-    sendBtn.onclick = (e) => {
+    connectBtn.onclick = async (e) => {
         e.preventDefault();
-        handleSendMessage();
-    };
+        
+        const provider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
 
-    chatInput.onkeypress = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleSendMessage();
+        if (!provider) {
+            alert("Web3 Wallet not detected! Please open this dApp inside OKX Wallet or Metamask App Browser.");
+            return;
+        }
+
+        try {
+            connectBtn.innerText = "Connecting...";
+            const accounts = await provider.request({ method: "eth_requestAccounts" });
+            
+            if (accounts.length > 0) {
+                userWalletAddress = accounts[0];
+                localStorage.setItem("user_wallet", userWalletAddress); 
+                updateWalletUI(userWalletAddress);
+                
+                // Pemicu buka kunci dashboard Polymarket setelah wallet sukses connect
+                handlePolymarketPrivacy();
+                console.log("✅ Wallet Connected:", userWalletAddress);
+            }
+        } catch (error) {
+            console.error("User denied wallet connection", error);
+            connectBtn.innerText = "Connect Wallet";
+            alert("Connection rejected by user.");
         }
     };
 }
 
-function appendChatMessage(sender, text, bgClass) {
-    const chatLogs = document.getElementById("ai-chat-logs");
-    if (!chatLogs) return;
+function updateWalletUI(address) {
+    const connectBtn = document.getElementById("connect-wallet-btn");
+    if (!connectBtn) return;
 
-    const msgBubble = document.createElement("div");
-    msgBubble.className = `p-2.5 rounded-xl text-[11px] mb-2 leading-relaxed ${bgClass}`;
-    msgBubble.innerHTML = `<strong>${sender}:</strong> ${text}`;
-    
-    chatLogs.appendChild(msgBubble);
-    chatLogs.scrollTop = chatLogs.scrollHeight; // Auto-scroll ke bawah
+    const shortAddress = address.substring(0, 6) + "..." + address.substring(address.length - 4);
+    connectBtn.innerText = `🟢 ${shortAddress}`;
+    connectBtn.classList.remove("bg-blue-600", "hover:bg-blue-500");
+    connectBtn.classList.add("bg-slate-800", "text-emerald-400", "border", "border-emerald-500/30");
 }
 
 // ==========================================================================
-// 4. CORE MODULE: SECURE ORACLE STALKER
+// 4. MANAGEMENT MODULE: POLYMARKET PRIVACY GATE
 // ==========================================================================
-function initOracleStalkerSystem() {
-    const stalkerInput = document.getElementById("external-target-input");
-    const stalkerBtn = document.getElementById("external-target-btn");
-    const stalkerResult = document.getElementById("external-target-result");
+function handlePolymarketPrivacy() {
+    const container = document.getElementById("polymarket-top-container");
+    if (!container) return;
 
-    if (!stalkerInput || !stalkerBtn || !stalkerResult) {
-        console.warn("⚠️ Elemen Oracle Stalker tidak ditemukan di HTML.");
-        return;
-    }
-
-    const handleStalkerScan = () => {
-        const targetValue = stalkerInput.value.trim();
-        if (targetValue === "") return;
-
-        stalkerResult.classList.remove("hidden");
-        stalkerResult.innerHTML = `
-            <div class="text-[11px] text-cyan-400 font-mono animate-pulse bg-slate-950 p-3 rounded-xl border border-cyan-500/20">
-                ⚡ Hashing matrix target: "${targetValue}"... Analysing contract resonance...
+    if (!userWalletAddress) {
+        // Tampilan Terkunci (Elegant Lock State) jika belum connect wallet
+        container.innerHTML = `
+            <div class="bg-slate-950/40 border border-slate-900 border-dashed rounded-2xl p-8 text-center space-y-3 backdrop-blur-sm">
+                <div class="text-xl">🔒</div>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Signals Locked</h4>
+                <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                    Connect your Web3 Wallet or Login above to sync live Polymarket orderbook nodes and access 99% accuracy trading algorithms.
+                </p>
             </div>
         `;
-
-        setTimeout(() => {
-            let score = Math.floor(Math.random() * 41) + 60; 
-            let cosmicStatus = score > 85 ? "🟢 HIGHLY BASED" : "🟡 NEUTRAL ALIGNMENT";
-
-            stalkerResult.innerHTML = `
-                <div class="bg-slate-950 border border-cyan-500/30 p-3 rounded-xl space-y-1.5 font-mono text-[11px]">
-                    <div class="flex justify-between text-[10px]">
-                        <span class="text-slate-400">Target Asset:</span>
-                        <span class="text-white font-bold">${targetValue.toUpperCase()}</span>
-                    </div>
-                    <div class="flex justify-between text-[10px]">
-                        <span class="text-slate-400">Cosmic Status:</span>
-                        <span class="text-cyan-400 font-bold">${cosmicStatus}</span>
-                    </div>
-                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
-                        <div class="bg-cyan-500 h-full" style="width: ${score}%"></div>
-                    </div>
-                    <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">
-                        "The cosmic alignment for this target architecture shows a ${score}% stabilization matrix on Base Chain network."
-                    </p>
-                </div>
-            `;
-        }, 1200);
-    };
-
-    stalkerBtn.onclick = (e) => {
-        e.preventDefault();
-        handleStalkerScan();
-    };
-
-    stalkerInput.onkeypress = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handleStalkerScan();
-        }
-    };
+    } else {
+        // Jika sudah login/connect, panggil fungsi render aslinya
+        renderTopPolymarketDashboard();
+    }
 }
 
 // ==========================================================================
@@ -187,12 +158,15 @@ function initPolymarketSystem() {
     const polyBtn = document.getElementById("polymarket-btn");
     const polyResult = document.getElementById("polymarket-result");
 
-    if (!polyInput || !polyBtn || !polyResult) {
-        console.warn("⚠️ Elemen Polymarket Forecaster Kustom tidak ditemukan di HTML.");
-        return;
-    }
+    if (!polyInput || !polyBtn || !polyResult) return;
 
     const handlePolyPrediction = () => {
+        // Proteksi ekstra: Mencegah ketik manual sebelum connect wallet
+        if (!userWalletAddress) {
+            alert("🔒 Please connect your Web3 Wallet first to use the custom forecaster!");
+            return;
+        }
+
         const marketTopic = polyInput.value.trim();
         if (marketTopic === "") return;
 
@@ -238,17 +212,8 @@ function initPolymarketSystem() {
         }, 1500);
     };
 
-    polyBtn.onclick = (e) => {
-        e.preventDefault();
-        handlePolyPrediction();
-    };
-
-    polyInput.onkeypress = (e) => {
-        if (e.key === "Enter") {
-            e.preventDefault();
-            handlePolyPrediction();
-        }
-    };
+    polyBtn.onclick = (e) => { e.preventDefault(); handlePolyPrediction(); };
+    polyInput.onkeypress = (e) => { if (e.key === "Enter") { e.preventDefault(); handlePolyPrediction(); } };
 }
 
 function renderTopPolymarketDashboard() {
@@ -307,11 +272,104 @@ function renderTopPolymarketDashboard() {
 }
 
 window.executeMagicBet = function(marketId, signal) {
-    alert(`🔮 Routing liquidity through Magic Route for Market [${marketId}] with signal [${signal}]. Confirming contract on your Web3 Wallet...`);
+    if(!userWalletAddress) {
+        alert("🔒 Please connect your Web3 Wallet first before routing a bet!");
+        return;
+    }
+    alert(`🔮 Routing liquidity through Magic Route for Market [${marketId}] with signal [${signal}]. Connected Wallet: ${userWalletAddress}`);
 };
 
 // ==========================================================================
-// 6. UTILITY & NAVIGATION MODULES
+// 6. CORE MODULE: ORACLE AI ASSISTANT (CHAT)
+// ==========================================================================
+function initAIChatSystem() {
+    const chatInput = document.getElementById("ai-chat-input");
+    const sendBtn = document.getElementById("ai-chat-send-btn");
+    const chatLogs = document.getElementById("ai-chat-logs");
+
+    if (!chatInput || !sendBtn || !chatLogs) return;
+
+    const handleSendMessage = () => {
+        const messageText = chatInput.value.trim();
+        if (messageText === "") return;
+
+        appendChatMessage("You", messageText, "text-blue-400 bg-slate-900/40");
+        chatInput.value = ""; 
+
+        setTimeout(() => {
+            const randomReply = destinyQuotes[Math.floor(Math.random() * destinyQuotes.length)];
+            appendChatMessage("Oracle AI", randomReply, "text-emerald-400 bg-slate-900/80 border border-slate-800");
+        }, 800);
+    };
+
+    sendBtn.onclick = (e) => { e.preventDefault(); handleSendMessage(); };
+    chatInput.onkeypress = (e) => { if (e.key === "Enter") { e.preventDefault(); handleSendMessage(); } };
+}
+
+function appendChatMessage(sender, text, bgClass) {
+    const chatLogs = document.getElementById("ai-chat-logs");
+    if (!chatLogs) return;
+
+    const msgBubble = document.createElement("div");
+    msgBubble.className = `p-2.5 rounded-xl text-[11px] mb-2 leading-relaxed ${bgClass}`;
+    msgBubble.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    
+    chatLogs.appendChild(msgBubble);
+    chatLogs.scrollTop = chatLogs.scrollHeight;
+}
+
+// ==========================================================================
+// 7. CORE MODULE: SECURE ORACLE STALKER
+// ==========================================================================
+function initOracleStalkerSystem() {
+    const stalkerInput = document.getElementById("external-target-input");
+    const stalkerBtn = document.getElementById("external-target-btn");
+    const stalkerResult = document.getElementById("external-target-result");
+
+    if (!stalkerInput || !stalkerBtn || !stalkerResult) return;
+
+    const handleStalkerScan = () => {
+        const targetValue = stalkerInput.value.trim();
+        if (targetValue === "") return;
+
+        stalkerResult.classList.remove("hidden");
+        stalkerResult.innerHTML = `
+            <div class="text-[11px] text-cyan-400 font-mono animate-pulse bg-slate-950 p-3 rounded-xl border border-cyan-500/20">
+                ⚡ Hashing matrix target: "${targetValue}"... Analysing contract resonance...
+            </div>
+        `;
+
+        setTimeout(() => {
+            let score = Math.floor(Math.random() * 41) + 60; 
+            let cosmicStatus = score > 85 ? "🟢 HIGHLY BASED" : "🟡 NEUTRAL ALIGNMENT";
+
+            stalkerResult.innerHTML = `
+                <div class="bg-slate-950 border border-cyan-500/30 p-3 rounded-xl space-y-1.5 font-mono text-[11px]">
+                    <div class="flex justify-between text-[10px]">
+                        <span class="text-slate-400">Target Asset:</span>
+                        <span class="text-white font-bold">${targetValue.toUpperCase()}</span>
+                    </div>
+                    <div class="flex justify-between text-[10px]">
+                        <span class="text-slate-400">Cosmic Status:</span>
+                        <span class="text-cyan-400 font-bold">${cosmicStatus}</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1">
+                        <div class="bg-cyan-500 h-full" style="width: ${score}%"></div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">
+                        "The cosmic alignment for this target architecture shows a ${score}% stabilization matrix on Base Chain network."
+                    </p>
+                </div>
+            `;
+        }, 1200);
+    };
+
+    stalkerBtn.onclick = (e) => { e.preventDefault(); handleStalkerScan(); };
+    stalkerInput.onkeypress = (e) => { if (e.key === "Enter") { e.preventDefault(); handleStalkerScan(); } };
+}
+
+// ==========================================================================
+// 8. UTILITY & NAVIGATION MODULES
 // ==========================================================================
 function initNavigationSystem() {
     window.navigate = function(page) {
