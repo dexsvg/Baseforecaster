@@ -189,7 +189,7 @@ function setupDailyLogin() {
         
         if (auraDisplay) auraDisplay.innerText = `${currentAP} AP`;
         if (typeof confetti === "function") confetti();
-        alert("📆 Daily login success! +50 Aura Points added to your hexadecimal anchor.");
+        alert("2026 Daily login success! +50 Aura Points added to your hexadecimal anchor.");
     });
 }
 
@@ -342,12 +342,12 @@ function updateWalletUI(address) {
 }
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB (REPLACES POLYMARKET CORES)
+// NATIVE MODULE: FORECASTER HUB (TRANSLATED TO ENGLISH FROM 1000050901.jpg)
 // ====================================================================
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
 function renderNativeForecasterHub() {
-    const container = document.getElementById("polymarket-top-container"); // Menggunakan id kontainer lama agar layout HTML tidak pecah
+    const container = document.getElementById("polymarket-top-container"); 
     if (!container) return;
 
     if (!userAddress || !isConnected) {
@@ -363,11 +363,11 @@ function renderNativeForecasterHub() {
         return;
     }
 
-    // Render 3 Fitur Utama Native dApp (Maksimalkan Tombol untuk Kerja Langsung ke Dompet Kamu)
+    // Render 3 Main Native dApp Features (Fully English & Button Mapped to your Wallet)
     container.innerHTML = `
         <div class="space-y-4 text-left">
             
-            <!-- 1. PEMBELIAN TOKEN PRA-LISTING $FORECAST -->
+            <!-- 1. PRE-LISTING TOKEN PURCHASE ($FORECAST) -->
             <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🔥 TOKEN IDO PRESALE</span>
@@ -375,8 +375,8 @@ function renderNativeForecasterHub() {
                 </div>
                 <h4 class="text-xs font-bold text-slate-200 leading-snug">Secure Pre-Listing $FORECAST Tokens</h4>
                 <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
-                    Dapatkan langsung alokasi token tata kelola utama platform sebelum bursa publik dibuka. 
-                    <br><span class="text-cyan-400 font-bold">Kurs: 1 ETH = 1,000,000 $FORECAST</span>
+                    Secure your allocation of the platform's main governance token directly before public exchange listings open.
+                    <br><span class="text-cyan-400 font-bold">Rate: 1 ETH = 1,000,000 $FORECAST</span>
                 </p>
                 <div class="pt-1 flex gap-2">
                     <input id="presale-eth-input" type="number" step="0.001" min="0.001" placeholder="Amount ETH (e.g. 0.005)" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
@@ -394,7 +394,7 @@ function renderNativeForecasterHub() {
                 </div>
                 <h4 class="text-xs font-bold text-slate-200 leading-snug">Base Native Prediction Micro-Betting & Staking</h4>
                 <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
-                    Taruhan mikro desentralisasi langsung ke liquidity router kontrak cerdas Anda. Dukung atau lawan probabilitas tren global harian.
+                    Deploy decentralized micro-stakes directly into your smart contract liquidity router. Back or oppose daily global trend probabilities.
                 </p>
                 <div class="grid grid-cols-2 gap-2 pt-1">
                     <button onclick="executeBaseBet('YES')" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
@@ -414,7 +414,7 @@ function renderNativeForecasterHub() {
                 </div>
                 <h4 class="text-xs font-bold text-slate-200 leading-snug">Mint Premium Forecaster AI Access Pass</h4>
                 <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
-                    Buka seluruh sinyal alpha AI bot premium secara permanen, gandakan perolehan poin Aura harian, serta dapatkan verifikasi cosmic-grade visual frame.
+                    Permanently unlock all premium AI bot alpha signals, double your daily Aura point generation, and obtain a cosmic-grade visual verification frame.
                 </p>
                 <button onclick="executeMintPass()" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
                     🔑 MINT PREMIUM ACCESS PASS
@@ -427,7 +427,7 @@ function renderNativeForecasterHub() {
 
 // ================= TRANSACTION ROUTERS (DIRECT INTERACTION WITH WALLET/CONTRACT) =================
 
-// 1. Aksi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Real-time
+// 1. Pre-Listing Purchase Trigger
 async function executePreListingBuy() {
     if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
@@ -460,7 +460,7 @@ async function executePreListingBuy() {
     }
 }
 
-// 2. Aksi Taruhan Mikro Langsung ke Dompet/Kontrak Kamu
+// 2. Micro-Betting Direct Routing Staker
 async function executeBaseBet(option) {
     if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
@@ -485,7 +485,7 @@ async function executeBaseBet(option) {
     }
 }
 
-// 3. Aksi Minting Premium NFT Pass
+// 3. Premium Access Pass Mint Sequence
 async function executeMintPass() {
     if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
@@ -504,9 +504,9 @@ async function executeMintPass() {
         
         alert(`👑 Premium Access Pass Activated!\nVIP parameters integrated. Welcome to the elite layer, Traveler.\n\nHash: ${tx.hash}`);
         
-        // Memaksimalkan efek kosmetik visual pasca minting premium
+        // Automated Cosmetic Premium Upgrades
         currentGlowColor = "rgba(245, 158, 11, 0.05)"; 
-        currentFrameColor = "#f59e0b"; // Otomatis ubah tema jadi Gold VIP
+        currentFrameColor = "#f59e0b"; // Automatically change UI Theme to Gold VIP
         if (currentFateGlobal && userAddress) {
             generateDestiny(userAddress);
         }
@@ -643,7 +643,7 @@ function generateAIWalletAdvice(fate, score) {
     if (score > 80) {
         adviceText = `📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Active Status: ${fate.fate}. Advice: You have strong momentum, buy $FORECAST to build an allocation layer or secure an NFT Pass.`;
     } else if (score > 50) {
-        adviceText = `📊 [AI AUDIT]: Moderate risk parameter detected. Alignment shows unstable trading intervals. Active Status: ${fate.fate}. Advice: Maintain delta-neutral balances. Deploy small micro-stakes into native predictions harian.`;
+        adviceText = `📊 [AI AUDIT]: Moderate risk parameter detected. Alignment shows unstable trading intervals. Active Status: ${fate.fate}. Advice: Maintain delta-neutral balances. Deploy small micro-stakes into native daily predictions.`;
     } else {
         adviceText = `⚠️ [AI AUDIT]: High alert status. Patterns match volatile trading cycles. Active Status: ${fate.fate}. Advice: Clean your local storage permissions, secure your core reserves, and lock your matrix with an official Pass.`;
     }
@@ -716,7 +716,7 @@ function startLiveNotificationLoop() {
 }
 
 // ==========================================
-// FEATURE: MINT NFT DESTINY CARD CARD
+// FEATURE: MINT NFT DESTINY CARD
 // ==========================================
 function setupUniversalMintButton() {
     const mintBtn = document.getElementById("mint-nft-btn");
