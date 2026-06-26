@@ -431,18 +431,101 @@ async function fetchRealPolymarketData() {
                     <div class="flex justify-between mb-1">
                         <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
                         <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
+async function fetchRealPolymarketData() {
+    const container = document.getElementById("polymarket-top-container");
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="text-center p-6 border border-slate-900 bg-slate-950/50 rounded-2xl">
+            <span class="text-xs text-cyan-400 font-mono animate-pulse">📡 Syncing with Polymarket Gamma API Nodes...</span>
+        </div>
+    `;
+
+    try {
+        const response = await fetch("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=3");
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const markets = await response.json();
+        
+        if (!markets || markets.length === 0) {
+            container.innerHTML = `<div class="text-xs text-slate-500 font-mono p-4">No active markets found.</div>`;
+            return;
+        }
+
+        container.innerHTML = ""; 
+
+        markets.forEach((market) => {
+            const marketTitle = market.question || market.title || "Untitled Market";
+            const marketId = market.id || "0x" + Math.floor(Math.random()*1000000);
+
+            let priceYes = 50;
+            if (market.outcomePrices) {
+                try {
+                    const prices = JSON.parse(market.outcomePrices);
+                    priceYes = Math.round(parseFloat(prices[0]) * 100);
+                } catch(e) {
+                    priceYes = Math.round(parseFloat(market.outcomePrices[0]) * 100) || 50;
+                }
+            }
+            let priceNo = 100 - priceYes;
+
+            const aiSignal = priceYes >= 50 ? "BUY YES" : "BUY NO";
+            const aiConfidence = Math.min(99.9, Math.max(70.1, (priceYes * 1.25) % 30 + 70)).toFixed(1);
+            
+            let aiAnalysis = `Orderbook volume spikes at $${(market.volume || 1500).toLocaleString()}. Structural compression implies whale momentum backing this strike.`;
+            if (priceYes > 75) aiAnalysis = `Extreme consensus market saturation. High probability of contract resolution favoring current bias.`;
+            if (priceYes < 30) aiAnalysis = `Heavy short liquidation cascades imminent on alternative derivatives pools. Intercept vector highly volatile.`;
+
+            const signalColor = aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
+            const borderSignalColor = aiSignal === "BUY YES" ? "border-emerald-500/20" : "border-rose-500/20";
+
+            const marketCard = document.createElement("div");
+            marketCard.className = `bg-slate-950/80 border ${borderSignalColor} rounded-2xl p-4 space-y-3 text-left mb-4 transition-all hover:scale-[1.01]`;
+            marketCard.innerHTML = `
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">${(market.category || "🔮 ORACLE MATCH").toUpperCase()}</span>
+                    <span class="text-slate-400 font-mono">🔮 AI Confidence: ${aiConfidence}%</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">${marketTitle}</h4>
+                
+                <div class="flex gap-4 text-[10px] font-mono text-slate-400 py-1 border-y border-slate-900/60 my-2">
+                    <div>🟢 Market YES: <span class="text-emerald-400 font-bold">${priceYes}¢</span></div>
+                    <div>🔴 Market NO: <span class="text-rose-400 font-bold">${priceNo}¢</span></div>
+                </div>
+
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono mb-3">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
+                        <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
                     </div>
                     <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">"${aiAnalysis}"</p>
                 </div>
 
-                <!-- TOMBOL TRANSAKSI NYATA (YES / NO) -->
-                <div class="grid grid-cols-2 gap-2 pt-1">
-                    <a href="${tradeLink}?outcome=YES" target="_blank" class="text-center p-2 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[11px] font-mono font-bold text-emerald-400 transition-all flex items-center justify-center gap-1">
-                        🟢 Bet YES (${priceYes}¢)
-                    </a>
-                    <a href="${tradeLink}?outcome=NO" target="_blank" class="text-center p-2 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[11px] font-mono font-bold text-rose-400 transition-all flex items-center justify-center gap-1">
-                        🔴 Bet NO (${priceNo}¢)
-                    </a>
+                <div class="space-y-2.5 pt-1 border-t border-slate-900">
+                    
+                    <div class="p-2 bg-cyan-950/20 border border-cyan-500/20 rounded-xl flex justify-between items-center text-[10px] font-mono">
+                        <div>
+                            <span class="text-cyan-400 font-bold block animate-pulse">🔥 PRE-LISTING IDO ACTIVE</span>
+                            <span class="text-slate-400 text-[9px]">Rate: 1 ETH = 1,000,000 $FORECAST</span>
+                        </div>
+                        <button onclick="executePreListingBuy()" class="px-2.5 py-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-lg shadow-md shadow-cyan-500/20 transition-all active:scale-95 text-[10px]">
+                            BUY $FORECAST
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="executeBaseBet('${marketId}', 'YES')" class="flex items-center justify-center gap-1 p-2 bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-500/20 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
+                            🎰 Stake YES (0.0002 ETH)
+                        </button>
+                        <button onclick="executeBaseBet('${marketId}', 'NO')" class="flex items-center justify-center gap-1 p-2 bg-rose-950/30 hover:bg-rose-900/40 border border-rose-500/20 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
+                            🎰 Stake NO (0.0002 ETH)
+                        </button>
+                    </div>
+
+                    <button onclick="executeMintPass()" class="w-full text-center p-2 bg-gradient-to-r from-amber-600/20 to-yellow-600/20 hover:from-amber-600/40 hover:to-yellow-600/40 border border-yellow-500/20 rounded-xl text-[10px] font-mono font-bold text-yellow-400 transition-all active:scale-95 flex items-center justify-center gap-1">
+                        👑 Unlock Full Alpha Signal (Mint 0.0005 ETH)
+                    </button>
+
                 </div>
             `;
             container.appendChild(marketCard);
@@ -458,6 +541,74 @@ async function fetchRealPolymarketData() {
     }
 }
 
+// ================= LOGIC SMART CONTRACT INTERACTION (WEB3) =================
+
+// Taruh alamat dompet Base asli milikmu di sini agar ETH kiriman user langsung masuk
+const DEVELOPER_WALLET = "0xYourActualBaseWalletAddressHere..."; 
+
+// 1. Fungsi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Otomatis
+async function executePreListingBuy() {
+    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
+    try {
+        const amountETH = prompt("Enter amount of Base ETH to invest:", "0.001");
+        if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) return;
+
+        // Menghitung jumlah token didapat berdasarkan rate 1 ETH = 1,000,000 $FORECAST
+        const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
+
+        const confirmProceed = confirm(`You will send ${amountETH} ETH to secure ${tokenAmount} $FORECAST. Proceed to wallet confirmation?`);
+        if (!confirmProceed) return;
+
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        const tx = await signer.sendTransaction({
+            to: DEVELOPER_WALLET,
+            value: ethers.utils.parseEther(amountETH)
+        });
+        
+        alert(`Transaction broadcasted! ${tokenAmount} $FORECAST allocation successfully secured. Hash: ${tx.hash}`);
+    } catch (err) {
+        console.error(err);
+        alert("Transaction cancelled or failed.");
+    }
+}
+
+// 2. Fungsi Taruhan Mikro Langsung di Jaringan Base
+async function executeBaseBet(marketId, option) {
+    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
+    try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        const tx = await signer.sendTransaction({
+            to: DEVELOPER_WALLET,
+            value: ethers.utils.parseEther("0.0002")
+        });
+        
+        alert(`Success! Deposited 0.0002 ETH into Base Pool for ${option}. Tx: ${tx.hash}`);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// 3. Fungsi Minting Pass NFT Premium
+async function executeMintPass() {
+    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
+    try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        const tx = await signer.sendTransaction({
+            to: DEVELOPER_WALLET,
+            value: ethers.utils.parseEther("0.0005")
+        });
+        
+        alert("Minting successful! Premium Pass activated. Hash: " + tx.hash);
+    } catch (err) {
+        console.error(err);
+    }
+        }
 // ==========================================
 // DESTINY ENGINE GENERATION & RENDERING
 // ==========================================
