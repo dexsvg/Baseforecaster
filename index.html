@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Forecaster - Ultimate AI Edition</title>
     
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -17,7 +17,6 @@
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
-    <!-- Live Notification Banner -->
     <div id="live-notification" class="fixed top-4 sm:top-6 max-w-sm w-full bg-slate-900/95 border border-blue-500/40 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 hidden flex items-center gap-3">
         <div id="live-notif-emoji" class="text-2xl animate-bounce">✨</div>
         <p id="live-notif-text" class="text-xs text-slate-300 leading-snug"></p>
@@ -111,8 +110,11 @@
                 </button>
             </div>
 
-            <!-- POLYMARKET ALPHA GATEWAY CONTAINER -->
-            <div id="polymarket-top-container" class="mb-5"></div>
+            <div id="polymarket-top-container" class="mb-5">
+                <div class="text-center p-4 text-xs text-slate-500 font-mono">
+                    Uplink channel ready. Connect wallet to sync Polymarket nodes...
+                </div>
+            </div>
 
             <div class="bg-slate-950 border border-blue-500/30 rounded-2xl p-3.5 text-left mb-5">
                 <div class="flex items-center gap-1.5 mb-2 text-cyan-400 text-xs font-bold tracking-wider uppercase">
@@ -123,7 +125,6 @@
                 </p>
             </div>
 
-            <!-- Boks Oracle AI Assistant -->
             <div class="bg-slate-950 border border-slate-900 rounded-2xl p-3.5 text-left mb-4 relative z-10">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -142,7 +143,6 @@
                 </div>
             </div>
 
-            <!-- Boks Secure Oracle Stalker -->
             <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4 relative z-10">
                 <div>
                     <h3 class="text-sm font-bold text-slate-200 tracking-wide">🔮 SECURE ORACLE STALKER</h3>
@@ -185,7 +185,6 @@
 
     </div>
 
-    <!-- Wallet Chooser Modal -->
     <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 relative shadow-2xl">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white text-lg font-bold">✕</button>
@@ -224,7 +223,6 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
     <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/50 flex justify-around items-center z-50">
         <button onclick="navigate('home')" class="flex flex-col items-center text-blue-400">
             <span class="text-xl">🔮</span><span class="text-[10px] font-bold">Oracle</span>
@@ -240,7 +238,6 @@
         </button>
     </div>
 
-    <!-- Glow Color Modal Overlay -->
     <div id="modal-glow" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
         <div class="bg-slate-950 border border-cyan-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(6,182,212,0.2)]">
             <button onclick="closeModal('glow')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
@@ -255,7 +252,6 @@
         </div>
     </div>
 
-    <!-- Lucky Wheel Modal Overlay -->
     <div id="modal-wheel" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
         <div class="bg-slate-950 border border-purple-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(168,85,247,0.2)]">
             <button onclick="closeModal('wheel')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
