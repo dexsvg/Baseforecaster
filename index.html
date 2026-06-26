@@ -98,21 +98,12 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-2.5 mb-5">
-                <button id="share-x-btn" class="bg-slate-950 hover:bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col items-center justify-center transition-all group">
-                    <span class="text-lg mb-0.5">𝕏</span>
-                    <span class="text-[10px] font-bold text-slate-300 group-hover:text-blue-400">Share to Twitter</span>
-                </button>
-
-                <button id="mint-nft-btn" class="bg-gradient-to-br from-amber-500/20 to-blue-600/20 border border-amber-500/40 hover:border-amber-400 p-2.5 rounded-xl flex flex-col items-center justify-center transition-all group">
-                    <span class="text-lg mb-0.5">🪙</span>
-                    <span class="text-[10px] font-bold text-amber-400 group-hover:scale-105 transition-all">Mint NFT (0.0005 ETH)</span>
-                </button>
-            </div>
-
+            <!-- ==================================================================== -->
+            <!-- NATIVE CORE MODULE CONTAINER (OTOMATIS DI-RENDER VIA SCRIPT.JS) -->
+            <!-- ==================================================================== -->
             <div id="polymarket-top-container" class="mb-5">
                 <div class="text-center p-4 text-xs text-slate-500 font-mono">
-                    Uplink channel ready. Connect wallet to sync Polymarket nodes...
+                    Uplink channel ready. Connect wallet to sync terminal nodes...
                 </div>
             </div>
 
@@ -162,11 +153,16 @@
                 <div id="external-target-result" class="hidden mt-2"></div>
             </div>
             
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2">
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2 mt-4">
                 <p class="text-[10px] text-slate-400 italic mb-2">Saved from a rugpull? Feed the Based Dev 👇</p>
-                <button id="donate-btn" class="w-full bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
-                    💸 Send 0.001 ETH Tip
-                </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="donate-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
+                        💸 Send 0.001 ETH Tip
+                    </button>
+                    <button id="mint-nft-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/30 text-amber-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
+                        🪙 Mint Card NFT
+                    </button>
+                </div>
             </div>
         </div>
 
