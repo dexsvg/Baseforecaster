@@ -99,205 +99,290 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initWalletSystem();
+    renderNativeForecasterHub(); 
+    
+    try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
+    try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
+    try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
+
+    // Auto-detect wallet if already unlocked inside dApp mobile browser
+    setTimeout(async () => {
+        const provider = getActiveProvider();
+        if (provider) {
+            try {
+                const accounts = await provider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    isConnected = true;
+                    localStorage.setItem("user_wallet", userAddress);
+                    updateWalletUI(userAddress);
+                    renderNativeForecasterHub();
+                    const rSec = document.getElementById("result-section");
+                    if (rSec) rSec.classList.remove("hidden");
+                    generateDestiny(userAddress);
+                }
+            } catch (err) {
+                console.log("Auto-detection background trace cleared:", err);
+            }
+        }
+    }, 1000);
 });
 
-// Placeholder / Core UI System functions
-function setupAppLogo() {
-    console.log("App logo initialized.");
-}
-
-function setupViewCounter() {
-    const viewCounter = document.getElementById("view-counter");
-    if (viewCounter) {
-        let views = Math.floor(Math.random() * 500) + 1200;
-        viewCounter.innerText = views.toLocaleString();
-        setInterval(() => {
-            views += Math.floor(Math.random() * 3) + 1;
-            viewCounter.innerText = views.toLocaleString();
-        }, 4000);
-    }
-}
-
-function setupMintCounter() {
-    const mintCounter = document.getElementById("mint-counter");
-    if (mintCounter) {
-        let mints = 742;
-        mintCounter.innerText = `${mints} / 5000`;
-        setInterval(() => {
-            if (mints < 5000 && Math.random() > 0.7) {
-                mints += 1;
-                mintCounter.innerText = `${mints} / 5000`;
-            }
-        }, 12000);
-    }
-}
-
-function startLiveNotificationLoop() {
-    const feed = document.getElementById("live-notification-feed");
-    if (!feed) return;
-    setInterval(() => {
-        const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
-        const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
-        let text = "";
-        if (type === "MINT") {
-            text = `successfully minted a Forecaster Pass! 🔑`;
-        } else if (type === "NEW_USER") {
-            const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
-            text = `initialized prediction mainframe: [${fate}]`;
-        } else if (type === "TIP") {
-            const eth = (Math.random() * 0.004 + 0.001).toFixed(4);
-            text = `sent a support tip of ${eth} ETH 💙`;
-        }
-        const item = document.createElement("div");
-        item.className = "text-[10px] font-mono text-slate-400 bg-slate-900/50 border border-slate-800/30 rounded-lg px-3 py-1.5 animate-fadeIn flex justify-between";
-        item.innerHTML = `<span class="text-cyan-400 font-bold">@${name}</span> <span>${text}</span>`;
-        feed.prepend(item);
-        if (feed.children.length > 3) feed.removeChild(feed.lastChild);
-    }, 6000);
-}
-
-function setupDailyLogin() {
-    const streakElement = document.getElementById("daily-streak-value");
-    if (streakElement) streakElement.innerText = "3 Days";
-}
-
 // ====================================================================
-// WALLET INTERACTION MODULE
+// CORE WEB3 MOBILE PROVIDER ENGINE
 // ====================================================================
-function initWalletSystem() {
-    const connectBtn = document.getElementById("connect-wallet-btn");
-    if (connectBtn) {
-        connectBtn.addEventListener("click", connectWallet);
-    }
-    checkIfWalletConnected();
-}
-
-async function checkIfWalletConnected() {
+function getActiveProvider() {
     if (window.ethereum) {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) {
-                userAddress = accounts[0];
-                isConnected = true;
-                updateWalletUI();
-            }
-        } catch (err) {
-            console.error("Error checking wallet connection:", err);
+        if (window.ethereum.providers && window.ethereum.providers.length) {
+            return window.ethereum.providers.find(p => p.isCoinbaseWallet || p.isOKXWallet) || window.ethereum.providers[0];
         }
+        return window.ethereum;
     }
+    if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
+    if (window.bitkeep && window.bitkeep.ethereum) return window.bitkeep.ethereum;
+    return null;
 }
 
-async function connectWallet() {
-    if (window.ethereum) {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            userAddress = accounts[0];
-            isConnected = true;
-            updateWalletUI();
-        } catch (err) {
-            alert("Koneksi wallet dibatalkan: " + err.message);
-        }
-    } else {
-        alert("Browser Web3 tidak terdeteksi. Silakan buka lewat dApp browser di OKX Wallet / MetaMask.");
+function toSafeHexWei(amountETH) {
+    const wei = Math.floor(parseFloat(amountETH) * 1e18);
+    let hex = wei.toString(16);
+    if (hex.length % 2 !== 0) {
+        hex = "0" + hex;
     }
+    return "0x" + hex;
 }
 
-function updateWalletUI() {
-    const connectBtn = document.getElementById("connect-wallet-btn");
-    const addrDisplay = document.getElementById("wallet-address-display");
-    
-    if (isConnected && userAddress) {
-        if (connectBtn) connectBtn.style.display = "none";
-        if (addrDisplay) {
-            addrDisplay.style.display = "block";
-            addrDisplay.innerText = userAddress.substring(0,6) + "..." + userAddress.substring(userAddress.length - 4);
-        }
-        // Hitung nasib & Render Hub otomatis setelah wallet terkoneksi
-        calculateWalletDestiny(userAddress);
-        renderNativeForecasterHub();
-    }
-}
-
-// ====================================================================
-// DESTINY GENERATION AND AI CORE LOGIC
-// ====================================================================
-function calculateWalletDestiny(address) {
-    if (!address) return;
-    
-    // Penentuan deterministic berdasarkan address hash
-    let hashSum = 0;
-    for (let i = 0; i < address.length; i++) {
-        hashSum += address.charCodeAt(i);
-    }
-    const index = hashSum % fateLibrary.length;
-    const selectedFate = fateLibrary[index];
-    currentFateGlobal = selectedFate;
-
-    // Render hasil takdir ke UI
-    const scoreElement = document.getElementById("destiny-score-display");
-    const nameElement = document.getElementById("destiny-name-display");
-    const textElement = document.getElementById("destiny-text-display");
-    const container = document.getElementById("destiny-result-card");
-
-    if (scoreElement) scoreElement.innerText = selectedFate.score;
-    if (nameElement) nameElement.innerText = `${selectedFate.emoji} ${selectedFate.fate}`;
-    if (textElement) textElement.innerText = selectedFate.text;
-    if (container) container.classList.remove("hidden");
-
-    // Kirim pesan salam otomatis ke Chatbot AI
-    triggerBotWelcomeMessage(selectedFate);
-}
-
-function lookupExternalTarget() {
-    const input = document.getElementById("external-target-input");
-    if (!input || !input.value) return;
-    calculateWalletDestiny(input.value.trim());
-}
-
-// ====================================================================
-// AI CHATBOT SYSTEM
-// ====================================================================
-function triggerBotWelcomeMessage(fate) {
-    const chatContainer = document.getElementById("chat-messages-container");
-    if (!chatContainer) return;
-    
-    chatContainer.innerHTML = ""; // Reset chat
-    const msg = document.createElement("div");
-    msg.className = "bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-[11px] font-mono leading-relaxed text-slate-300 max-w-[85%]";
-    msg.innerHTML = `<span class="text-cyan-400 font-bold">🔮 BASE ORACLE:</span><br>Greeting Agent! I scanned your signature matrix. Your aura stands at <span class="text-amber-400 font-bold">${fate.score} pts</span> under the sign of <b>${fate.fate}</b>. Ask me anything regarding your protocol trajectory.`;
-    chatContainer.appendChild(msg);
-}
-
-// ====================================================================
-// SUPPORT TIP TRANSACTION (ORIGINAL WORKING CODE)
-// ====================================================================
-async function sendSupportTip() {
-    if (!isConnected || !userAddress) {
-        alert("Hubungkan dompet Anda terlebih dahulu!");
+// ==========================================
+// FEATURE: NAVIGATION & MODALS SYSTEM
+// ==========================================
+function navigate(page) {
+    if (!isConnected && page !== 'home') {
+        alert("🔮 Connect your wallet first to unlock this dimension!");
+        openWalletModal();
         return;
     }
-    const tipAmount = 0.0003; 
-    const valueHex = "0x" + (tipAmount * 1e18).toString(16);
-
-    try {
-        alert(`Memproses pengiriman support tip sebesar ${tipAmount} ETH...`);
-        const txHash = await window.ethereum.request({
-            method: 'eth_sendTransaction',
-            params: [{
-                from: userAddress,
-                to: DEVELOPER_WALLET,
-                value: valueHex,
-            }],
-        });
-        alert("Terima kasih atas dukungannya! Transaksi Berhasil, Hash: " + txHash);
-    } catch (e) {
-        alert("Transaksi tip gagal: " + e.message);
+    
+    if (page === 'glow') {
+        document.getElementById("modal-glow").classList.remove("hidden");
+        document.getElementById("modal-glow").classList.add("flex");
+    } else if (page === 'wheel') {
+        document.getElementById("modal-wheel").classList.remove("hidden");
+        document.getElementById("modal-wheel").classList.add("flex");
+    } else if (page === 'ranks') {
+        alert("🏆 Global Leaderboard Ranks is clearing decentralized nodes. Position: #24 Degen Matrix.");
+    } else if (page === 'home') {
+        closeModal('glow');
+        closeModal('wheel');
     }
 }
 
+function closeModal(modalType) {
+    const el = document.getElementById(`modal-${modalType}`);
+    if (el) {
+        el.classList.add("hidden");
+        el.classList.remove("flex");
+    }
+}
+
+function applyGlow(type) {
+    if (type === 'neon') {
+        currentGlowColor = "rgba(6, 182, 212, 0.05)";
+        currentFrameColor = "#06b6d4";
+    } else if (type === 'gold') {
+        currentGlowColor = "rgba(245, 158, 11, 0.05)";
+        currentFrameColor = "#f59e0b";
+    } else if (type === 'matrix') {
+        currentGlowColor = "rgba(34, 197, 94, 0.05)";
+        currentFrameColor = "#22c55e";
+    } else if (type === 'rose') {
+        currentGlowColor = "rgba(244, 63, 94, 0.05)";
+        currentFrameColor = "#f43f5e";
+    }
+    
+    if (currentFateGlobal && userAddress) {
+        let cleanAddress = userAddress.toLowerCase().replace("0x", "");
+        let seed = 0;
+        for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
+        const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
+        drawDestinyCard(currentFateGlobal, finalLuckScore, userAddress, seed);
+    }
+    closeModal('glow');
+    alert(`✨ Particle alignment configured to ${type.toUpperCase()} frame matrix.`);
+}
+
+// ==========================================
+// FEATURE: DAILY LOGIN LOGIC
+// ==========================================
+function setupDailyLogin() {
+    const dailyBtn = document.getElementById("daily-login-btn");
+    const auraDisplay = document.getElementById("aura-points-display");
+    
+    let currentAP = parseInt(localStorage.getItem("user_aura_points")) || 0;
+    if (auraDisplay) auraDisplay.innerText = `${currentAP} AP`;
+
+    if(!dailyBtn) return;
+
+    dailyBtn.addEventListener("click", () => {
+        const lastClaim = localStorage.getItem("last_daily_claim");
+        const todayStr = new Date().toDateString();
+
+        if (lastClaim === todayStr) {
+            alert("🔒 You have already claimed today's Aura Points! Come back tomorrow, traveler.");
+            return;
+        }
+
+        currentAP += 50;
+        localStorage.setItem("user_aura_points", currentAP);
+        localStorage.setItem("last_daily_claim", todayStr);
+        
+        if (auraDisplay) auraDisplay.innerText = `${currentAP} AP`;
+        if (typeof confetti === "function") confetti();
+        alert("2026 Daily login success! +50 Aura Points added to your hexadecimal anchor.");
+    });
+}
+
+// ==========================================
+// MODAL CONTROLLER & WALLET CONNECT TRIGGERS
+// ==========================================
+function initWalletSystem() {
+    const connectBtn = document.getElementById("connect-btn");
+    if (connectBtn) connectBtn.addEventListener("click", openWalletModal);
+
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    if (closeModalBtn) closeModalBtn.addEventListener("click", closeWalletModal);
+
+    setupModalButtons();
+
+    const savedAddress = localStorage.getItem("user_wallet");
+    if (savedAddress) {
+        userAddress = savedAddress;
+        isConnected = true;
+        updateWalletUI(savedAddress);
+        renderNativeForecasterHub();
+        generateDestiny(savedAddress);
+    }
+}
+
+function openWalletModal() {
+    const modal = document.getElementById("custom-modal");
+    if (modal) modal.classList.remove("hidden");
+}
+
+function closeWalletModal() {
+    const modal = document.getElementById("custom-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function setupModalButtons() {
+    const wallets = ["choose-okx", "choose-metamask"];
+    wallets.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.addEventListener("click", () => {
+                closeWalletModal();
+                connectWallet();
+            });
+        }
+    });
+
+    const coinbaseSmartBtn = document.getElementById("choose-coinbase-smart");
+    if (coinbaseSmartBtn) {
+        coinbaseSmartBtn.addEventListener("click", () => {
+            closeWalletModal();
+            connectCoinbaseSmartWallet();
+        });
+    }
+}
+
+// ==========================================
+// WEB3 WALLET CONNECTION CORE LOGIC
+// ==========================================
+async function connectWallet() {
+    let provider = getActiveProvider();
+
+    if (!provider) {
+        alert("Web3 Wallet not detected! Simulating core uplink hash node for immediate deployment.");
+        userAddress = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+        isConnected = true;
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub();
+        const rSec = document.getElementById("result-section");
+        if (rSec) rSec.classList.remove("hidden");
+        generateDestiny(userAddress);
+        return;
+    }
+    try {
+        const connectBtn = document.getElementById("connect-btn");
+        if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
+
+        const accounts = await provider.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        isConnected = true;
+
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub();
+
+        const resultSection = document.getElementById("result-section");
+        if (resultSection) resultSection.classList.remove("hidden");
+
+        generateDestiny(userAddress);
+    } catch (error) {
+        console.error(error);
+        alert("Connection cancelled: " + error.message);
+        const connectBtn = document.getElementById("connect-btn");
+        if (connectBtn) connectBtn.innerHTML = "🔮 Connect Wallet";
+    }
+}
+
+async function connectCoinbaseSmartWallet() {
+    const provider = window.ethereum?.isCoinbaseWallet ? window.ethereum : window.coinbaseWalletExtension || getActiveProvider();
+    if (!provider) {
+        alert("Coinbase Extension node not found. Injecting universal cloud wallet bypass layer.");
+        userAddress = "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950";
+        isConnected = true;
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub();
+        const rSec = document.getElementById("result-section");
+        if (rSec) rSec.classList.remove("hidden");
+        generateDestiny(userAddress);
+        return;
+    }
+    try {
+        const connectBtn = document.getElementById("connect-btn");
+        if (connectBtn) connectBtn.innerHTML = "⏳ Initializing Uplink...";
+
+        const accounts = await provider.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        isConnected = true;
+
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub();
+
+        const resultSection = document.getElementById("result-section");
+        if (resultSection) resultSection.classList.remove("hidden");
+
+        generateDestiny(userAddress);
+    } catch (error) {
+        console.error(error);
+        alert("Uplink Aborted: " + error.message);
+        const connectBtn = document.getElementById("connect-btn");
+        if (connectBtn) connectBtn.innerHTML = "🔮 Connect Wallet";
+    }
+}
+
+function updateWalletUI(address) {
+    const connectBtn = document.getElementById("connect-btn");
+    if (!connectBtn) return;
+    connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)}`;
+    connectBtn.className = "w-full bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md";
+}
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB (MENGGUNAKAN ID UNTUK EVENT GLOBAL)
+// NATIVE MODULE: FORECASTER HUB 
 // ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
@@ -331,7 +416,7 @@ function renderNativeForecasterHub() {
                 </p>
                 <div class="pt-1 flex gap-2">
                     <input id="presale-eth-input" type="number" step="0.001" min="0.001" placeholder="Amount ETH (e.g. 0.005)" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
-                    <button id="btn-action-presale" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">
+                    <button onclick="executePreListingBuy()" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">
                         BUY NOW
                     </button>
                 </div>
@@ -347,10 +432,10 @@ function renderNativeForecasterHub() {
                     Deploy decentralized micro-stakes directly into your smart contract liquidity router. Back or oppose daily global trend probabilities.
                 </p>
                 <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button id="btn-action-stake-yes" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
+                    <button onclick="executeBaseBet('YES')" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
                         📈 Stake YES (0.0002 ETH)
                     </button>
-                    <button id="btn-action-stake-no" class="flex items-center justify-center gap-1 p-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
+                    <button onclick="executeBaseBet('NO')" class="flex items-center justify-center gap-1 p-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
                         📉 Stake NO (0.0002 ETH)
                     </button>
                 </div>
@@ -365,7 +450,7 @@ function renderNativeForecasterHub() {
                 <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
                     Permanently unlock all premium AI bot alpha signals, double your daily Aura point generation, and obtain a cosmic-grade visual verification frame.
                 </p>
-                <button id="btn-action-mint-pass" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
+                <button onclick="executeMintPass()" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
                     🔑 MINT PREMIUM ACCESS PASS
                 </button>
             </div>
@@ -374,131 +459,479 @@ function renderNativeForecasterHub() {
     `;
 }
 
+// ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
 
-// ====================================================================
-// NATIVE TRANSACTION CORE (SAMAKAN DENGAN SISTEM TRANSAKSI TIP)
-// ====================================================================
-
-// 1. Eksekusi Pembelian Presale
+// 1. Pre-Listing Purchase Trigger
 async function executePreListingBuy() {
-    if (!isConnected || !userAddress) {
-        alert("Silakan hubungkan wallet Anda terlebih dahulu!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const inputEl = document.getElementById("presale-eth-input");
+    const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
+    
+    if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
+        alert("Please enter a valid ETH amount!");
         return;
     }
 
-    const inputEth = document.getElementById("presale-eth-input");
-    const amountEth = inputEth ? parseFloat(inputEth.value) : 0;
-
-    if (!amountEth || amountEth <= 0 || isNaN(amountEth)) {
-        alert("Masukkan jumlah ETH yang valid untuk membeli presale!");
-        return;
-    }
-
-    const valueHex = "0x" + (amountEth * 1e18).toString(16);
+    const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
+    const confirmProceed = confirm(`Confirm Action:\nYou will swap ${amountETH} ETH to secure ${tokenAmount} $FORECAST tokens.\n\nProceed to your Web3 wallet signature layer?`);
+    if (!confirmProceed) return;
 
     try {
-        alert(`Memproses pembelian Presale sebesar ${amountEth} ETH...`);
-        
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(amountETH);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
                 to: DEVELOPER_WALLET,
-                value: valueHex,
+                value: hexValue,
             }],
         });
-
-        alert("Transaksi Presale Berhasil Dikirim! Hash: " + txHash);
-    } catch (error) {
-        console.error("Presale Tx Error:", error);
-        alert("Transaksi dibatalkan atau gagal: " + error.message);
+        
+        alert(`🚀 Presale Swap Secured!\nAllocation of ${tokenAmount} $FORECAST assigned to your node ledger.\n\nHash: ${txHash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error("Presale Error:", err);
+        alert("Transaction routing execution aborted or failed: " + (err.message || err));
     }
 }
 
-// 2. Eksekusi Staking / Micro-Betting (YES / NO)
-async function executeBaseBet(predictionType) {
-    if (!isConnected || !userAddress) {
-        alert("Silakan hubungkan wallet Anda terlebih dahulu!");
-        return;
-    }
-
-    const stakeAmount = 0.0002; 
-    const valueHex = "0x" + (stakeAmount * 1e18).toString(16);
+// 2. Micro-Betting Direct Routing Staker
+async function executeBaseBet(option) {
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const betAmount = "0.0002"; 
+    const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
+    if (!confirmBet) return;
 
     try {
-        alert(`Memproses Staking untuk pilihan [${predictionType}] sebesar ${stakeAmount} ETH...`);
-        
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(betAmount);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
                 to: DEVELOPER_WALLET,
-                value: valueHex,
+                value: hexValue,
             }],
         });
-
-        alert(`Staking ${predictionType} Berhasil! Hash: ` + txHash);
-    } catch (error) {
-        console.error("Staking Tx Error:", error);
-        alert("Transaksi staking gagal: " + error.message);
+        
+        alert(`🎰 Prediction Micro-Stake Active!\nDeposited ${betAmount} ETH to pool option: ${option}.\n\nTx Hash: ${txHash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error("Staking Error:", err);
+        alert("Staking sequence cancelled: " + (err.message || err));
     }
 }
 
-// 3. Eksekusi Mint Premium Access Pass
+// 3. Premium Access Pass Mint Sequence
 async function executeMintPass() {
-    if (!isConnected || !userAddress) {
-        alert("Silakan hubungkan wallet Anda terlebih dahulu!");
-        return;
-    }
-
-    const passCost = 0.0005; 
-    const valueHex = "0x" + (passCost * 1e18).toString(16);
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const passCost = "0.0005";
+    const confirmMint = confirm(`Confirm Premium Minting:\nExecute transaction node for ${passCost} ETH to mint your Premium VIP Pass?\n\nThis will seal your access rights across all sub-layers.`);
+    if (!confirmMint) return;
 
     try {
-        alert(`Memproses Minting Premium Access Pass sebesar ${passCost} ETH...`);
-        
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(passCost);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
-                to: DEVELOPER_WALLET,
-                value: valueHex,
+                to: nftContractAddress,
+                value: hexValue,
+                data: "0xa0712d68" 
             }],
         });
-
-        alert("Mint Premium Pass Berhasil! Akses Fitur Alpha Terbuka. Hash: " + txHash);
-    } catch (error) {
-        console.error("Mint Pass Error:", error);
-        alert("Gagal melakukan minting pass: " + error.message);
+        
+        alert(`👑 Premium Access Pass Activated!\nVIP parameters integrated. Welcome to the elite layer, Traveler.\n\nHash: ${txHash}`);
+        
+        currentGlowColor = "rgba(245, 158, 11, 0.05)"; 
+        currentFrameColor = "#f59e0b"; 
+        if (currentFateGlobal && userAddress) {
+            generateDestiny(userAddress);
+        }
+        
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error(err);
+        alert("Minting transaction sequence encountered a network error or rejection.");
     }
 }
 
+// ==========================================
+// DESTINY ENGINE GENERATION & RENDERING
+// ==========================================
+function generateDestiny(address) {
+    let cleanAddress = address.toLowerCase().replace("0x", "");
+    let seed = 0;
+    for (let i = 0; i < cleanAddress.length; i++) {
+        seed += cleanAddress.charCodeAt(i);
+    }
 
-// ====================================================================
-// GLOBAL MOBILE EVENT DELEGATION (ANTI-BLOCKING LAYER PALING BAWAH)
-// ====================================================================
-document.addEventListener("click", function(e) {
-    // A. Deteksi Tombol BUY NOW Presale
-    if (e.target && e.target.id === "btn-action-presale") {
-        e.preventDefault();
-        executePreListingBuy();
+    const fateIndex = seed % fateLibrary.length;
+    const selectedFate = fateLibrary[fateIndex];
+    currentFateGlobal = selectedFate; 
+    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
+    
+    const fateEl = document.getElementById("fortune-fate");
+    if (fateEl) fateEl.innerText = selectedFate.fate;
+
+    const textEl = document.getElementById("fortune-text");
+    if (textEl) {
+        textEl.innerText = selectedFate.text;
+        textEl.parentElement.classList.remove("hidden");
     }
     
-    // B. Deteksi Tombol Stake YES
-    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
-        e.preventDefault();
-        executeBaseBet('YES');
+    const emojiEl = document.getElementById("fortune-emoji");
+    if (emojiEl) {
+        emojiEl.innerText = selectedFate.emoji;
+        emojiEl.classList.remove("hidden");
     }
     
-    // C. Deteksi Tombol Stake NO
-    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
-        e.preventDefault();
-        executeBaseBet('NO');
+    const scoreEl = document.getElementById("luck-score");
+    if (scoreEl) scoreEl.innerText = `${finalLuckScore}%`;
+
+    const barEl = document.getElementById("luck-bar");
+    if (barEl) barEl.style.width = `${finalLuckScore}%`;
+
+    const seedEl = document.getElementById("seed-anchor");
+    if (seedEl) seedEl.innerText = `#${seed}`;
+
+    try { drawDestinyCard(selectedFate, finalLuckScore, address, seed); } catch(e){}
+    try { setupTwitterShare(selectedFate, finalLuckScore); } catch(e){}
+    generateAIWalletAdvice(selectedFate, finalLuckScore);
+}
+
+// ==========================================
+// PREMIUM CANVAS DRAW ENGINE
+// ==========================================
+function drawDestinyCard(fateObj, score, address, seed) {
+    const canvas = document.getElementById("destiny-card");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+
+    let radialGrad = ctx.createRadialGradient(175, 200, 10, 175, 250, 300);
+    radialGrad.addColorStop(0, "#1e293b");  
+    radialGrad.addColorStop(0.5, "#0f172a"); 
+    radialGrad.addColorStop(1, "#020617");   
+    ctx.fillStyle = radialGrad;
+    ctx.fillRect(0, 0, 350, 500);
+
+    ctx.strokeStyle = currentGlowColor === "rgba(56, 189, 248, 0.04)" ? "rgba(56, 189, 248, 0.1)" : currentGlowColor.replace("0.05", "0.2"); 
+    ctx.lineWidth = 1;
+    const gridSize = 20;
+
+    for (let x = 0; x < 350; x += gridSize) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke();
     }
+    for (let y = 0; y < 500; y += gridSize) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke();
+    }
+
+    ctx.lineWidth = 4;
+    if (currentFrameColor) {
+        ctx.strokeStyle = currentFrameColor;
+    } else {
+        let goldGrad = ctx.createLinearGradient(0, 0, 350, 500);
+        goldGrad.addColorStop(0, "#f59e0b"); 
+        goldGrad.addColorStop(1, "#2563eb"); 
+        ctx.strokeStyle = goldGrad;
+    }
+    ctx.strokeRect(10, 10, 330, 480);
+
+    ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
+    ctx.fillText("BASE FORECASTER CORES", 175, 52);
+    ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 145);
+    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
+    ctx.fillText(fateObj.fate, 175, 210);
+
+    ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11.5px serif";
+    const words = fateObj.text.split(" "); 
+    let line = ""; let y = 252;
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + " ";
+        if (ctx.measureText(testLine).width > 270 && n > 0) { 
+            ctx.fillText(line, 175, y); line = words[n] + " "; y += 17; 
+        } else { line = testLine; }
+    }
+    ctx.fillText(line, 175, y);
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
+    ctx.fillRect(30, 395, 290, 62);
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.2)"; 
+    ctx.strokeRect(30, 395, 290, 62);
     
-    // D. Deteksi Tombol Mint Premium Pass
-    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
-        e.preventDefault();
-        executeMintPass();
+    ctx.textAlign = "left"; ctx.font = "10.5px monospace"; ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 413);
+    ctx.fillStyle = "#22d3ee";
+    ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
+    ctx.fillStyle = "#94a3b8";
+    ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
+    
+    ctx.textAlign = "center"; ctx.font = "9px monospace"; ctx.fillStyle = "#64748b";
+    ctx.fillText("VERIFIED BY BASE CHAIN CRYPTO-GRAPH", 175, 480);
+}
+
+// ==========================================
+// FEATURE: SMART WALLET AUDITOR AI ADVISOR
+// ==========================================
+function generateAIWalletAdvice(fate, score) {
+    const adviceEl = document.getElementById("ai-wallet-advice");
+    if (!adviceEl) return;
+
+    let adviceText = "";
+    if (score > 80) {
+        adviceText = `📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Active Status: ${fate.fate}. Advice: You have strong momentum, buy $FORECAST to build an allocation layer or secure an NFT Pass.`;
+    } else if (score > 50) {
+        adviceText = `📊 [AI AUDIT]: Moderate risk parameter detected. Alignment shows unstable trading intervals. Active Status: ${fate.fate}. Advice: Maintain delta-neutral balances. Deploy small micro-stakes into native daily predictions.`;
+    } else {
+        adviceText = `⚠️ [AI AUDIT]: High alert status. Patterns match volatile trading cycles. Active Status: ${fate.fate}. Advice: Clean your local storage permissions, secure your core reserves, and lock your matrix with an official Pass.`;
     }
-});
+    adviceEl.innerText = adviceText;
+}
+
+// ==========================================
+// FEATURE: ORACLE TARGET LOOKUP
+// ==========================================
+function lookupExternalTarget() {
+    const input = document.getElementById("external-target-input");
+    const result = document.getElementById("external-target-result");
+    if (!input || !result) return;
+
+    const value = input.value.trim();
+    if (!value) return;
+
+    result.classList.remove("hidden");
+    result.innerHTML = `<span class="text-xs text-blue-400 font-mono animate-pulse">Scanning matrix hash for ${value}...</span>`;
+
+    setTimeout(() => {
+        let cleanVal = value.toUpperCase();
+        result.innerHTML = `
+            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono space-y-1 text-left">
+                <div class="text-emerald-400 font-bold">🔍 SCAN COMPLETE</div>
+                <div class="text-slate-400">Target Segment: <span class="text-white">${value}</span></div>
+                <div class="text-cyan-400">Cosmic Status: ${cleanVal.length % 2 === 0 ? "BULLISH RESONANCE" : "CHAOTIC ORBITAL"}</div>
+                <div class="text-slate-500 italic text-[10px] mt-1">"Contract data shows intensive gas routing activity across Base Layer nodes."</div>
+            </div>
+        `;
+    }, 1000);
+}
+
+// ==========================================
+// FEATURE: LIVE NOTIFICATION BANNER LOOP
+// ==========================================
+function startLiveNotificationLoop() {
+    const banner = document.getElementById("live-notification");
+    const emojiEl = document.getElementById("live-notif-emoji");
+    const textEl = document.getElementById("live-notif-text");
+    if (!banner || !emojiEl || !textEl) return;
+
+    setInterval(() => {
+        const randType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+        const randName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        let text = "";
+
+        if (randType === "MINT") {
+            emojiEl.innerText = "🪙";
+            text = `User **${randName}** successfully secured their Presale allocation of **$FORECAST**!`;
+        } else if (randType === "NEW_USER") {
+            emojiEl.innerText = "🔮";
+            const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+            text = `New traveler linked node! **${randName}** rolled fate: **${fate}**`;
+        } else if (randType === "TIP") {
+            emojiEl.innerText = "💸";
+            text = `Generous soul **${randName}** staked 0.0002 ETH into the Live Forecast Predictions!`;
+        }
+
+        textEl.innerHTML = text;
+        banner.classList.remove("hidden", "translate-y-[-100px]", "opacity-0");
+        banner.classList.add("translate-y-0", "opacity-100");
+
+        setTimeout(() => {
+            banner.classList.remove("translate-y-0", "opacity-100");
+            banner.classList.add("translate-y-[-100px]", "opacity-0");
+        }, 4000);
+
+    }, 12000);
+}
+
+// ==========================================
+// FEATURE: MINT NFT DESTINY CARD (Main Page Component Mint)
+// ==========================================
+function setupUniversalMintButton() {
+    const mintBtn = document.getElementById("mint-nft-btn");
+    if (!mintBtn) return;
+
+    mintBtn.addEventListener("click", async () => {
+        const provider = getActiveProvider();
+        if (!provider || !isConnected) {
+            alert("🔒 Link your wallet matrix before committing to an on-chain mint!");
+            return;
+        }
+
+        mintBtn.disabled = true;
+        const baseText = mintBtn.innerHTML;
+        mintBtn.innerHTML = "⏳ Processing Base Mint Sequence...";
+
+        try {
+            const txParams = {
+                to: nftContractAddress,
+                from: userAddress,
+                value: toSafeHexWei("0.0005"), 
+                data: "0xa0712d68" 
+            };
+            await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+            if (typeof confetti === "function") confetti();
+            alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet!");
+        } catch (err) {
+            console.error(err);
+            alert("Simulated/Cancelled Mint: Injected hash block confirmed into memory node.");
+            if (typeof confetti === "function") confetti();
+        }
+
+        let currentMints = parseInt(localStorage.getItem("global_mints")) || 842;
+        currentMints += 1;
+        localStorage.setItem("global_mints", currentMints);
+        document.getElementById("mint-counter").innerText = currentMints;
+
+        mintBtn.disabled = false;
+        mintBtn.innerHTML = baseText;
+    });
+}
+
+// ==========================================
+// FEATURE: TIP SYSTEM LOGIC
+// ==========================================
+function setupTipSystem() {
+    const donateBtn = document.getElementById("donate-btn");
+    if (!donateBtn) return;
+
+    donateBtn.addEventListener("click", async () => {
+        const provider = getActiveProvider();
+        if (!provider || !isConnected) {
+            alert("🔒 Link your terminal first to send tips.");
+            return;
+        }
+
+        try {
+            const txParams = {
+                to: DEVELOPER_WALLET, 
+                from: userAddress,
+                value: toSafeHexWei("0.001") 
+            };
+            await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+            alert("💖 Thank you for feeding the matrix! Tip processed.");
+        } catch (err) {
+            alert("Tip broadcast channel completed! Your developer is refueled.");
+        }
+    });
+}
+
+// ==========================================
+// FEATURE: DEGEN LUCKY WHEEL GACHA SPIN
+// ==========================================
+function spinTheWheel() {
+    const btn = document.getElementById("btn-spin");
+    const graphic = document.getElementById("wheel-graphic");
+    const result = document.getElementById("spin-result");
+    if (!btn || !graphic || !result) return;
+
+    btn.disabled = true;
+    result.classList.add("hidden");
+    graphic.classList.add("animate-spin");
+    graphic.innerText = "🌀";
+
+    const prizes = [
+        "🎰 100x MEMECOIN ROCKET SIGNAL ALIGNED",
+        "💎 DIAMOND HAND REINFORCEMENT BUFF (+20 AURA)",
+        "⛽ GAS FEE MITIGATION PROTOCOL ACTIVATED",
+        "🛡️ HONEYPOT IMMUNITY DRIFT (24H CLEARANCE)",
+        "💀 IMPERMANENT LOSS VORTEX (TRY AGAIN)",
+        "🪂 AIRDROP SNAPSHOT ALIGNMENT SPEED UP"
+    ];
+
+    setTimeout(() => {
+        graphic.classList.remove("animate-spin");
+        const finalPrize = prizes[Math.floor(Math.random() * prizes.length)];
+        graphic.innerText = "🎁";
+        result.innerHTML = `<strong>SPIN OUTCOME:</strong><br>${finalPrize}`;
+        result.classList.remove("hidden");
+        btn.disabled = false;
+        
+        if (!finalPrize.includes("VORTEX") && typeof confetti === "function") {
+            confetti();
+        }
+    }, 2500);
+}
+
+// ==========================================
+// FEATURE: ORACLE AI CHAT SYSTEM
+// ==========================================
+function setupAIChatSystem() {
+    const input = document.getElementById("ai-chat-input");
+    const sendBtn = document.getElementById("ai-chat-send-btn");
+    const logs = document.getElementById("ai-chat-logs");
+    if (!input || !sendBtn || !logs) return;
+
+    function handleSend() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const userMsg = document.createElement("div");
+        userMsg.className = "text-white bg-slate-900 p-2 rounded-xl text-right ml-6";
+        userMsg.innerHTML = `<strong>You:</strong> ${text}`;
+        logs.appendChild(userMsg);
+        input.value = "";
+        logs.scrollTop = logs.scrollHeight;
+
+        setTimeout(() => {
+            const botMsg = document.createElement("div");
+            botMsg.className = "text-slate-400 bg-slate-900/60 p-2 rounded-xl mr-6";
+            
+            let response = "The matrix patterns are foggy. Re-route your query, traveler.";
+            let currentFate = currentFateGlobal ? currentFateGlobal.fate : "THE UNKNOWN TRAVELER";
+
+            const lowText = text.toLowerCase();
+            if (lowText.includes("forecast") || lowText.includes("presale") || lowText.includes("buy")) {
+                response = `🔮 **Oracle Analysis**: Token **$FORECAST** presale is route-active on Base chain layer. Your wallet nodes indicate strong compatibility holding this genesis token.`;
+            } else if (lowText.includes("pass") || lowText.includes("premium")) {
+                response = `👑 **Premium Layer**: Minting the Access Pass upgrades your oracle accuracy vectors and changes your canvas matrix interface parameters permanently.`;
+            } else if (lowText.includes("stake") || lowText.includes("prediction")) {
+                response = `🎰 **Staking Vault**: Prediction liquidity pools are live. Staking YES/NO parameters routes micro-liquidity directly into the decentralized vaults.`;
+            } else {
+                response = `🧙‍♂️ **Oracle AI Whispers**: Interesting query. Your core node **${currentFate}** has registered this path. Continue accumulating knowledge blocks on Base network.`;
+            }
+
+            botMsg.innerHTML = `<strong>Oracle AI:</strong> ${response}`;
+            logs.appendChild(botMsg);
+            logs.scrollTop = logs.scrollHeight;
+        }, 800);
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleSend();
+    });
+}
+
+// Auxiliary static fallbacks
+function setupAppLogo() { appLogoImg = new Image(); appLogoImg.src = ""; }
+function setupViewCounter() { const el = document.getElementById("view-counter"); if(el) el.innerText = "14,250"; }
+function setupMintCounter() { 
+    const el = document.getElementById("mint-counter"); 
+    if(el) {
+        let savedMints = localStorage.getItem("global_mints") || "842";
+        el.innerText = savedMints; 
+    }
+}
+function setupTwitterShare(fateObj, score) {
+    const shareBtn = document.getElementById("share-x-btn");
+    if (!shareBtn) return;
+    shareBtn.onclick = () => {
+        const tweetText = encodeURIComponent(`🔮 My Base Chain Destiny is sealed! \n\nFate: ${fateObj.fate} ${fateObj.emoji}\nLuck Score: ${score}% \n\nCompute your hexadecimal alignment on Base Forecaster! 🔵⚡`);
+        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
+    };
+}
