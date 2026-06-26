@@ -62,13 +62,12 @@ document.addEventListener("DOMContentLoaded", () => {
         initPolymarketSystem();
         initNavigationSystem();
         
-        // Cek status di awal: Kalau wallet belum connect, handle tampilan polymarket
         handlePolymarketPrivacy();
     }, 500);
 });
 
 // ==========================================================================
-// 3. CORE MODULE: WEB3 WALLET CONNECTION SYSTEM
+// 3. CORE MODULE: WEB3 WALLET CONNECTION SYSTEM (POWERFUL INJECTED DETECTOR)
 // ==========================================================================
 function initWalletSystem() {
     const connectBtn = document.getElementById("connect-wallet-btn");
@@ -77,41 +76,55 @@ function initWalletSystem() {
         return;
     }
 
+    // Auto-reconnect wallet jika session tersimpan di local storage
     const savedAddress = localStorage.getItem("user_wallet");
     if (savedAddress) {
         userWalletAddress = savedAddress;
         updateWalletUI(savedAddress);
-        // Buka kunci & render Polymarket jika terdeteksi auto-connect
         handlePolymarketPrivacy();
     }
 
     connectBtn.onclick = async (e) => {
         e.preventDefault();
         
-        const provider = window.ethereum || (window.okxwallet && window.okxwallet.ethereum);
+        // Pengecekan Provider Berlapis (Anti-Gagal untuk OKX & Metamask Browser)
+        let provider = null;
+        if (window.okxwallet && window.okxwallet.ethereum) {
+            provider = window.okxwallet.ethereum;
+        } else if (window.ethereum) {
+            provider = window.ethereum;
+            // Jika ada banyak wallet terinstall di browser, ambil yang OKX jika tersedia
+            if (window.ethereum.providers && window.ethereum.providers.length) {
+                provider = window.ethereum.providers.find(p => p.isOKXWallet) || window.ethereum.providers[0];
+            }
+        }
 
         if (!provider) {
-            alert("Web3 Wallet not detected! Please open this dApp inside OKX Wallet or Metamask App Browser.");
+            alert("Web3 Wallet Not Detected! Silakan buka dApp ini dari dalam browser aplikasi OKX Wallet, Metamask, atau Coinbase Wallet di HP lu.");
             return;
         }
 
         try {
             connectBtn.innerText = "Connecting...";
+            
+            // Request permission connect ke akun dompet user
             const accounts = await provider.request({ method: "eth_requestAccounts" });
             
-            if (accounts.length > 0) {
+            if (accounts && accounts.length > 0) {
                 userWalletAddress = accounts[0];
-                localStorage.setItem("user_wallet", userWalletAddress); 
+                localStorage.setItem("user_wallet", userWalletAddress); // Simpan session login
                 updateWalletUI(userWalletAddress);
                 
-                // Pemicu buka kunci dashboard Polymarket setelah wallet sukses connect
+                // Langsung buka pintu lock gate Polymarket
                 handlePolymarketPrivacy();
-                console.log("✅ Wallet Connected:", userWalletAddress);
+                console.log("✅ Wallet Berhasil Terhubung:", userWalletAddress);
+            } else {
+                throw new Error("No accounts found");
             }
         } catch (error) {
-            console.error("User denied wallet connection", error);
+            console.error("User denied or failed wallet connection", error);
             connectBtn.innerText = "Connect Wallet";
-            alert("Connection rejected by user.");
+            alert("Koneksi dibatalkan atau ditolak oleh dompet.");
         }
     };
 }
@@ -120,10 +133,10 @@ function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-wallet-btn");
     if (!connectBtn) return;
 
+    // Format address premium (Contoh: 0x8a12...7b3c)
     const shortAddress = address.substring(0, 6) + "..." + address.substring(address.length - 4);
     connectBtn.innerText = `🟢 ${shortAddress}`;
-    connectBtn.classList.remove("bg-blue-600", "hover:bg-blue-500");
-    connectBtn.classList.add("bg-slate-800", "text-emerald-400", "border", "border-emerald-500/30");
+    connectBtn.className = "bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-2 rounded-xl font-mono tracking-wide transition-all shadow-md";
 }
 
 // ==========================================================================
@@ -134,7 +147,7 @@ function handlePolymarketPrivacy() {
     if (!container) return;
 
     if (!userWalletAddress) {
-        // Tampilan Terkunci (Elegant Lock State) jika belum connect wallet
+        // Keadaan Terkunci (Elegant Lock State) sebelum login
         container.innerHTML = `
             <div class="bg-slate-950/40 border border-slate-900 border-dashed rounded-2xl p-8 text-center space-y-3 backdrop-blur-sm">
                 <div class="text-xl">🔒</div>
@@ -145,7 +158,7 @@ function handlePolymarketPrivacy() {
             </div>
         `;
     } else {
-        // Jika sudah login/connect, panggil fungsi render aslinya
+        // Render 3 data unggulan jika sudah berhasil connect
         renderTopPolymarketDashboard();
     }
 }
@@ -161,7 +174,6 @@ function initPolymarketSystem() {
     if (!polyInput || !polyBtn || !polyResult) return;
 
     const handlePolyPrediction = () => {
-        // Proteksi ekstra: Mencegah ketik manual sebelum connect wallet
         if (!userWalletAddress) {
             alert("🔒 Please connect your Web3 Wallet first to use the custom forecaster!");
             return;
@@ -425,4 +437,4 @@ window.spinTheWheel = function() {
         }
     }, 2000);
 };
-            
+                    
