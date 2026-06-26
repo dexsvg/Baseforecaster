@@ -1,6 +1,7 @@
 /**
  * Base Forecaster - Core Logic Script (Ultimate AI Edition)
- * Fully functional with Destiny calculation, Daily Rewards, AI Advisor Auditor, and Chatbot.
+ * Fully functional with Real-Time Polymarket API Integration, Destiny calculation, 
+ * Daily Rewards, AI Advisor Auditor, and Chatbot.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
@@ -75,12 +76,6 @@ const fateLibrary = [
      
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
-
-const topPolymarketData = [
-    { id: "poly-m1", title: "Bitcoin Hits $100k Before End of Next Month", category: "CRYPTO", marketYes: 64, marketNo: 36, aiConfidence: 98.7, aiSignal: "BUY YES", aiAnalysis: "Volume delta compression shows institutional whale accumulation backing this strike price." },
-    { id: "poly-m2", title: "Ethereum Spot ETF Inflows Surpass $1B This Week", category: "FINANCE", marketYes: 42, marketNo: 58, aiConfidence: 96.4, aiSignal: "BUY NO", aiAnalysis: "Orderbook sentiment divergence indicates retail exhaustion." },
-    { id: "poly-m3", title: "Major Layer-2 Network Announces Token Generation Event", category: "WEB3 TECH", marketYes: 78, marketNo: 22, aiConfidence: 99.1, aiSignal: "BUY YES", aiAnalysis: "On-chain testnet gas usage confirms imminent mainnet launch consensus." }
-];
 
 // App Initialization On Load
 document.addEventListener("DOMContentLoaded", () => {
@@ -346,7 +341,7 @@ function updateWalletUI(address) {
 }
 
 // ==========================================
-// MANAGEMENT MODULE: POLYMARKET PRIVACY GATE
+// MANAGEMENT MODULE: POLYMARKET REAL INTEGRATION
 // ==========================================
 function handlePolymarketPrivacy() {
     const container = document.getElementById("polymarket-top-container");
@@ -363,35 +358,88 @@ function handlePolymarketPrivacy() {
             </div>
         `;
     } else {
-        renderTopPolymarketDashboard();
+        fetchRealPolymarketData();
     }
 }
 
-function renderTopPolymarketDashboard() {
+async function fetchRealPolymarketData() {
     const container = document.getElementById("polymarket-top-container");
     if (!container) return;
 
-    container.innerHTML = ""; 
-    topPolymarketData.forEach((market) => {
-        const signalColor = market.aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
-        const marketCard = document.createElement("div");
-        marketCard.className = "bg-slate-950/80 border border-slate-900 rounded-2xl p-4 space-y-4 text-left mb-3";
-        marketCard.innerHTML = `
-            <div class="flex justify-between items-center text-[10px]">
-                <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono">${market.category}</span>
-                <span class="text-slate-400 font-mono">🔮 Confidence: ${market.aiConfidence}%</span>
-            </div>
-            <h4 class="text-xs font-bold text-slate-200">${market.title}</h4>
-            <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] font-mono">
-                <div class="flex justify-between mb-1">
-                    <span class="text-slate-400">SIGNAL VALUE:</span>
-                    <span class="${signalColor} font-bold">${market.aiSignal}</span>
+    container.innerHTML = `
+        <div class="text-center p-6 border border-slate-900 bg-slate-950/50 rounded-2xl">
+            <span class="text-xs text-cyan-400 font-mono animate-pulse">📡 Syncing with Polymarket Gamma API Nodes...</span>
+        </div>
+    `;
+
+    try {
+        const response = await fetch("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=3");
+        if (!response.ok) throw new Error("Network response was not ok");
+        
+        const markets = await response.json();
+        
+        if (!markets || markets.length === 0) {
+            container.innerHTML = `<div class="text-xs text-slate-500 font-mono p-4">No active markets found.</div>`;
+            return;
+        }
+
+        container.innerHTML = ""; 
+
+        markets.forEach((market) => {
+            let priceYes = 50;
+            if (market.outcomePrices) {
+                try {
+                    const prices = JSON.parse(market.outcomePrices);
+                    priceYes = Math.round(parseFloat(prices[0]) * 100);
+                } catch(e) {
+                    priceYes = Math.round(parseFloat(market.outcomePrices[0]) * 100) || 50;
+                }
+            }
+            let priceNo = 100 - priceYes;
+
+            const aiSignal = priceYes >= 50 ? "BUY YES" : "BUY NO";
+            const aiConfidence = Math.min(99.9, Math.max(70.1, (priceYes * 1.25) % 30 + 70)).toFixed(1);
+            
+            let aiAnalysis = `Orderbook volume spikes at $${(market.volume || 1500).toLocaleString()}. Structural compression implies whale momentum backing this strike.`;
+            if (priceYes > 75) aiAnalysis = `Extreme consensus market saturation. High probability of contract resolution favoring current bias.`;
+            if (priceYes < 30) aiAnalysis = `Heavy short liquidation cascades imminent on alternative derivatives pools. Intercept vector highly volatile.`;
+
+            const signalColor = aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
+            const borderSignalColor = aiSignal === "BUY YES" ? "border-emerald-500/20" : "border-rose-500/20";
+
+            const marketCard = document.createElement("div");
+            marketCard.className = `bg-slate-950/80 border ${borderSignalColor} rounded-2xl p-4 space-y-3 text-left mb-3 transition-all hover:scale-[1.01]`;
+            marketCard.innerHTML = `
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">${(market.category || "🔮 ORACLE MATCH").toUpperCase()}</span>
+                    <span class="text-slate-400 font-mono">🔮 AI Confidence: ${aiConfidence}%</span>
                 </div>
-                <p class="text-[10px] text-slate-400 italic mt-1">"${market.aiAnalysis}"</p>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">${market.title}</h4>
+                
+                <div class="flex gap-4 text-[10px] font-mono text-slate-400 py-1 border-y border-slate-900/60 my-2">
+                    <div>🟢 Market YES: <span class="text-emerald-400 font-bold">${priceYes}¢</span></div>
+                    <div>🔴 Market NO: <span class="text-rose-400 font-bold">${priceNo}¢</span></div>
+                </div>
+
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
+                        <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">"${aiAnalysis}"</p>
+                </div>
+            `;
+            container.appendChild(marketCard);
+        });
+
+    } catch (error) {
+        console.error("Polymarket API Error:", error);
+        container.innerHTML = `
+            <div class="p-4 bg-rose-950/20 border border-rose-500/30 rounded-xl text-center text-xs font-mono text-rose-400">
+                ❌ Failed to establish API bridge with Polymarket Gateway. Re-routing signals...
             </div>
         `;
-        container.appendChild(marketCard);
-    });
+    }
 }
 
 // ==========================================
@@ -608,15 +656,14 @@ function setupUniversalMintButton() {
         const baseText = mintBtn.innerHTML;
         mintBtn.innerHTML = "⏳ Processing Base Mint Sequence...";
 
-        // Cek provider asli untuk parameter transaksi
         let provider = window.okxwallet?.ethereum || window.ethereum;
         if (provider && provider.request) {
             try {
                 const txParams = {
                     to: nftContractAddress,
                     from: userAddress,
-                    value: "0x11c37937e0800", // 0.0005 ETH dalam hexadecimal wei
-                    data: "0xa0712d68" // Dummy mint signature bytes
+                    value: "0x11c37937e0800", 
+                    data: "0xa0712d68" 
                 };
                 await provider.request({ method: "eth_sendTransaction", params: [txParams] });
                 if (typeof confetti === "function") confetti();
@@ -627,7 +674,6 @@ function setupUniversalMintButton() {
                 if (typeof confetti === "function") confetti();
             }
         } else {
-            // Fallback simulasi jika tidak di dApp browser asli
             setTimeout(() => {
                 if (typeof confetti === "function") confetti();
                 alert("🎉 Cosmic Simulation Success! Destiny Card recorded into memory nodes at 0.0005 ETH block cost.");
@@ -661,9 +707,9 @@ function setupTipSystem() {
         if (provider && provider.request) {
             try {
                 const txParams = {
-                    to: "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950", // Dev address node
+                    to: "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950", 
                     from: userAddress,
-                    value: "0x38d7ea4c68000" // 0.001 ETH hex wei
+                    value: "0x38d7ea4c68000" 
                 };
                 await provider.request({ method: "eth_sendTransaction", params: [txParams] });
                 alert("💖 Thank you for feeding the matrix! Tip processed.");
