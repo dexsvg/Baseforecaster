@@ -341,7 +341,7 @@ function updateWalletUI(address) {
 }
 
 // ==========================================
-// MANAGEMENT MODULE: POLYMARKET REAL INTEGRATION
+// MANAGEMENT MODULE: POLYMARKET REAL INTEGRATION WITH BASE ECOSYSTEM
 // ==========================================
 function handlePolymarketPrivacy() {
     const container = document.getElementById("polymarket-top-container");
@@ -362,75 +362,6 @@ function handlePolymarketPrivacy() {
     }
 }
 
-async function fetchRealPolymarketData() {
-    const container = document.getElementById("polymarket-top-container");
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="text-center p-6 border border-slate-900 bg-slate-950/50 rounded-2xl">
-            <span class="text-xs text-cyan-400 font-mono animate-pulse">📡 Syncing with Polymarket Gamma API Nodes...</span>
-        </div>
-    `;
-
-    try {
-        const response = await fetch("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=3");
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const markets = await response.json();
-        
-        if (!markets || markets.length === 0) {
-            container.innerHTML = `<div class="text-xs text-slate-500 font-mono p-4">No active markets found.</div>`;
-            return;
-        }
-
-        container.innerHTML = ""; 
-
-        markets.forEach((market) => {
-            const marketTitle = market.question || market.title || "Untitled Market";
-
-            // Mengambil Slug unik untuk membuat link transaksi asli ke Polymarket
-            const marketSlug = market.slug || "";
-            const tradeLink = marketSlug ? `https://polymarket.com/event/${marketSlug}` : "https://polymarket.com";
-
-            let priceYes = 50;
-            if (market.outcomePrices) {
-                try {
-                    const prices = JSON.parse(market.outcomePrices);
-                    priceYes = Math.round(parseFloat(prices[0]) * 100);
-                } catch(e) {
-                    priceYes = Math.round(parseFloat(market.outcomePrices[0]) * 100) || 50;
-                }
-            }
-            let priceNo = 100 - priceYes;
-
-            const aiSignal = priceYes >= 50 ? "BUY YES" : "BUY NO";
-            const aiConfidence = Math.min(99.9, Math.max(70.1, (priceYes * 1.25) % 30 + 70)).toFixed(1);
-            
-            let aiAnalysis = `Orderbook volume spikes at $${(market.volume || 1500).toLocaleString()}. Structural compression implies whale momentum backing this strike.`;
-            if (priceYes > 75) aiAnalysis = `Extreme consensus market saturation. High probability of contract resolution favoring current bias.`;
-            if (priceYes < 30) aiAnalysis = `Heavy short liquidation cascades imminent on alternative derivatives pools. Intercept vector highly volatile.`;
-
-            const signalColor = aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
-            const borderSignalColor = aiSignal === "BUY YES" ? "border-emerald-500/20" : "border-rose-500/20";
-
-            const marketCard = document.createElement("div");
-            marketCard.className = `bg-slate-950/80 border ${borderSignalColor} rounded-2xl p-4 space-y-3 text-left mb-3 transition-all hover:scale-[1.01]`;
-            marketCard.innerHTML = `
-                <div class="flex justify-between items-center text-[10px]">
-                    <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">${(market.category || "🔮 ORACLE MATCH").toUpperCase()}</span>
-                    <span class="text-slate-400 font-mono">🔮 AI Confidence: ${aiConfidence}%</span>
-                </div>
-                <h4 class="text-xs font-bold text-slate-200 leading-snug">${marketTitle}</h4>
-                
-                <div class="flex gap-4 text-[10px] font-mono text-slate-400 py-1 border-y border-slate-900/60 my-2">
-                    <div>🟢 Market YES: <span class="text-emerald-400 font-bold">${priceYes}¢</span></div>
-                    <div>🔴 Market NO: <span class="text-rose-400 font-bold">${priceNo}¢</span></div>
-                </div>
-
-                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono mb-2">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
-                        <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
 async function fetchRealPolymarketData() {
     const container = document.getElementById("polymarket-top-container");
     if (!container) return;
@@ -543,7 +474,7 @@ async function fetchRealPolymarketData() {
 
 // ================= LOGIC SMART CONTRACT INTERACTION (WEB3) =================
 
-// Taruh alamat dompet Base asli milikmu di sini agar ETH kiriman user langsung masuk
+// Alamat dompet Base milikmu untuk menampung ETH masuk
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
 // 1. Fungsi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Otomatis
@@ -553,7 +484,6 @@ async function executePreListingBuy() {
         const amountETH = prompt("Enter amount of Base ETH to invest:", "0.001");
         if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) return;
 
-        // Menghitung jumlah token didapat berdasarkan rate 1 ETH = 1,000,000 $FORECAST
         const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
 
         const confirmProceed = confirm(`You will send ${amountETH} ETH to secure ${tokenAmount} $FORECAST. Proceed to wallet confirmation?`);
@@ -608,7 +538,8 @@ async function executeMintPass() {
     } catch (err) {
         console.error(err);
     }
-        }
+}
+
 // ==========================================
 // DESTINY ENGINE GENERATION & RENDERING
 // ==========================================
