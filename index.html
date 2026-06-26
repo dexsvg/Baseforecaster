@@ -17,8 +17,9 @@
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
+    <!-- Live Notification Banner -->
     <div id="live-notification" class="fixed top-4 sm:top-6 max-w-sm w-full bg-slate-900/95 border border-blue-500/40 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 hidden flex items-center gap-3">
-        <div class="text-2xl animate-bounce">✨</div>
+        <div id="live-notif-emoji" class="text-2xl animate-bounce">✨</div>
         <p id="live-notif-text" class="text-xs text-slate-300 leading-snug"></p>
     </div>
 
@@ -49,30 +50,10 @@
             "Forget technical analysis. Stop staring at the charts. The true fate of your portfolio isn’t in the candles—it’s written in your wallet address. Base Forecaster hashes your hexadecimal identity into chaotic, 100% unique, and slightly unhinged destiny readings."
         </p>
 
-        <div id="wallet-section" class="block">
+        <div id="wallet-section">
             <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-md">
                 <span>🔮</span> Connect Wallet
             </button>
-        </div>
-
-        <div class="w-full text-left mt-6 space-y-3 relative z-10 border-t border-slate-800/60 pt-4">
-            <div class="flex justify-between items-center px-1">
-                <div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-1.5">
-                        <span>📈</span> Polymarket Top Signal Bot
-                    </h3>
-                    <p class="text-[10px] text-slate-400">High accuracy orderbook data node analysis forecasts.</p>
-                </div>
-                <span class="flex h-2 w-2 relative">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-            </div>
-            <div id="polymarket-top-container" class="space-y-3">
-                <div class="bg-slate-950/50 border border-slate-900 rounded-2xl p-4 text-center">
-                    <p class="text-[10px] text-slate-500 font-mono animate-pulse">Syncing trading parameters...</p>
-                </div>
-            </div>
         </div>
 
         <div id="result-section" class="hidden mt-6 border-t border-slate-800 pt-5 text-center">
@@ -90,7 +71,7 @@
                 LOADING YOUR DESTINY...
             </h2>
 
-            <div class="bg-slate-950/80 border border-blue-500/20 rounded-2xl p-4 mb-4 text-slate-300 text-sm leading-relaxed font-serif">
+            <div class="bg-slate-950/80 border border-blue-500/20 rounded-2xl p-4 mb-4 text-slate-300 text-sm leading-relaxed font-serif hidden">
                 "<span id="fortune-text">Calculating the alignment of your hexadecimal sequence...</span>"
             </div>
 
@@ -130,6 +111,9 @@
                 </button>
             </div>
 
+            <!-- POLYMARKET ALPHA GATEWAY CONTAINER -->
+            <div id="polymarket-top-container" class="mb-5"></div>
+
             <div class="bg-slate-950 border border-blue-500/30 rounded-2xl p-3.5 text-left mb-5">
                 <div class="flex items-center gap-1.5 mb-2 text-cyan-400 text-xs font-bold tracking-wider uppercase">
                     <span>🛡️</span> AI Wallet Auditor Advisor
@@ -139,6 +123,7 @@
                 </p>
             </div>
 
+            <!-- Boks Oracle AI Assistant -->
             <div class="bg-slate-950 border border-slate-900 rounded-2xl p-3.5 text-left mb-4 relative z-10">
                 <div class="flex items-center gap-2 mb-2">
                     <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -157,7 +142,8 @@
                 </div>
             </div>
 
-            <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4 text-left relative z-10">
+            <!-- Boks Secure Oracle Stalker -->
+            <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4 relative z-10">
                 <div>
                     <h3 class="text-sm font-bold text-slate-200 tracking-wide">🔮 SECURE ORACLE STALKER</h3>
                     <p class="text-[11px] text-slate-400">Scan external smart contract tokens or track influencer wallet addresses to compute their cosmic matrix alignment.</p>
@@ -166,7 +152,7 @@
                 <div class="flex items-center space-x-2 w-full relative z-20">
                     <input type="text" id="external-target-input" 
                            placeholder="Enter 0x address or token symbol (e.g., BRETT, DENT, 0x71C...)" 
-                           class="bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 font-mono relative z-20" />
+                           class="bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 monospace relative z-20" />
                     <button id="external-target-btn" 
                             class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-cyan-950/30 relative z-20 whitespace-nowrap">
                         Scan
@@ -176,7 +162,7 @@
                 <div id="external-target-result" class="hidden mt-2"></div>
             </div>
             
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2 mt-4">
+            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2">
                 <p class="text-[10px] text-slate-400 italic mb-2">Saved from a rugpull? Feed the Based Dev 👇</p>
                 <button id="donate-btn" class="w-full bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold py-2 px-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
                     💸 Send 0.001 ETH Tip
@@ -184,7 +170,7 @@
             </div>
         </div>
 
-        <div class="mt-6 border-t border-slate-800/80 pt-4">
+        <div class="mt-6 border-t border-slate-800/60 pt-4">
             <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="block bg-gradient-to-r from-slate-950 via-blue-950/20 to-slate-950 border border-slate-800/60 hover:border-blue-500/40 rounded-xl p-2.5 transition-all text-left relative overflow-hidden group">
                 <span class="absolute top-0 right-0 bg-blue-600/30 text-blue-400 text-[8px] px-1.5 py-0.5 rounded-bl font-mono tracking-widest uppercase font-bold">ECOSYSTEM</span>
                 <div class="flex items-center gap-3">
@@ -199,6 +185,7 @@
 
     </div>
 
+    <!-- Wallet Chooser Modal -->
     <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 relative shadow-2xl">
             <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white text-lg font-bold">✕</button>
@@ -237,6 +224,7 @@
         </div>
     </div>
 
+    <!-- Bottom Navigation Bar -->
     <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/50 flex justify-around items-center z-50">
         <button onclick="navigate('home')" class="flex flex-col items-center text-blue-400">
             <span class="text-xl">🔮</span><span class="text-[10px] font-bold">Oracle</span>
@@ -252,6 +240,7 @@
         </button>
     </div>
 
+    <!-- Glow Color Modal Overlay -->
     <div id="modal-glow" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
         <div class="bg-slate-950 border border-cyan-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(6,182,212,0.2)]">
             <button onclick="closeModal('glow')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
@@ -266,6 +255,7 @@
         </div>
     </div>
 
+    <!-- Lucky Wheel Modal Overlay -->
     <div id="modal-wheel" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
         <div class="bg-slate-950 border border-purple-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(168,85,247,0.2)]">
             <button onclick="closeModal('wheel')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
@@ -290,7 +280,7 @@
             </div>
             <div class="w-px h-3 bg-slate-800"></div>
             <div class="text-blue-400">
-                📊 Global Views: <span id="global-view-counter" class="font-bold text-white bg-blue-950 px-1.5 py-0.5 rounded border border-blue-500/20">14,250</span>
+                📊 Global Views: <span id="view-counter" class="font-bold text-white bg-blue-950 px-1.5 py-0.5 rounded border border-blue-500/20">Loading...</span>
             </div>
         </div>
         <div class="text-[10px] text-slate-600 font-mono">Built on Base • Ultimate AI Edition</div>
