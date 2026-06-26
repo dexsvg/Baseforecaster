@@ -382,7 +382,7 @@ function updateWalletUI(address) {
 }
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB 
+// NATIVE MODULE: FORECASTER HUB (SAMAKAN MEKANISME DENGAN TIP SYSTEM - NO INLINE ONCLICK)
 // ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
@@ -416,7 +416,7 @@ function renderNativeForecasterHub() {
                 </p>
                 <div class="pt-1 flex gap-2">
                     <input id="presale-eth-input" type="number" step="0.001" min="0.001" placeholder="Amount ETH (e.g. 0.005)" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
-                    <button onclick="executePreListingBuy()" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">
+                    <button id="btn-action-presale" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">
                         BUY NOW
                     </button>
                 </div>
@@ -432,10 +432,10 @@ function renderNativeForecasterHub() {
                     Deploy decentralized micro-stakes directly into your smart contract liquidity router. Back or oppose daily global trend probabilities.
                 </p>
                 <div class="grid grid-cols-2 gap-2 pt-1">
-                    <button onclick="executeBaseBet('YES')" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
+                    <button id="btn-action-stake-yes" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
                         📈 Stake YES (0.0002 ETH)
                     </button>
-                    <button onclick="executeBaseBet('NO')" class="flex items-center justify-center gap-1 p-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
+                    <button id="btn-action-stake-no" class="flex items-center justify-center gap-1 p-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
                         📉 Stake NO (0.0002 ETH)
                     </button>
                 </div>
@@ -450,7 +450,7 @@ function renderNativeForecasterHub() {
                 <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
                     Permanently unlock all premium AI bot alpha signals, double your daily Aura point generation, and obtain a cosmic-grade visual verification frame.
                 </p>
-                <button onclick="executeMintPass()" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
+                <button id="btn-action-mint-pass" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
                     🔑 MINT PREMIUM ACCESS PASS
                 </button>
             </div>
@@ -935,3 +935,33 @@ function setupTwitterShare(fateObj, score) {
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
     };
 }
+
+// ====================================================================
+// GLOBAL EVENT DELEGATION (ANTI-BLOCKING LAYER FOR MOBILE dApp BROWSERS)
+// SAMA SEPERTI MECHANISM SETUP TIP SYSTEM (MEMASTIKAN TOMBOL HUB JALAN)
+// ====================================================================
+document.addEventListener("click", function(e) {
+    // 1. Deteksi klik tombol BUY NOW untuk Presale Token
+    if (e.target && e.target.id === "btn-action-presale") {
+        e.preventDefault();
+        executePreListingBuy();
+    }
+    
+    // 2. Deteksi klik tombol Stake YES
+    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
+        e.preventDefault();
+        executeBaseBet('YES');
+    }
+    
+    // 3. Deteksi klik tombol Stake NO
+    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
+        e.preventDefault();
+        executeBaseBet('NO');
+    }
+    
+    // 4. Deteksi klik tombol MINT PREMIUM ACCESS PASS
+    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
+        e.preventDefault();
+        executeMintPass();
+    }
+});
