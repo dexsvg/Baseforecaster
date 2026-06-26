@@ -544,7 +544,7 @@ async function fetchRealPolymarketData() {
 // ================= LOGIC SMART CONTRACT INTERACTION (WEB3) =================
 
 // Taruh alamat dompet Base asli milikmu di sini agar ETH kiriman user langsung masuk
-const DEVELOPER_WALLET = "0xYourActualBaseWalletAddressHere..."; 
+const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
 // 1. Fungsi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Otomatis
 async function executePreListingBuy() {
