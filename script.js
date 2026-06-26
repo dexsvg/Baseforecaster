@@ -512,10 +512,10 @@ async function executeBaseBet(option) {
         const hexValue = toSafeHexWei(betAmount);
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [{
+            const txParams = {
+                to: DEVELOPER_WALLET, 
                 from: userAddress,
-                to: DEVELOPER_WALLET,
-                value: hexValue,
+                value: toSafeHexWei("0.001") 
             }],
         });
         
