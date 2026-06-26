@@ -386,6 +386,9 @@ async function fetchRealPolymarketData() {
         container.innerHTML = ""; 
 
         markets.forEach((market) => {
+            // Ini baris baru penentu agar tidak 'undefined' lagi
+            const marketTitle = market.question || market.title || "Untitled Market";
+
             let priceYes = 50;
             if (market.outcomePrices) {
                 try {
@@ -414,7 +417,7 @@ async function fetchRealPolymarketData() {
                     <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">${(market.category || "🔮 ORACLE MATCH").toUpperCase()}</span>
                     <span class="text-slate-400 font-mono">🔮 AI Confidence: ${aiConfidence}%</span>
                 </div>
-                <h4 class="text-xs font-bold text-slate-200 leading-snug">${market.title}</h4>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">${marketTitle}</h4>
                 
                 <div class="flex gap-4 text-[10px] font-mono text-slate-400 py-1 border-y border-slate-900/60 my-2">
                     <div>🟢 Market YES: <span class="text-emerald-400 font-bold">${priceYes}¢</span></div>
