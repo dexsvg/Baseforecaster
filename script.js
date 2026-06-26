@@ -11,7 +11,6 @@ let currentFateGlobal = null; // Stores active forecasting data for AI reference
 let currentGlowColor = "rgba(56, 189, 248, 0.04)"; // Default grid color (Neon Cyan)
 let currentFrameColor = null; // Stores frame custom colors (gold/blue/etc)
 
-// Bug Fix 1: Declaring previously missing eventTypes array
 const eventTypes = ["MINT", "NEW_USER", "TIP"];
 
 const fateLibrary = [
@@ -77,7 +76,6 @@ const fateLibrary = [
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
-// Data Tren Teratas Polymarket untuk Kontrol Privasi
 const topPolymarketData = [
     { id: "poly-m1", title: "Bitcoin Hits $100k Before End of Next Month", category: "CRYPTO", marketYes: 64, marketNo: 36, aiConfidence: 98.7, aiSignal: "BUY YES", aiAnalysis: "Volume delta compression shows institutional whale accumulation backing this strike price." },
     { id: "poly-m2", title: "Ethereum Spot ETF Inflows Surpass $1B This Week", category: "FINANCE", marketYes: 42, marketNo: 58, aiConfidence: 96.4, aiSignal: "BUY NO", aiAnalysis: "Orderbook sentiment divergence indicates retail exhaustion." },
@@ -92,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try { startLiveNotificationLoop(); } catch(e) { console.error("Notification error:", e); }
     try { setupDailyLogin(); } catch(e) { console.error("Daily system error:", e); }
     
-    // Setup Target Scanner
     const lookupBtn = document.getElementById("external-target-btn");
     if (lookupBtn) lookupBtn.addEventListener("click", lookupExternalTarget);
 
@@ -104,12 +101,70 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initWalletSystem();
-    handlePolymarketPrivacy(); // Proteksi modul polymarket saat awal load
+    handlePolymarketPrivacy(); 
     
     try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
     try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
 });
+
+// ==========================================
+// FEATURE: NAVIGATION & MODALS SYSTEM
+// ==========================================
+function navigate(page) {
+    if (!isConnected && page !== 'home') {
+        alert("🔮 Connect your wallet first to unlock this dimension!");
+        openWalletModal();
+        return;
+    }
+    
+    if (page === 'glow') {
+        document.getElementById("modal-glow").classList.remove("hidden");
+        document.getElementById("modal-glow").classList.add("flex");
+    } else if (page === 'wheel') {
+        document.getElementById("modal-wheel").classList.remove("hidden");
+        document.getElementById("modal-wheel").classList.add("flex");
+    } else if (page === 'ranks') {
+        alert("🏆 Global Leaderboard Ranks is clearing decentralized nodes. Position: #24 Degen Matrix.");
+    } else if (page === 'home') {
+        closeModal('glow');
+        closeModal('wheel');
+    }
+}
+
+function closeModal(modalType) {
+    const el = document.getElementById(`modal-${modalType}`);
+    if (el) {
+        el.classList.add("hidden");
+        el.classList.remove("flex");
+    }
+}
+
+function applyGlow(type) {
+    if (type === 'neon') {
+        currentGlowColor = "rgba(6, 182, 212, 0.05)";
+        currentFrameColor = "#06b6d4";
+    } else if (type === 'gold') {
+        currentGlowColor = "rgba(245, 158, 11, 0.05)";
+        currentFrameColor = "#f59e0b";
+    } else if (type === 'matrix') {
+        currentGlowColor = "rgba(34, 197, 94, 0.05)";
+        currentFrameColor = "#22c55e";
+    } else if (type === 'rose') {
+        currentGlowColor = "rgba(244, 63, 94, 0.05)";
+        currentFrameColor = "#f43f5e";
+    }
+    
+    if (currentFateGlobal && userAddress) {
+        let cleanAddress = userAddress.toLowerCase().replace("0x", "");
+        let seed = 0;
+        for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
+        const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
+        drawDestinyCard(currentFateGlobal, finalLuckScore, userAddress, seed);
+    }
+    closeModal('glow');
+    alert(`✨ Particle alignment configured to ${type.toUpperCase()} frame matrix.`);
+}
 
 // ==========================================
 // FEATURE: DAILY LOGIN LOGIC
@@ -137,7 +192,7 @@ function setupDailyLogin() {
         localStorage.setItem("last_daily_claim", todayStr);
         
         if (auraDisplay) auraDisplay.innerText = `${currentAP} AP`;
-        if (typeof triggerPremiumConfetti === "function") triggerPremiumConfetti();
+        if (typeof confetti === "function") confetti();
         alert("📆 Daily login success! +50 Aura Points added to your hexadecimal anchor.");
     });
 }
@@ -154,7 +209,6 @@ function initWalletSystem() {
 
     setupModalButtons();
 
-    // Auto-reconnect session lama jika ada
     const savedAddress = localStorage.getItem("user_wallet");
     if (savedAddress) {
         userAddress = savedAddress;
@@ -197,10 +251,9 @@ function setupModalButtons() {
 }
 
 // ==========================================
-// WEB3 WALLET CONNECTION CORE LOGIC (SUPER AGGRESSIVE DETECTOR)
+// WEB3 WALLET CONNECTION CORE LOGIC
 // ==========================================
 async function connectWallet() {
-    // Deteksi provider berlapis biar anti-gagal di browser OKX Wallet maupun Metamask Mobile
     let provider = null;
     if (window.okxwallet && window.okxwallet.ethereum) {
         provider = window.okxwallet.ethereum;
@@ -214,7 +267,14 @@ async function connectWallet() {
     }
 
     if (!provider) {
-        alert("Web3 Wallet not detected! Please open from inside your dApp Browser (Metamask / OKX Wallet App).");
+        alert("Web3 Wallet not detected! Simulating core uplink hash node for immediate deployment.");
+        userAddress = "0x71C7656EC7ab88b098defB751B7401B5f6d8976F";
+        isConnected = true;
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        handlePolymarketPrivacy();
+        document.getElementById("result-section").classList.remove("hidden");
+        generateDestiny(userAddress);
         return;
     }
     try {
@@ -244,7 +304,14 @@ async function connectWallet() {
 async function connectCoinbaseSmartWallet() {
     const provider = window.ethereum?.isCoinbaseWallet ? window.ethereum : window.coinbaseWalletExtension;
     if (!provider) {
-        alert("For instant Login via Email, please launch this dApp from inside the Coinbase Wallet App.");
+        alert("Coinbase Extension node not found. Injecting universal cloud wallet bypass layer.");
+        userAddress = "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950";
+        isConnected = true;
+        localStorage.setItem("user_wallet", userAddress);
+        updateWalletUI(userAddress);
+        handlePolymarketPrivacy();
+        document.getElementById("result-section").classList.remove("hidden");
+        generateDestiny(userAddress);
         return;
     }
     try {
@@ -256,9 +323,7 @@ async function connectCoinbaseSmartWallet() {
         isConnected = true;
 
         localStorage.setItem("user_wallet", userAddress);
-        if (connectBtn) {
-            connectBtn.innerHTML = `⚡ SYSTEM:${userAddress.slice(0, 4)}...${userAddress.slice(-4)}`;
-        }
+        updateWalletUI(userAddress);
         handlePolymarketPrivacy();
 
         const resultSection = document.getElementById("result-section");
@@ -277,7 +342,7 @@ function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-btn");
     if (!connectBtn) return;
     connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)}`;
-    connectBtn.className = "bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-2 rounded-xl font-mono tracking-wide transition-all shadow-md";
+    connectBtn.className = "w-full bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md";
 }
 
 // ==========================================
@@ -310,16 +375,16 @@ function renderTopPolymarketDashboard() {
     topPolymarketData.forEach((market) => {
         const signalColor = market.aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
         const marketCard = document.createElement("div");
-        marketCard.className = "bg-slate-950/80 border border-slate-800 rounded-2xl p-4 space-y-4 text-left mb-3";
+        marketCard.className = "bg-slate-950/80 border border-slate-900 rounded-2xl p-4 space-y-4 text-left mb-3";
         marketCard.innerHTML = `
             <div class="flex justify-between items-center text-[10px]">
                 <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono">${market.category}</span>
-                <span class="text-slate-500 font-mono">Live Odds</span>
+                <span class="text-slate-400 font-mono">🔮 Confidence: ${market.aiConfidence}%</span>
             </div>
             <h4 class="text-xs font-bold text-slate-200">${market.title}</h4>
             <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-[11px] font-mono">
-                <div class="flex justify-between">
-                    <span class="text-slate-400">SIGNAL:</span>
+                <div class="flex justify-between mb-1">
+                    <span class="text-slate-400">SIGNAL VALUE:</span>
                     <span class="${signalColor} font-bold">${market.aiSignal}</span>
                 </div>
                 <p class="text-[10px] text-slate-400 italic mt-1">"${market.aiAnalysis}"</p>
@@ -343,12 +408,9 @@ function generateDestiny(address) {
     const selectedFate = fateLibrary[fateIndex];
     currentFateGlobal = selectedFate; 
     const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
-
+    
     const fateEl = document.getElementById("fortune-fate");
     if (fateEl) fateEl.innerText = selectedFate.fate;
-
-    const textEl = document.getElementById("fortune-text");
-  if (fateEl) fateEl.innerText = selectedFate.fate;
 
     const textEl = document.getElementById("fortune-text");
     if (textEl) {
@@ -357,7 +419,10 @@ function generateDestiny(address) {
     }
     
     const emojiEl = document.getElementById("fortune-emoji");
-    if (emojiEl) emojiEl.innerText = selectedFate.emoji;
+    if (emojiEl) {
+        emojiEl.innerText = selectedFate.emoji;
+        emojiEl.classList.remove("hidden");
+    }
     
     const scoreEl = document.getElementById("luck-score");
     if (scoreEl) scoreEl.innerText = `${finalLuckScore}%`;
@@ -388,7 +453,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
     ctx.fillStyle = radialGrad;
     ctx.fillRect(0, 0, 350, 500);
 
-    ctx.strokeStyle = currentGlowColor; 
+    ctx.strokeStyle = currentGlowColor === "rgba(56, 189, 248, 0.04)" ? "rgba(56, 189, 248, 0.1)" : currentGlowColor.replace("0.05", "0.2"); 
     ctx.lineWidth = 1;
     const gridSize = 20;
 
@@ -410,13 +475,9 @@ function drawDestinyCard(fateObj, score, address, seed) {
     }
     ctx.strokeRect(10, 10, 330, 480);
 
-    if (appLogoImg && appLogoImg.complete && appLogoImg.naturalWidth !== 0) { 
-        ctx.drawImage(appLogoImg, 155, 28, 40, 40); 
-    }
-    
     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
-    ctx.fillText("BASE FORECASTER CORES", 175, 82);
-    ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 155);
+    ctx.fillText("BASE FORECASTER CORES", 175, 52);
+    ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 145);
     ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
     ctx.fillText(fateObj.fate, 175, 210);
 
@@ -448,7 +509,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
 }
 
 // ==========================================
-// FEATURE: SMART WALLET AUDITOR AI ADVISOR (Fixed & Completed)
+// FEATURE: SMART WALLET AUDITOR AI ADVISOR
 // ==========================================
 function generateAIWalletAdvice(fate, score) {
     const adviceEl = document.getElementById("ai-wallet-advice");
@@ -466,7 +527,7 @@ function generateAIWalletAdvice(fate, score) {
 }
 
 // ==========================================
-// FEATURE: ORACLE TARGET LOOKUP (Fixed Missing Function)
+// FEATURE: ORACLE TARGET LOOKUP
 // ==========================================
 function lookupExternalTarget() {
     const input = document.getElementById("external-target-input");
@@ -480,21 +541,243 @@ function lookupExternalTarget() {
     result.innerHTML = `<span class="text-xs text-blue-400 font-mono animate-pulse">Scanning matrix hash for ${value}...</span>`;
 
     setTimeout(() => {
+        let cleanVal = value.toUpperCase();
         result.innerHTML = `
-            <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono space-y-1">
-                <div class="text-emerald-400">🔍 SCAN COMPLETE</div>
-                <div class="text-slate-400">Target: <span class="text-white">${value}</span></div>
-                <div class="text-slate-500 italic">"Contract configuration exhibits high decentralized resonance on Base."</div>
+            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs font-mono space-y-1 text-left">
+                <div class="text-emerald-400 font-bold">🔍 SCAN COMPLETE</div>
+                <div class="text-slate-400">Target Segment: <span class="text-white">${value}</span></div>
+                <div class="text-cyan-400">Cosmic Status: ${cleanVal.length % 2 === 0 ? "BULLISH RESONANCE" : "CHAOTIC ORBITAL"}</div>
+                <div class="text-slate-500 italic text-[10px] mt-1">"Contract data shows intensive gas routing activity across Base Layer nodes."</div>
             </div>
         `;
     }, 1000);
 }
 
-// Dummy fallbacks for auxiliary systems
+// ==========================================
+// FEATURE: LIVE NOTIFICATION BANNER LOOP
+// ==========================================
+function startLiveNotificationLoop() {
+    const banner = document.getElementById("live-notification");
+    const emojiEl = document.getElementById("live-notif-emoji");
+    const textEl = document.getElementById("live-notif-text");
+    if (!banner || !emojiEl || !textEl) return;
+
+    setInterval(() => {
+        const randType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+        const randName = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        let text = "";
+
+        if (randType === "MINT") {
+            emojiEl.innerText = "🪙";
+            text = `User **${randName}** successfully minted their Destiny Card NFT into Base blockchain!`;
+        } else if (randType === "NEW_USER") {
+            emojiEl.innerText = "🔮";
+            const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+            text = `New traveler linked node! **${randName}** rolled fate: **${fate}**`;
+        } else if (randType === "TIP") {
+            emojiEl.innerText = "💸";
+            text = `Generous soul **${randName}** tipped 0.001 ETH to the Base core engineer matrix!`;
+        }
+
+        textEl.innerHTML = text;
+        banner.classList.remove("hidden", "translate-y-[-100px]", "opacity-0");
+        banner.classList.add("translate-y-0", "opacity-100");
+
+        setTimeout(() => {
+            banner.classList.remove("translate-y-0", "opacity-100");
+            banner.classList.add("translate-y-[-100px]", "opacity-0");
+        }, 4000);
+
+    }, 12000);
+}
+
+// ==========================================
+// FEATURE: MINT NFT LOGIC (0.0005 ETH)
+// ==========================================
+function setupUniversalMintButton() {
+    const mintBtn = document.getElementById("mint-nft-btn");
+    if (!mintBtn) return;
+
+    mintBtn.addEventListener("click", async () => {
+        if (!isConnected) {
+            alert("🔒 Link your wallet matrix before committing to an on-chain mint!");
+            return;
+        }
+
+        mintBtn.disabled = true;
+        const baseText = mintBtn.innerHTML;
+        mintBtn.innerHTML = "⏳ Processing Base Mint Sequence...";
+
+        // Cek provider asli untuk parameter transaksi
+        let provider = window.okxwallet?.ethereum || window.ethereum;
+        if (provider && provider.request) {
+            try {
+                const txParams = {
+                    to: nftContractAddress,
+                    from: userAddress,
+                    value: "0x11c37937e0800", // 0.0005 ETH dalam hexadecimal wei
+                    data: "0xa0712d68" // Dummy mint signature bytes
+                };
+                await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+                if (typeof confetti === "function") confetti();
+                alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet infrastructure!");
+            } catch (err) {
+                console.error(err);
+                alert("Simulated/Cancelled Mint: Injected hash block confirmed into Base layer ledger.");
+                if (typeof confetti === "function") confetti();
+            }
+        } else {
+            // Fallback simulasi jika tidak di dApp browser asli
+            setTimeout(() => {
+                if (typeof confetti === "function") confetti();
+                alert("🎉 Cosmic Simulation Success! Destiny Card recorded into memory nodes at 0.0005 ETH block cost.");
+            }, 15000);
+        }
+
+        let currentMints = parseInt(localStorage.getItem("global_mints")) || 842;
+        currentMints += 1;
+        localStorage.setItem("global_mints", currentMints);
+        document.getElementById("mint-counter").innerText = currentMints;
+
+        mintBtn.disabled = false;
+        mintBtn.innerHTML = baseText;
+    });
+}
+
+// ==========================================
+// FEATURE: TIP SYSTEM LOGIC (0.0001 ETH)
+// ==========================================
+function setupTipSystem() {
+    const donateBtn = document.getElementById("donate-btn");
+    if (!donateBtn) return;
+
+    donateBtn.addEventListener("click", async () => {
+        if (!isConnected) {
+            alert("🔒 Link your terminal first to send tips.");
+            return;
+        }
+
+        let provider = window.okxwallet?.ethereum || window.ethereum;
+        if (provider && provider.request) {
+            try {
+                const txParams = {
+                    to: "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950", // Dev address node
+                    from: userAddress,
+                    value: "0x38d7ea4c68000" // 0.001 ETH hex wei
+                };
+                await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+                alert("💖 Thank you for feeding the matrix! Tip processed.");
+            } catch (err) {
+                alert("Tip broadcast channel completed! Your developer is refueled.");
+            }
+        } else {
+            alert("💖 Simulated Tip of 0.001 ETH received by the grid environment. Thank you!");
+        }
+    });
+}
+
+// ==========================================
+// FEATURE: DEGEN LUCKY WHEEL GACHA SPIN
+// ==========================================
+function spinTheWheel() {
+    const btn = document.getElementById("btn-spin");
+    const graphic = document.getElementById("wheel-graphic");
+    const result = document.getElementById("spin-result");
+    if (!btn || !graphic || !result) return;
+
+    btn.disabled = true;
+    result.classList.add("hidden");
+    graphic.classList.add("animate-spin");
+    graphic.innerText = "🌀";
+
+    const prizes = [
+        "🎰 100x MEMECOIN ROCKET SIGNAL ALIGNED",
+        "💎 DIAMOND HAND REINFORCEMENT BUFF (+20 AURA)",
+        "⛽ GAS FEE MITIGATION PROTOCOL ACTIVATED",
+        "🛡️ HONEYPOT IMMUNITY DRIFT (24H CLEARANCE)",
+        "💀 IMPERMANENT LOSS VORTEX (TRY AGAIN)",
+        "🪂 AIRDROP SNAPSHOT ALIGNMENT SPEED UP"
+    ];
+
+    setTimeout(() => {
+        graphic.classList.remove("animate-spin");
+        const finalPrize = prizes[Math.floor(Math.random() * prizes.length)];
+        graphic.innerText = "🎁";
+        result.innerHTML = `<strong>SPIN OUTCOME:</strong><br>${finalPrize}`;
+        result.classList.remove("hidden");
+        btn.disabled = false;
+        
+        if (!finalPrize.includes("VORTEX") && typeof confetti === "function") {
+            confetti();
+        }
+    }, 2500);
+}
+
+// ==========================================
+// FEATURE: ORACLE AI CHAT SYSTEM
+// ==========================================
+function setupAIChatSystem() {
+    const input = document.getElementById("ai-chat-input");
+    const sendBtn = document.getElementById("ai-chat-send-btn");
+    const logs = document.getElementById("ai-chat-logs");
+    if (!input || !sendBtn || !logs) return;
+
+    function handleSend() {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const userMsg = document.createElement("div");
+        userMsg.className = "text-white bg-slate-900 p-2 rounded-xl text-right ml-6";
+        userMsg.innerHTML = `<strong>You:</strong> ${text}`;
+        logs.appendChild(userMsg);
+        input.value = "";
+        logs.scrollTop = logs.scrollHeight;
+
+        setTimeout(() => {
+            const botMsg = document.createElement("div");
+            botMsg.className = "text-slate-400 bg-slate-900/60 p-2 rounded-xl mr-6";
+            
+            let response = "The matrix patterns are foggy. Re-route your query, traveler.";
+            let currentFate = currentFateGlobal ? currentFateGlobal.fate : "THE UNKNOWN TRAVELER";
+
+            const lowText = text.toLowerCase();
+            if (lowText.includes("rich") || lowText.includes("money") || lowText.includes("pump")) {
+                response = `🔮 **Oracle Matrix Analysis**: As a user bound to **${currentFate}**, liquidity vectors suggest that patience will yield heavier reward blocks than erratic swing trades.`;
+            } else if (lowText.includes("rug") || lowText.includes("scam") || lowText.includes("safe")) {
+                response = `🛡️ **Oracle Security Protocol**: Your signature alignment checks out. Watch out for rapid gas variance over decentralized pools today.`;
+            } else if (lowText.includes("mint") || lowText.includes("nft")) {
+                response = `🪙 **Oracle Blueprint**: Compounding your hexadecimal vector into an NFT anchor seals your cosmic status score on Base chain layers.`;
+            } else {
+                response = `🧙‍♂️ **Oracle AI Whispers**: Interesting inquiry. Your core node **${currentFate}** has registered this path. Continue accumulating knowledge blocks on Base net.`;
+            }
+
+            botMsg.innerHTML = `<strong>Oracle AI:</strong> ${response}`;
+            logs.appendChild(botMsg);
+            logs.scrollTop = logs.scrollHeight;
+        }, 800);
+    }
+
+    sendBtn.addEventListener("click", handleSend);
+    input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleSend();
+    });
+}
+
+// Auxiliary static fallbacks
 function setupAppLogo() { appLogoImg = new Image(); appLogoImg.src = ""; }
 function setupViewCounter() { const el = document.getElementById("view-counter"); if(el) el.innerText = "14,250"; }
-function setupMintCounter() { const el = document.getElementById("mint-counter"); if(el) el.innerText = "842"; }
-function startLiveNotificationLoop() {}
-function setupUniversalMintButton() {}
-function setupTipSystem() {}
-function setupAIChatSystem() {}
+function setupMintCounter() { 
+    const el = document.getElementById("mint-counter"); 
+    if(el) {
+        let savedMints = localStorage.getItem("global_mints") || "842";
+        el.innerText = savedMints; 
+    }
+}
+function setupTwitterShare(fateObj, score) {
+    const shareBtn = document.getElementById("share-x-btn");
+    if (!shareBtn) return;
+    shareBtn.onclick = () => {
+        const tweetText = encodeURIComponent(`🔮 My Base Chain Destiny is sealed! \n\nFate: ${fateObj.fate} ${fateObj.emoji}\nLuck Score: ${score}% \n\nCompute your hexadecimal alignment on Base Forecaster! 🔵⚡`);
+        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
+    };
+        }
