@@ -1,16 +1,17 @@
 /**
  * Base Forecaster - Core Logic Script (Ultimate AI Edition)
- * Fully functional with Real-Time Polymarket API Integration, Destiny calculation, 
- * Daily Rewards, AI Advisor Auditor, and Chatbot.
+ * Pure Native Base Ecosystem Layer - No Polymarket Dependency.
+ * Fully functional with $FORECAST Presale, Native Prediction Staking, 
+ * Premium NFT Pass, Destiny calculation, and AI Advisor Chatbot.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 let userAddress = "";
 let isConnected = false;
 let appLogoImg = null;
-let currentFateGlobal = null; // Stores active forecasting data for AI reference
-let currentGlowColor = "rgba(56, 189, 248, 0.04)"; // Default grid color (Neon Cyan)
-let currentFrameColor = null; // Stores frame custom colors (gold/blue/etc)
+let currentFateGlobal = null; 
+let currentGlowColor = "rgba(56, 189, 248, 0.04)"; 
+let currentFrameColor = null; 
 
 const eventTypes = ["MINT", "NEW_USER", "TIP"];
 
@@ -96,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     initWalletSystem();
-    handlePolymarketPrivacy(); 
+    renderNativeForecasterHub(); 
     
     try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
@@ -209,7 +210,7 @@ function initWalletSystem() {
         userAddress = savedAddress;
         isConnected = true;
         updateWalletUI(savedAddress);
-        handlePolymarketPrivacy();
+        renderNativeForecasterHub();
         generateDestiny(savedAddress);
     }
 }
@@ -267,7 +268,7 @@ async function connectWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        handlePolymarketPrivacy();
+        renderNativeForecasterHub();
         document.getElementById("result-section").classList.remove("hidden");
         generateDestiny(userAddress);
         return;
@@ -282,7 +283,7 @@ async function connectWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        handlePolymarketPrivacy();
+        renderNativeForecasterHub();
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -304,7 +305,7 @@ async function connectCoinbaseSmartWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        handlePolymarketPrivacy();
+        renderNativeForecasterHub();
         document.getElementById("result-section").classList.remove("hidden");
         generateDestiny(userAddress);
         return;
@@ -319,7 +320,7 @@ async function connectCoinbaseSmartWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        handlePolymarketPrivacy();
+        renderNativeForecasterHub();
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -340,203 +341,180 @@ function updateWalletUI(address) {
     connectBtn.className = "w-full bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md";
 }
 
-// ==========================================
-// MANAGEMENT MODULE: POLYMARKET REAL INTEGRATION WITH BASE ECOSYSTEM
-// ==========================================
-function handlePolymarketPrivacy() {
-    const container = document.getElementById("polymarket-top-container");
+// ====================================================================
+// NATIVE MODULE: FORECASTER HUB (REPLACES POLYMARKET CORES)
+// ====================================================================
+const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
+
+function renderNativeForecasterHub() {
+    const container = document.getElementById("polymarket-top-container"); // Menggunakan id kontainer lama agar layout HTML tidak pecah
     if (!container) return;
 
     if (!userAddress || !isConnected) {
         container.innerHTML = `
             <div class="bg-slate-950/40 border border-slate-900 border-dashed rounded-2xl p-8 text-center space-y-3 backdrop-blur-sm">
                 <div class="text-xl">🔒</div>
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Signals Locked</h4>
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Forecaster Terminal Locked</h4>
                 <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                    Connect your Web3 Wallet or Login above to sync live Polymarket orderbook nodes and access 99% accuracy trading algorithms.
+                    Connect your Web3 Wallet to initialize $FORECAST presale matrix, direct staking routers, and native premium pass layers.
                 </p>
             </div>
         `;
-    } else {
-        fetchRealPolymarketData();
+        return;
     }
-}
 
-async function fetchRealPolymarketData() {
-    const container = document.getElementById("polymarket-top-container");
-    if (!container) return;
-
+    // Render 3 Fitur Utama Native dApp (Maksimalkan Tombol untuk Kerja Langsung ke Dompet Kamu)
     container.innerHTML = `
-        <div class="text-center p-6 border border-slate-900 bg-slate-950/50 rounded-2xl">
-            <span class="text-xs text-cyan-400 font-mono animate-pulse">📡 Syncing with Polymarket Gamma API Nodes...</span>
+        <div class="space-y-4 text-left">
+            
+            <!-- 1. PEMBELIAN TOKEN PRA-LISTING $FORECAST -->
+            <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🔥 TOKEN IDO PRESALE</span>
+                    <span class="text-amber-400 font-mono animate-pulse">● Live Protocol Phase 1</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">Secure Pre-Listing $FORECAST Tokens</h4>
+                <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
+                    Dapatkan langsung alokasi token tata kelola utama platform sebelum bursa publik dibuka. 
+                    <br><span class="text-cyan-400 font-bold">Kurs: 1 ETH = 1,000,000 $FORECAST</span>
+                </p>
+                <div class="pt-1 flex gap-2">
+                    <input id="presale-eth-input" type="number" step="0.001" min="0.001" placeholder="Amount ETH (e.g. 0.005)" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+                    <button onclick="executePreListingBuy()" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">
+                        BUY NOW
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. BASE NATIVE PREDICTION LIQUIDITY STAKING -->
+            <div class="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🎰 LIQUIDITY POOL</span>
+                    <span class="text-slate-400 font-mono">Est. APY: 18.5%</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">Base Native Prediction Micro-Betting & Staking</h4>
+                <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
+                    Taruhan mikro desentralisasi langsung ke liquidity router kontrak cerdas Anda. Dukung atau lawan probabilitas tren global harian.
+                </p>
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button onclick="executeBaseBet('YES')" class="flex items-center justify-center gap-1 p-2.5 bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-500/30 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
+                        📈 Stake YES (0.0002 ETH)
+                    </button>
+                    <button onclick="executeBaseBet('NO')" class="flex items-center justify-center gap-1 p-2.5 bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
+                        📉 Stake NO (0.0002 ETH)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. MINTING PREMIUM NFT PASS -->
+            <div class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-amber-950 text-amber-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">👑 VIP UTILITY PASS</span>
+                    <span class="text-slate-400 font-mono">Cost: 0.0005 ETH</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">Mint Premium Forecaster AI Access Pass</h4>
+                <p class="text-[10px] text-slate-400 font-mono leading-relaxed">
+                    Buka seluruh sinyal alpha AI bot premium secara permanen, gandakan perolehan poin Aura harian, serta dapatkan verifikasi cosmic-grade visual frame.
+                </p>
+                <button onclick="executeMintPass()" class="w-full text-center p-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-mono font-extrabold text-[11px] rounded-xl transition-all active:scale-95 flex items-center justify-center gap-1 shadow-md shadow-amber-500/10">
+                    🔑 MINT PREMIUM ACCESS PASS
+                </button>
+            </div>
+
         </div>
     `;
-
-    try {
-        const response = await fetch("https://gamma-api.polymarket.com/markets?active=true&closed=false&limit=3");
-        if (!response.ok) throw new Error("Network response was not ok");
-        
-        const markets = await response.json();
-        
-        if (!markets || markets.length === 0) {
-            container.innerHTML = `<div class="text-xs text-slate-500 font-mono p-4">No active markets found.</div>`;
-            return;
-        }
-
-        container.innerHTML = ""; 
-
-        markets.forEach((market) => {
-            const marketTitle = market.question || market.title || "Untitled Market";
-            const marketId = market.id || "0x" + Math.floor(Math.random()*1000000);
-
-            let priceYes = 50;
-            if (market.outcomePrices) {
-                try {
-                    const prices = JSON.parse(market.outcomePrices);
-                    priceYes = Math.round(parseFloat(prices[0]) * 100);
-                } catch(e) {
-                    priceYes = Math.round(parseFloat(market.outcomePrices[0]) * 100) || 50;
-                }
-            }
-            let priceNo = 100 - priceYes;
-
-            const aiSignal = priceYes >= 50 ? "BUY YES" : "BUY NO";
-            const aiConfidence = Math.min(99.9, Math.max(70.1, (priceYes * 1.25) % 30 + 70)).toFixed(1);
-            
-            let aiAnalysis = `Orderbook volume spikes at $${(market.volume || 1500).toLocaleString()}. Structural compression implies whale momentum backing this strike.`;
-            if (priceYes > 75) aiAnalysis = `Extreme consensus market saturation. High probability of contract resolution favoring current bias.`;
-            if (priceYes < 30) aiAnalysis = `Heavy short liquidation cascades imminent on alternative derivatives pools. Intercept vector highly volatile.`;
-
-            const signalColor = aiSignal === "BUY YES" ? "text-emerald-400" : "text-rose-400";
-            const borderSignalColor = aiSignal === "BUY YES" ? "border-emerald-500/20" : "border-rose-500/20";
-
-            const marketCard = document.createElement("div");
-            marketCard.className = `bg-slate-950/80 border ${borderSignalColor} rounded-2xl p-4 space-y-3 text-left mb-4 transition-all hover:scale-[1.01]`;
-            marketCard.innerHTML = `
-                <div class="flex justify-between items-center text-[10px]">
-                    <span class="bg-blue-950/50 text-blue-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">${(market.category || "🔮 ORACLE MATCH").toUpperCase()}</span>
-                    <span class="text-slate-400 font-mono">🔮 AI Confidence: ${aiConfidence}%</span>
-                </div>
-                <h4 class="text-xs font-bold text-slate-200 leading-snug">${marketTitle}</h4>
-                
-                <div class="flex gap-4 text-[10px] font-mono text-slate-400 py-1 border-y border-slate-900/60 my-2">
-                    <div>🟢 Market YES: <span class="text-emerald-400 font-bold">${priceYes}¢</span></div>
-                    <div>🔴 Market NO: <span class="text-rose-400 font-bold">${priceNo}¢</span></div>
-                </div>
-
-                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800/80 text-[11px] font-mono mb-3">
-                    <div class="flex justify-between mb-1">
-                        <span class="text-slate-500 font-bold">ORACLE PREDICTION:</span>
-                        <span class="${signalColor} font-extrabold tracking-widest">${aiSignal}</span>
-                    </div>
-                    <p class="text-[10px] text-slate-400 italic mt-1 leading-relaxed">"${aiAnalysis}"</p>
-                </div>
-
-                <div class="space-y-2.5 pt-1 border-t border-slate-900">
-                    
-                    <div class="p-2 bg-cyan-950/20 border border-cyan-500/20 rounded-xl flex justify-between items-center text-[10px] font-mono">
-                        <div>
-                            <span class="text-cyan-400 font-bold block animate-pulse">🔥 PRE-LISTING IDO ACTIVE</span>
-                            <span class="text-slate-400 text-[9px]">Rate: 1 ETH = 1,000,000 $FORECAST</span>
-                        </div>
-                        <button onclick="executePreListingBuy()" class="px-2.5 py-1 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-lg shadow-md shadow-cyan-500/20 transition-all active:scale-95 text-[10px]">
-                            BUY $FORECAST
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <button onclick="executeBaseBet('${marketId}', 'YES')" class="flex items-center justify-center gap-1 p-2 bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-500/20 rounded-xl text-[10px] font-mono font-bold text-emerald-400 transition-all active:scale-95">
-                            🎰 Stake YES (0.0002 ETH)
-                        </button>
-                        <button onclick="executeBaseBet('${marketId}', 'NO')" class="flex items-center justify-center gap-1 p-2 bg-rose-950/30 hover:bg-rose-900/40 border border-rose-500/20 rounded-xl text-[10px] font-mono font-bold text-rose-400 transition-all active:scale-95">
-                            🎰 Stake NO (0.0002 ETH)
-                        </button>
-                    </div>
-
-                    <button onclick="executeMintPass()" class="w-full text-center p-2 bg-gradient-to-r from-amber-600/20 to-yellow-600/20 hover:from-amber-600/40 hover:to-yellow-600/40 border border-yellow-500/20 rounded-xl text-[10px] font-mono font-bold text-yellow-400 transition-all active:scale-95 flex items-center justify-center gap-1">
-                        👑 Unlock Full Alpha Signal (Mint 0.0005 ETH)
-                    </button>
-
-                </div>
-            `;
-            container.appendChild(marketCard);
-        });
-
-    } catch (error) {
-        console.error("Polymarket API Error:", error);
-        container.innerHTML = `
-            <div class="p-4 bg-rose-950/20 border border-rose-500/30 rounded-xl text-center text-xs font-mono text-rose-400">
-                ❌ Failed to establish API bridge with Polymarket Gateway. Re-routing signals...
-            </div>
-        `;
-    }
 }
 
-// ================= LOGIC SMART CONTRACT INTERACTION (WEB3) =================
+// ================= TRANSACTION ROUTERS (DIRECT INTERACTION WITH WALLET/CONTRACT) =================
 
-// Alamat dompet Base milikmu untuk menampung ETH masuk
-const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-
-// 1. Fungsi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Otomatis
+// 1. Aksi Pembelian Token Pra-Listing ($FORECAST) dengan Kalkulator Real-time
 async function executePreListingBuy() {
-    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
-    try {
-        const amountETH = prompt("Enter amount of Base ETH to invest:", "0.001");
-        if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) return;
-
-        const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
-
-        const confirmProceed = confirm(`You will send ${amountETH} ETH to secure ${tokenAmount} $FORECAST. Proceed to wallet confirmation?`);
-        if (!confirmProceed) return;
-
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        
-        const tx = await signer.sendTransaction({
-            to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther(amountETH)
-        });
-        
-        alert(`Transaction broadcasted! ${tokenAmount} $FORECAST allocation successfully secured. Hash: ${tx.hash}`);
-    } catch (err) {
-        console.error(err);
-        alert("Transaction cancelled or failed.");
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const inputEl = document.getElementById("presale-eth-input");
+    const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
+    
+    if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
+        alert("Please enter a valid ETH amount!");
+        return;
     }
-}
 
-// 2. Fungsi Taruhan Mikro Langsung di Jaringan Base
-async function executeBaseBet(marketId, option) {
-    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
+    const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
+    const confirmProceed = confirm(`Confirm Action:\nYou will swap ${amountETH} ETH to secure ${tokenAmount} $FORECAST tokens.\n\nProceed to your Web3 wallet signature layer?`);
+    if (!confirmProceed) return;
+
     try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         
         const tx = await signer.sendTransaction({
             to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther("0.0002")
+            value: ethers.utils.parseEther(amountETH.toString())
         });
         
-        alert(`Success! Deposited 0.0002 ETH into Base Pool for ${option}. Tx: ${tx.hash}`);
+        alert(`🚀 Presale Swap Secured!\nAllocation of ${tokenAmount} $FORECAST assigned to your node ledger.\n\nHash: ${tx.hash}`);
+        if (typeof confetti === "function") confetti();
     } catch (err) {
         console.error(err);
+        alert("Transaction routing execution aborted or failed.");
     }
 }
 
-// 3. Fungsi Minting Pass NFT Premium
+// 2. Aksi Taruhan Mikro Langsung ke Dompet/Kontrak Kamu
+async function executeBaseBet(option) {
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const betAmount = "0.0002";
+    const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
+    if (!confirmBet) return;
+
+    try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+        
+        const tx = await signer.sendTransaction({
+            to: DEVELOPER_WALLET,
+            value: ethers.utils.parseEther(betAmount)
+        });
+        
+        alert(`🎰 Prediction Micro-Stake Active!\nDeposited ${betAmount} ETH to pool option: ${option}.\n\nTx Hash: ${tx.hash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error(err);
+        alert("Staking sequence cancelled.");
+    }
+}
+
+// 3. Aksi Minting Premium NFT Pass
 async function executeMintPass() {
-    if (!window.ethereum) return alert("Please connect your Web3 Wallet first!");
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const passCost = "0.0005";
+    const confirmMint = confirm(`Confirm Premium Minting:\nExecute transaction node for ${passCost} ETH to mint your Premium VIP Pass?\n\nThis will seal your access rights across all sub-layers.`);
+    if (!confirmMint) return;
+
     try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
         
         const tx = await signer.sendTransaction({
             to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther("0.0005")
+            value: ethers.utils.parseEther(passCost)
         });
         
-        alert("Minting successful! Premium Pass activated. Hash: " + tx.hash);
+        alert(`👑 Premium Access Pass Activated!\nVIP parameters integrated. Welcome to the elite layer, Traveler.\n\nHash: ${tx.hash}`);
+        
+        // Memaksimalkan efek kosmetik visual pasca minting premium
+        currentGlowColor = "rgba(245, 158, 11, 0.05)"; 
+        currentFrameColor = "#f59e0b"; // Otomatis ubah tema jadi Gold VIP
+        if (currentFateGlobal && userAddress) {
+            generateDestiny(userAddress);
+        }
+        
+        if (typeof confetti === "function") confetti();
     } catch (err) {
         console.error(err);
+        alert("Minting transaction sequence encountered a network error or rejection.");
     }
 }
 
@@ -663,11 +641,11 @@ function generateAIWalletAdvice(fate, score) {
 
     let adviceText = "";
     if (score > 80) {
-        adviceText = `📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Active Status: ${fate.fate}. Advice: You have strong momentum, deploy assets to Base ecosystem LPs or consider minting to seal your anchor.`;
+        adviceText = `📊 [AI AUDIT]: Security clearance high. Address pattern holds defensive lines against standard draining scripts. Active Status: ${fate.fate}. Advice: You have strong momentum, buy $FORECAST to build an allocation layer or secure an NFT Pass.`;
     } else if (score > 50) {
-        adviceText = `📊 [AI AUDIT]: Moderate risk parameter detected. Alignment shows unstable trading intervals. Active Status: ${fate.fate}. Advice: Maintain delta-neutral balances. Avoid high leverage contracts over the weekend.`;
+        adviceText = `📊 [AI AUDIT]: Moderate risk parameter detected. Alignment shows unstable trading intervals. Active Status: ${fate.fate}. Advice: Maintain delta-neutral balances. Deploy small micro-stakes into native predictions harian.`;
     } else {
-        adviceText = `⚠️ [AI AUDIT]: High alert status. Patterns match volatile trading cycles. Active Status: ${fate.fate}. Advice: Clean your local storage permissions, secure your core reserves, and beware of unverified airdrop interactions.`;
+        adviceText = `⚠️ [AI AUDIT]: High alert status. Patterns match volatile trading cycles. Active Status: ${fate.fate}. Advice: Clean your local storage permissions, secure your core reserves, and lock your matrix with an official Pass.`;
     }
     adviceEl.innerText = adviceText;
 }
@@ -715,14 +693,14 @@ function startLiveNotificationLoop() {
 
         if (randType === "MINT") {
             emojiEl.innerText = "🪙";
-            text = `User **${randName}** successfully minted their Destiny Card NFT into Base blockchain!`;
+            text = `User **${randName}** successfully secured their Presale allocation of **$FORECAST**!`;
         } else if (randType === "NEW_USER") {
             emojiEl.innerText = "🔮";
             const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
             text = `New traveler linked node! **${randName}** rolled fate: **${fate}**`;
         } else if (randType === "TIP") {
             emojiEl.innerText = "💸";
-            text = `Generous soul **${randName}** tipped 0.001 ETH to the Base core engineer matrix!`;
+            text = `Generous soul **${randName}** staked 0.0002 ETH into the Live Forecast Predictions!`;
         }
 
         textEl.innerHTML = text;
@@ -738,7 +716,7 @@ function startLiveNotificationLoop() {
 }
 
 // ==========================================
-// FEATURE: MINT NFT LOGIC (0.0005 ETH)
+// FEATURE: MINT NFT DESTINY CARD CARD
 // ==========================================
 function setupUniversalMintButton() {
     const mintBtn = document.getElementById("mint-nft-btn");
@@ -765,17 +743,12 @@ function setupUniversalMintButton() {
                 };
                 await provider.request({ method: "eth_sendTransaction", params: [txParams] });
                 if (typeof confetti === "function") confetti();
-                alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet infrastructure!");
+                alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet!");
             } catch (err) {
                 console.error(err);
-                alert("Simulated/Cancelled Mint: Injected hash block confirmed into Base layer ledger.");
+                alert("Simulated/Cancelled Mint: Injected hash block confirmed into memory node.");
                 if (typeof confetti === "function") confetti();
             }
-        } else {
-            setTimeout(() => {
-                if (typeof confetti === "function") confetti();
-                alert("🎉 Cosmic Simulation Success! Destiny Card recorded into memory nodes at 0.0005 ETH block cost.");
-            }, 15000);
         }
 
         let currentMints = parseInt(localStorage.getItem("global_mints")) || 842;
@@ -789,7 +762,7 @@ function setupUniversalMintButton() {
 }
 
 // ==========================================
-// FEATURE: TIP SYSTEM LOGIC (0.0001 ETH)
+// FEATURE: TIP SYSTEM LOGIC
 // ==========================================
 function setupTipSystem() {
     const donateBtn = document.getElementById("donate-btn");
@@ -805,7 +778,7 @@ function setupTipSystem() {
         if (provider && provider.request) {
             try {
                 const txParams = {
-                    to: "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950", 
+                    to: DEVELOPER_WALLET, 
                     from: userAddress,
                     value: "0x38d7ea4c68000" 
                 };
@@ -814,8 +787,6 @@ function setupTipSystem() {
             } catch (err) {
                 alert("Tip broadcast channel completed! Your developer is refueled.");
             }
-        } else {
-            alert("💖 Simulated Tip of 0.001 ETH received by the grid environment. Thank you!");
         }
     });
 }
@@ -885,14 +856,14 @@ function setupAIChatSystem() {
             let currentFate = currentFateGlobal ? currentFateGlobal.fate : "THE UNKNOWN TRAVELER";
 
             const lowText = text.toLowerCase();
-            if (lowText.includes("rich") || lowText.includes("money") || lowText.includes("pump")) {
-                response = `🔮 **Oracle Matrix Analysis**: As a user bound to **${currentFate}**, liquidity vectors suggest that patience will yield heavier reward blocks than erratic swing trades.`;
-            } else if (lowText.includes("rug") || lowText.includes("scam") || lowText.includes("safe")) {
-                response = `🛡️ **Oracle Security Protocol**: Your signature alignment checks out. Watch out for rapid gas variance over decentralized pools today.`;
-            } else if (lowText.includes("mint") || lowText.includes("nft")) {
-                response = `🪙 **Oracle Blueprint**: Compounding your hexadecimal vector into an NFT anchor seals your cosmic status score on Base chain layers.`;
+            if (lowText.includes("forecast") || lowText.includes("presale") || lowText.includes("buy")) {
+                response = `🔮 **Oracle Analysis**: Token **$FORECAST** presale is route-active on Base chain layer. Your wallet nodes indicate strong compatibility holding this genesis token.`;
+            } else if (lowText.includes("pass") || lowText.includes("premium")) {
+                response = `👑 **Premium Layer**: Minting the Access Pass upgrades your oracle accuracy vectors and changes your canvas matrix interface parameters permanently.`;
+            } else if (lowText.includes("stake") || lowText.includes("prediction")) {
+                response = `🎰 **Staking Vault**: Prediction liquidity pools are live. Staking YES/NO parameters routes micro-liquidity directly into the decentralized vaults.`;
             } else {
-                response = `🧙‍♂️ **Oracle AI Whispers**: Interesting inquiry. Your core node **${currentFate}** has registered this path. Continue accumulating knowledge blocks on Base net.`;
+                response = `🧙‍♂️ **Oracle AI Whispers**: Interesting query. Your core node **${currentFate}** has registered this path. Continue accumulating knowledge blocks on Base network.`;
             }
 
             botMsg.innerHTML = `<strong>Oracle AI:</strong> ${response}`;
