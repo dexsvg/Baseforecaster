@@ -80,7 +80,7 @@ const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENER
 
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
-// App Initialization On Load (PERBAIKAN SYNTAX Selesai di sini)
+// App Initialization On Load
 document.addEventListener("DOMContentLoaded", () => {
     try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
     try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
@@ -101,14 +101,199 @@ document.addEventListener("DOMContentLoaded", () => {
     initWalletSystem();
 });
 
-// Placeholder functions for system setup
-function setupAppLogo() {}
-function setupViewCounter() {}
-function setupMintCounter() {}
-function startLiveNotificationLoop() {}
-function setupDailyLogin() {}
-function lookupExternalTarget() {}
-function initWalletSystem() {}
+// Placeholder / Core UI System functions
+function setupAppLogo() {
+    console.log("App logo initialized.");
+}
+
+function setupViewCounter() {
+    const viewCounter = document.getElementById("view-counter");
+    if (viewCounter) {
+        let views = Math.floor(Math.random() * 500) + 1200;
+        viewCounter.innerText = views.toLocaleString();
+        setInterval(() => {
+            views += Math.floor(Math.random() * 3) + 1;
+            viewCounter.innerText = views.toLocaleString();
+        }, 4000);
+    }
+}
+
+function setupMintCounter() {
+    const mintCounter = document.getElementById("mint-counter");
+    if (mintCounter) {
+        let mints = 742;
+        mintCounter.innerText = `${mints} / 5000`;
+        setInterval(() => {
+            if (mints < 5000 && Math.random() > 0.7) {
+                mints += 1;
+                mintCounter.innerText = `${mints} / 5000`;
+            }
+        }, 12000);
+    }
+}
+
+function startLiveNotificationLoop() {
+    const feed = document.getElementById("live-notification-feed");
+    if (!feed) return;
+    setInterval(() => {
+        const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+        const name = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        let text = "";
+        if (type === "MINT") {
+            text = `successfully minted a Forecaster Pass! 🔑`;
+        } else if (type === "NEW_USER") {
+            const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
+            text = `initialized prediction mainframe: [${fate}]`;
+        } else if (type === "TIP") {
+            const eth = (Math.random() * 0.004 + 0.001).toFixed(4);
+            text = `sent a support tip of ${eth} ETH 💙`;
+        }
+        const item = document.createElement("div");
+        item.className = "text-[10px] font-mono text-slate-400 bg-slate-900/50 border border-slate-800/30 rounded-lg px-3 py-1.5 animate-fadeIn flex justify-between";
+        item.innerHTML = `<span class="text-cyan-400 font-bold">@${name}</span> <span>${text}</span>`;
+        feed.prepend(item);
+        if (feed.children.length > 3) feed.removeChild(feed.lastChild);
+    }, 6000);
+}
+
+function setupDailyLogin() {
+    const streakElement = document.getElementById("daily-streak-value");
+    if (streakElement) streakElement.innerText = "3 Days";
+}
+
+// ====================================================================
+// WALLET INTERACTION MODULE
+// ====================================================================
+function initWalletSystem() {
+    const connectBtn = document.getElementById("connect-wallet-btn");
+    if (connectBtn) {
+        connectBtn.addEventListener("click", connectWallet);
+    }
+    checkIfWalletConnected();
+}
+
+async function checkIfWalletConnected() {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+            if (accounts.length > 0) {
+                userAddress = accounts[0];
+                isConnected = true;
+                updateWalletUI();
+            }
+        } catch (err) {
+            console.error("Error checking wallet connection:", err);
+        }
+    }
+}
+
+async function connectWallet() {
+    if (window.ethereum) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            userAddress = accounts[0];
+            isConnected = true;
+            updateWalletUI();
+        } catch (err) {
+            alert("Koneksi wallet dibatalkan: " + err.message);
+        }
+    } else {
+        alert("Browser Web3 tidak terdeteksi. Silakan buka lewat dApp browser di OKX Wallet / MetaMask.");
+    }
+}
+
+function updateWalletUI() {
+    const connectBtn = document.getElementById("connect-wallet-btn");
+    const addrDisplay = document.getElementById("wallet-address-display");
+    
+    if (isConnected && userAddress) {
+        if (connectBtn) connectBtn.style.display = "none";
+        if (addrDisplay) {
+            addrDisplay.style.display = "block";
+            addrDisplay.innerText = userAddress.substring(0,6) + "..." + userAddress.substring(userAddress.length - 4);
+        }
+        // Hitung nasib & Render Hub otomatis setelah wallet terkoneksi
+        calculateWalletDestiny(userAddress);
+        renderNativeForecasterHub();
+    }
+}
+
+// ====================================================================
+// DESTINY GENERATION AND AI CORE LOGIC
+// ====================================================================
+function calculateWalletDestiny(address) {
+    if (!address) return;
+    
+    // Penentuan deterministic berdasarkan address hash
+    let hashSum = 0;
+    for (let i = 0; i < address.length; i++) {
+        hashSum += address.charCodeAt(i);
+    }
+    const index = hashSum % fateLibrary.length;
+    const selectedFate = fateLibrary[index];
+    currentFateGlobal = selectedFate;
+
+    // Render hasil takdir ke UI
+    const scoreElement = document.getElementById("destiny-score-display");
+    const nameElement = document.getElementById("destiny-name-display");
+    const textElement = document.getElementById("destiny-text-display");
+    const container = document.getElementById("destiny-result-card");
+
+    if (scoreElement) scoreElement.innerText = selectedFate.score;
+    if (nameElement) nameElement.innerText = `${selectedFate.emoji} ${selectedFate.fate}`;
+    if (textElement) textElement.innerText = selectedFate.text;
+    if (container) container.classList.remove("hidden");
+
+    // Kirim pesan salam otomatis ke Chatbot AI
+    triggerBotWelcomeMessage(selectedFate);
+}
+
+function lookupExternalTarget() {
+    const input = document.getElementById("external-target-input");
+    if (!input || !input.value) return;
+    calculateWalletDestiny(input.value.trim());
+}
+
+// ====================================================================
+// AI CHATBOT SYSTEM
+// ====================================================================
+function triggerBotWelcomeMessage(fate) {
+    const chatContainer = document.getElementById("chat-messages-container");
+    if (!chatContainer) return;
+    
+    chatContainer.innerHTML = ""; // Reset chat
+    const msg = document.createElement("div");
+    msg.className = "bg-slate-900/80 border border-slate-800 rounded-2xl p-3 text-[11px] font-mono leading-relaxed text-slate-300 max-w-[85%]";
+    msg.innerHTML = `<span class="text-cyan-400 font-bold">🔮 BASE ORACLE:</span><br>Greeting Agent! I scanned your signature matrix. Your aura stands at <span class="text-amber-400 font-bold">${fate.score} pts</span> under the sign of <b>${fate.fate}</b>. Ask me anything regarding your protocol trajectory.`;
+    chatContainer.appendChild(msg);
+}
+
+// ====================================================================
+// SUPPORT TIP TRANSACTION (ORIGINAL WORKING CODE)
+// ====================================================================
+async function sendSupportTip() {
+    if (!isConnected || !userAddress) {
+        alert("Hubungkan dompet Anda terlebih dahulu!");
+        return;
+    }
+    const tipAmount = 0.0003; 
+    const valueHex = "0x" + (tipAmount * 1e18).toString(16);
+
+    try {
+        alert(`Memproses pengiriman support tip sebesar ${tipAmount} ETH...`);
+        const txHash = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: DEVELOPER_WALLET,
+                value: valueHex,
+            }],
+        });
+        alert("Terima kasih atas dukungannya! Transaksi Berhasil, Hash: " + txHash);
+    } catch (e) {
+        alert("Transaksi tip gagal: " + e.message);
+    }
+}
 
 
 // ====================================================================
