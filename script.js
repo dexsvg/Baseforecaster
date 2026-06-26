@@ -342,7 +342,7 @@ function updateWalletUI(address) {
 }
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB (TRANSLATED TO ENGLISH FROM 1000050901.jpg)
+// NATIVE MODULE: FORECASTER HUB 
 // ====================================================================
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
@@ -367,7 +367,6 @@ function renderNativeForecasterHub() {
     container.innerHTML = `
         <div class="space-y-4 text-left">
             
-            <!-- 1. PRE-LISTING TOKEN PURCHASE ($FORECAST) -->
             <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🔥 TOKEN IDO PRESALE</span>
@@ -386,7 +385,6 @@ function renderNativeForecasterHub() {
                 </div>
             </div>
 
-            <!-- 2. BASE NATIVE PREDICTION LIQUIDITY STAKING -->
             <div class="bg-slate-950/80 border border-emerald-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🎰 LIQUIDITY POOL</span>
@@ -406,7 +404,6 @@ function renderNativeForecasterHub() {
                 </div>
             </div>
 
-            <!-- 3. MINTING PREMIUM NFT PASS -->
             <div class="bg-slate-950/80 border border-amber-500/30 rounded-2xl p-4 space-y-3 transition-all hover:scale-[1.01]">
                 <div class="flex justify-between items-center text-[10px]">
                     <span class="bg-amber-950 text-amber-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">👑 VIP UTILITY PASS</span>
@@ -425,76 +422,6 @@ function renderNativeForecasterHub() {
     `;
 }
 
-// ================= TRANSACTION ROUTERS (DIRECT INTERACTION WITH WALLET/CONTRACT) =================
-
-// 1. Pre-Listing Purchase Trigger
-async function executePreListingBuy() {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
-    
-    const inputEl = document.getElementById("presale-eth-input");
-    const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
-    
-    if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
-        alert("Please enter a valid ETH amount!");
-        return;
-    }
-
-    const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
-    const confirmProceed = confirm(`Confirm Action:\nYou will swap ${amountETH} ETH to secure ${tokenAmount} $FORECAST tokens.\n\nProceed to your Web3 wallet signature layer?`);
-    if (!confirmProceed) return;
-
-    try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        
-        const tx = await signer.sendTransaction({
-            to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther(amountETH.toString())
-        });
-        
-        alert(`🚀 Presale Swap Secured!\nAllocation of ${tokenAmount} $FORECAST assigned to your node ledger.\n\nHash: ${tx.hash}`);
-        if (typeof confetti === "function") confetti();
-    } catch (err) {
-        console.error(err);
-        alert("Transaction routing execution aborted or failed.");
-    }
-}
-
-// 2. Micro-Betting Direct Routing Staker
-async function executeBaseBet(option) {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
-    
-    const betAmount = "0.0002";
-    const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
-    if (!confirmBet) return;
-
-    try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-        
-        const tx = await signer.sendTransaction({
-            to: DEVELOPER_WALLET,
-            value: ethers.utils.parseEther(betAmount)
-        });
-        
-        alert(`🎰 Prediction Micro-Stake Active!\nDeposited ${betAmount} ETH to pool option: ${option}.\n\nTx Hash: ${tx.hash}`);
-        if (typeof confetti === "function") confetti();
-    } catch (err) {
-        console.error(err);
-        alert("Staking sequence cancelled.");
-    }
-}
-
-// 3. Premium Access Pass Mint Sequence
-async function executeMintPass() {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
-    
-    const passCost = "0.0005";
-    const confirmMint = confirm(`Confirm Premium Minting:\nExecute transaction node for ${passCost} ETH to mint your Premium VIP Pass?\n\nThis will seal your access rights across all sub-layers.`);
-    if (!confirmMint) return;
-
-    try {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
 // ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
 
 // 1. Pre-Listing Purchase Trigger (Direct Transfer via RPC window.ethereum)
@@ -514,18 +441,15 @@ async function executePreListingBuy() {
     if (!confirmProceed) return;
 
     try {
-        // Mengonversi ETH ke Wei (Hexadecimal) secara native tanpa ethers.js
         const valueInWei = (parseFloat(amountETH) * 1e18).toString(16);
         const hexValue = "0x" + valueInWei;
 
-        // Memicu pop-up transaksi transfer ETH biasa langsung ke wallet kamu
         const txHash = await window.ethereum.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
                 to: DEVELOPER_WALLET,
                 value: hexValue,
-                // Gas otomatis dihitung oleh dompet (Base Network sangat murah)
             }],
         });
         
@@ -541,16 +465,14 @@ async function executePreListingBuy() {
 async function executeBaseBet(option) {
     if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
-    const betAmount = "0.0002"; // 0.0002 ETH
+    const betAmount = "0.0002"; 
     const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
     if (!confirmBet) return;
 
     try {
-        // Konversi 0.0002 ETH ke Wei Hex format -> 0x2c68af0bb14000
         const valueInWei = (parseFloat(betAmount) * 1e18).toString(16);
         const hexValue = "0x" + valueInWei;
 
-        // Kirim transaksi transfer biasa langsung memicu dompet
         const txHash = await window.ethereum.request({
             method: 'eth_sendTransaction',
             params: [{
@@ -567,6 +489,44 @@ async function executeBaseBet(option) {
         alert("Staking sequence cancelled: " + (err.message || err));
     }
 }
+
+// 3. Premium Access Pass Mint Sequence (Smart Contract Interaction Layer)
+async function executeMintPass() {
+    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    
+    const passCost = "0.0005";
+    const confirmMint = confirm(`Confirm Premium Minting:\nExecute transaction node for ${passCost} ETH to mint your Premium VIP Pass?\n\nThis will seal your access rights across all sub-layers.`);
+    if (!confirmMint) return;
+
+    try {
+        const valueInWei = (parseFloat(passCost) * 1e18).toString(16);
+        const hexValue = "0x" + valueInWei;
+
+        const txHash = await window.ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: nftContractAddress, // Ditujukan ke contract pas kamu
+                value: hexValue,
+                data: "0xa0712d68" // Mint function selector node
+            }],
+        });
+        
+        alert(`👑 Premium Access Pass Activated!\nVIP parameters integrated. Welcome to the elite layer, Traveler.\n\nHash: ${txHash}`);
+        
+        currentGlowColor = "rgba(245, 158, 11, 0.05)"; 
+        currentFrameColor = "#f59e0b"; 
+        if (currentFateGlobal && userAddress) {
+            generateDestiny(userAddress);
+        }
+        
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error(err);
+        alert("Minting transaction sequence encountered a network error or rejection.");
+    }
+}
+
 // ==========================================
 // DESTINY ENGINE GENERATION & RENDERING
 // ==========================================
@@ -765,7 +725,7 @@ function startLiveNotificationLoop() {
 }
 
 // ==========================================
-// FEATURE: MINT NFT DESTINY CARD
+// FEATURE: MINT NFT DESTINY CARD (Main Page Component Mint)
 // ==========================================
 function setupUniversalMintButton() {
     const mintBtn = document.getElementById("mint-nft-btn");
