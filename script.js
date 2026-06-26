@@ -937,31 +937,38 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ====================================================================
-// GLOBAL EVENT DELEGATION (ANTI-BLOCKING LAYER FOR MOBILE dApp BROWSERS)
-// SAMA SEPERTI MECHANISM SETUP TIP SYSTEM (MEMASTIKAN TOMBOL HUB JALAN)
+// GLOBAL EVENT DELEGATION (VERSI FIXED - ANTI-LUDRUK DI MOBILE)
 // ====================================================================
 document.addEventListener("click", function(e) {
-    // 1. Deteksi klik tombol BUY NOW untuk Presale Token
-    if (e.target && e.target.id === "btn-action-presale") {
+    // 1. Tombol BUY NOW Presale (Sekarang aman walau kena teks/pinggiran tombol)
+    const presaleBtn = e.target.closest("#btn-action-presale");
+    if (presaleBtn) {
         e.preventDefault();
         executePreListingBuy();
+        return; // stop check biar ga bentrok
     }
     
-    // 2. Deteksi klik tombol Stake YES
-    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
+    // 2. Tombol Stake YES
+    const stakeYesBtn = e.target.closest("#btn-action-stake-yes");
+    if (stakeYesBtn) {
         e.preventDefault();
         executeBaseBet('YES');
+        return;
     }
     
-    // 3. Deteksi klik tombol Stake NO
-    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
+    // 3. Tombol Stake NO
+    const stakeNoBtn = e.target.closest("#btn-action-stake-no");
+    if (stakeNoBtn) {
         e.preventDefault();
         executeBaseBet('NO');
+        return;
     }
     
-    // 4. Deteksi klik tombol MINT PREMIUM ACCESS PASS
-    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
+    // 4. Tombol MINT PREMIUM ACCESS PASS
+    const mintPassBtn = e.target.closest("#btn-action-mint-pass");
+    if (mintPassBtn) {
         e.preventDefault();
         executeMintPass();
+        return;
     }
 });
