@@ -78,6 +78,8 @@ const fateLibrary = [
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
+const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
+
 // App Initialization On Load
 document.addEventListener("DOMContentLoaded", () => {
     try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
@@ -102,7 +104,53 @@ document.addEventListener("DOMContentLoaded", () => {
     try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
     try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
+
+    // Auto-detect wallet if already unlocked inside dApp mobile browser
+    setTimeout(async () => {
+        const provider = getActiveProvider();
+        if (provider) {
+            try {
+                const accounts = await provider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    isConnected = true;
+                    localStorage.setItem("user_wallet", userAddress);
+                    updateWalletUI(userAddress);
+                    renderNativeForecasterHub();
+                    const rSec = document.getElementById("result-section");
+                    if (rSec) rSec.classList.remove("hidden");
+                    generateDestiny(userAddress);
+                }
+            } catch (err) {
+                console.log("Auto-detection background trace cleared:", err);
+            }
+        }
+    }, 1000);
 });
+
+// ====================================================================
+// CORE WEB3 MOBILE PROVIDER ENGINE
+// ====================================================================
+function getActiveProvider() {
+    if (window.ethereum) {
+        if (window.ethereum.providers && window.ethereum.providers.length) {
+            return window.ethereum.providers.find(p => p.isCoinbaseWallet || p.isOKXWallet) || window.ethereum.providers[0];
+        }
+        return window.ethereum;
+    }
+    if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
+    if (window.bitkeep && window.bitkeep.ethereum) return window.bitkeep.ethereum;
+    return null;
+}
+
+function toSafeHexWei(amountETH) {
+    const wei = Math.floor(parseFloat(amountETH) * 1e18);
+    let hex = wei.toString(16);
+    if (hex.length % 2 !== 0) {
+        hex = "0" + hex;
+    }
+    return "0x" + hex;
+}
 
 // ==========================================
 // FEATURE: NAVIGATION & MODALS SYSTEM
@@ -250,17 +298,7 @@ function setupModalButtons() {
 // WEB3 WALLET CONNECTION CORE LOGIC
 // ==========================================
 async function connectWallet() {
-    let provider = null;
-    if (window.okxwallet && window.okxwallet.ethereum) {
-        provider = window.okxwallet.ethereum;
-    } else if (window.ethereum) {
-        provider = window.ethereum;
-        if (window.ethereum.providers && window.ethereum.providers.length) {
-            provider = window.ethereum.providers.find(p => p.isOKXWallet) || window.ethereum.providers[0];
-        }
-    } else if (window.bitkeep && window.bitkeep.ethereum) {
-        provider = window.bitkeep.ethereum;
-    }
+    let provider = getActiveProvider();
 
     if (!provider) {
         alert("Web3 Wallet not detected! Simulating core uplink hash node for immediate deployment.");
@@ -269,7 +307,8 @@ async function connectWallet() {
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
         renderNativeForecasterHub();
-        document.getElementById("result-section").classList.remove("hidden");
+        const rSec = document.getElementById("result-section");
+        if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
         return;
     }
@@ -298,7 +337,7 @@ async function connectWallet() {
 }
 
 async function connectCoinbaseSmartWallet() {
-    const provider = window.ethereum?.isCoinbaseWallet ? window.ethereum : window.coinbaseWalletExtension;
+    const provider = window.ethereum?.isCoinbaseWallet ? window.ethereum : window.coinbaseWalletExtension || getActiveProvider();
     if (!provider) {
         alert("Coinbase Extension node not found. Injecting universal cloud wallet bypass layer.");
         userAddress = "0xEaa6809EAdE7388077d9EC014C98c8764D9f13950";
@@ -306,7 +345,8 @@ async function connectCoinbaseSmartWallet() {
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
         renderNativeForecasterHub();
-        document.getElementById("result-section").classList.remove("hidden");
+        const rSec = document.getElementById("result-section");
+        if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
         return;
     }
@@ -344,8 +384,6 @@ function updateWalletUI(address) {
 // ====================================================================
 // NATIVE MODULE: FORECASTER HUB 
 // ====================================================================
-const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
     if (!container) return;
@@ -363,7 +401,6 @@ function renderNativeForecasterHub() {
         return;
     }
 
-    // Render 3 Main Native dApp Features (Fully English & Button Mapped to your Wallet)
     container.innerHTML = `
         <div class="space-y-4 text-left">
             
@@ -424,9 +461,10 @@ function renderNativeForecasterHub() {
 
 // ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
 
-// 1. Pre-Listing Purchase Trigger (Direct Transfer via RPC window.ethereum)
+// 1. Pre-Listing Purchase Trigger
 async function executePreListingBuy() {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
     const inputEl = document.getElementById("presale-eth-input");
     const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
@@ -441,10 +479,8 @@ async function executePreListingBuy() {
     if (!confirmProceed) return;
 
     try {
-        const valueInWei = (parseFloat(amountETH) * 1e18).toString(16);
-        const hexValue = "0x" + valueInWei;
-
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(amountETH);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
@@ -461,19 +497,18 @@ async function executePreListingBuy() {
     }
 }
 
-// 2. Micro-Betting Direct Routing Staker (Direct Transfer via RPC window.ethereum)
+// 2. Micro-Betting Direct Routing Staker
 async function executeBaseBet(option) {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
     const betAmount = "0.0002"; 
     const confirmBet = confirm(`Confirm Prediction Stake:\nDeploy ${betAmount} ETH supporting the [${option}] pool parameter?\n\nThis will be broadcasted directly into your secure ecosystem router.`);
     if (!confirmBet) return;
 
     try {
-        const valueInWei = (parseFloat(betAmount) * 1e18).toString(16);
-        const hexValue = "0x" + valueInWei;
-
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(betAmount);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
@@ -490,25 +525,24 @@ async function executeBaseBet(option) {
     }
 }
 
-// 3. Premium Access Pass Mint Sequence (Smart Contract Interaction Layer)
+// 3. Premium Access Pass Mint Sequence
 async function executeMintPass() {
-    if (!window.ethereum || !isConnected) return alert("Please connect your Web3 Wallet first!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
     const passCost = "0.0005";
     const confirmMint = confirm(`Confirm Premium Minting:\nExecute transaction node for ${passCost} ETH to mint your Premium VIP Pass?\n\nThis will seal your access rights across all sub-layers.`);
     if (!confirmMint) return;
 
     try {
-        const valueInWei = (parseFloat(passCost) * 1e18).toString(16);
-        const hexValue = "0x" + valueInWei;
-
-        const txHash = await window.ethereum.request({
+        const hexValue = toSafeHexWei(passCost);
+        const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
-                to: nftContractAddress, // Ditujukan ke contract pas kamu
+                to: nftContractAddress,
                 value: hexValue,
-                data: "0xa0712d68" // Mint function selector node
+                data: "0xa0712d68" 
             }],
         });
         
@@ -732,7 +766,8 @@ function setupUniversalMintButton() {
     if (!mintBtn) return;
 
     mintBtn.addEventListener("click", async () => {
-        if (!isConnected) {
+        const provider = getActiveProvider();
+        if (!provider || !isConnected) {
             alert("🔒 Link your wallet matrix before committing to an on-chain mint!");
             return;
         }
@@ -741,23 +776,20 @@ function setupUniversalMintButton() {
         const baseText = mintBtn.innerHTML;
         mintBtn.innerHTML = "⏳ Processing Base Mint Sequence...";
 
-        let provider = window.okxwallet?.ethereum || window.ethereum;
-        if (provider && provider.request) {
-            try {
-                const txParams = {
-                    to: nftContractAddress,
-                    from: userAddress,
-                    value: "0x11c37937e0800", 
-                    data: "0xa0712d68" 
-                };
-                await provider.request({ method: "eth_sendTransaction", params: [txParams] });
-                if (typeof confetti === "function") confetti();
-                alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet!");
-            } catch (err) {
-                console.error(err);
-                alert("Simulated/Cancelled Mint: Injected hash block confirmed into memory node.");
-                if (typeof confetti === "function") confetti();
-            }
+        try {
+            const txParams = {
+                to: nftContractAddress,
+                from: userAddress,
+                value: toSafeHexWei("0.0005"), 
+                data: "0xa0712d68" 
+            };
+            await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+            if (typeof confetti === "function") confetti();
+            alert("🎉 Success! Your Destiny Card NFT has been minted permanently on the Base Mainnet!");
+        } catch (err) {
+            console.error(err);
+            alert("Simulated/Cancelled Mint: Injected hash block confirmed into memory node.");
+            if (typeof confetti === "function") confetti();
         }
 
         let currentMints = parseInt(localStorage.getItem("global_mints")) || 842;
@@ -778,24 +810,22 @@ function setupTipSystem() {
     if (!donateBtn) return;
 
     donateBtn.addEventListener("click", async () => {
-        if (!isConnected) {
+        const provider = getActiveProvider();
+        if (!provider || !isConnected) {
             alert("🔒 Link your terminal first to send tips.");
             return;
         }
 
-        let provider = window.okxwallet?.ethereum || window.ethereum;
-        if (provider && provider.request) {
-            try {
-                const txParams = {
-                    to: DEVELOPER_WALLET, 
-                    from: userAddress,
-                    value: "0x38d7ea4c68000" 
-                };
-                await provider.request({ method: "eth_sendTransaction", params: [txParams] });
-                alert("💖 Thank you for feeding the matrix! Tip processed.");
-            } catch (err) {
-                alert("Tip broadcast channel completed! Your developer is refueled.");
-            }
+        try {
+            const txParams = {
+                to: DEVELOPER_WALLET, 
+                from: userAddress,
+                value: toSafeHexWei("0.001") 
+            };
+            await provider.request({ method: "eth_sendTransaction", params: [txParams] });
+            alert("💖 Thank you for feeding the matrix! Tip processed.");
+        } catch (err) {
+            alert("Tip broadcast channel completed! Your developer is refueled.");
         }
     });
 }
