@@ -246,17 +246,25 @@ function setupDailyLogin() {
 }
 
 // ====================================================================
-// REAL CONNECT WALLET ONLY (NO SIMULATION)
+// REAL CONNECT & DISCONNECT WALLET MODULE (NO SIMULATION)
 // ====================================================================
 function initWalletSystem() {
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
-        // Hapus semua event listener lama dengan mengganti elemen (clean setup)
+        // Hapus event listener lama agar tidak double trigger
         const newConnectBtn = connectBtn.cloneNode(true);
         connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
         
-        // Pasang event listener murni
-        newConnectBtn.addEventListener("click", connectWallet);
+        // Pasang event listener dinamis berdasarkan status koneksi
+        newConnectBtn.addEventListener("click", () => {
+            if (isConnected) {
+                // Jika sudah connect, klik tombol akan memicu Disconnect
+                disconnectWallet();
+            } else {
+                // Jika belum connect, klik tombol akan memicu Connect
+                connectWallet();
+            }
+        });
     }
 }
 
@@ -272,7 +280,7 @@ async function connectWallet() {
     try {
         if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
 
-        // Murni meminta izin koneksi akun dari aplikasi wallet (Pop-up Real)
+        // Meminta izin akses akun real dari wallet
         const accounts = await provider.request({ method: "eth_requestAccounts" });
         
         if (!accounts || accounts.length === 0) {
@@ -282,31 +290,48 @@ async function connectWallet() {
         userAddress = accounts[0];
         isConnected = true;
 
-        // Hubungkan ke UI asli
+        // Update tampilan tombol & halaman
         updateWalletUI(userAddress);
         renderNativeForecasterHub(); 
 
-        // Tampilkan section hasil jika ada
         document.getElementById("result-section")?.classList.remove("hidden");
         generateDestiny(userAddress);
 
         alert("🟢 Wallet berhasil terhubung secara real!");
     } catch (error) {
         console.error("Koneksi gagal:", error);
-        isConnected = false;
-        userAddress = "";
-        
-        // Kembalikan tombol ke status awal jika gagal/ditolak
-        if (connectBtn) {
-            connectBtn.innerHTML = "🔮 Connect Wallet";
-            connectBtn.className = "w-full bg-blue-600 text-white text-xs font-bold px-4 py-3 rounded-2xl transition-all shadow-md active:scale-95";
-        }
-        
-        // Kunci kembali hub transaksi agar tidak bisa diklik
-        renderNativeForecasterHub(); 
-        
+        resetWalletState();
         alert("❌ Koneksi Gagal atau Dibatalkan: " + (error.message || error));
     }
+}
+
+// FUNGSI BARU: Untuk memutus koneksi wallet secara bersih
+function disconnectWallet() {
+    const confirmDisconnect = confirm("Apakah Anda yakin ingin memutuskan koneksi wallet?");
+    if (!confirmDisconnect) return;
+
+    resetWalletState();
+    alert("🔴 Wallet berhasil diputuskan!");
+}
+
+// Fungsi pembantu untuk mengembalikan state ke awal (Reset)
+function resetWalletState() {
+    userAddress = "";
+    isConnected = false;
+
+    // Kembalikan tombol Connect Wallet ke tampilan semula
+    const connectBtn = document.getElementById("connect-btn");
+    if (connectBtn) {
+        connectBtn.innerHTML = "🔮 Connect Wallet";
+        // Mengembalikan class style awal tombolmu
+        connectBtn.className = "w-full bg-blue-600 text-white text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md active:scale-95 text-center block";
+    }
+
+    // Sembunyikan kembali section hasil/fortune teller jika ada
+    document.getElementById("result-section")?.classList.add("hidden");
+
+    // Kunci kembali semua tombol transaksi (BUY NOW, Stake, dll)
+    renderNativeForecasterHub();
 }
 // ==========================================
 // WEB3 WALLET CONNECTION CORE LOGIC
@@ -391,8 +416,12 @@ async function connectCoinbaseSmartWallet() {
 function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-btn");
     if (!connectBtn) return;
-    connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)}`;
-    connectBtn.className = "w-full bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md";
+    
+    // Tampilkan alamat wallet yang terpotong beserta teks panduan disconnect
+    connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)} (Click to Disconnect)`;
+    
+    // Mengubah warna tombol menjadi tema abu-abu/merah gelap penanda connected/disconnect
+    connectBtn.className = "w-full bg-slate-900 text-rose-400 border border-rose-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md text-center block hover:bg-rose-950/20";
 }
 
 // ====================================================================
