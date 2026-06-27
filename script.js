@@ -937,35 +937,38 @@ function setupTwitterShare(fateObj, score) {
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
     };
 }
-
 // ====================================================================
-// GLOBAL EVENT DELEGATION
+// GLOBAL EVENT DELEGATION (FIXED & AGGRESSIVE ROUTING FOR MOBILE)
 // ====================================================================
 document.addEventListener("click", function(e) {
-    const presaleBtn = e.target.closest("#btn-action-presale");
-    if (presaleBtn) {
+    // 1. Deteksi Tombol Presale BUY NOW
+    if (e.target && (e.target.id === "btn-action-presale" || e.target.closest("#btn-action-presale"))) {
         e.preventDefault();
+        e.stopPropagation();
         executePreListingBuy();
         return;
     }
     
-    const stakeYesBtn = e.target.closest("#btn-action-stake-yes");
-    if (stakeYesBtn) {
+    // 2. Deteksi Tombol Stake YES
+    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
         e.preventDefault();
+        e.stopPropagation();
         executeBaseBet('YES');
         return;
     }
     
-    const stakeNoBtn = e.target.closest("#btn-action-stake-no");
-    if (stakeNoBtn) {
+    // 3. Deteksi Tombol Stake NO
+    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
         e.preventDefault();
+        e.stopPropagation();
         executeBaseBet('NO');
         return;
     }
     
-    const mintPassBtn = e.target.closest("#btn-action-mint-pass");
-    if (mintPassBtn) {
+    // 4. Deteksi Tombol Mint Premium Pass
+    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
         e.preventDefault();
+        e.stopPropagation();
         executeMintPass();
         return;
     }
