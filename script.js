@@ -197,17 +197,26 @@ function disconnectWallet() {
 }
 
 function resetWalletState() {
+    // 1. Bersihkan semua variabel global
     userAddress = "";
     isConnected = false;
 
+    // 2. Kembalikan UI tombol ke kondisi awal & hapus data-status
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
+        connectBtn.removeAttribute("data-status");
         connectBtn.innerHTML = "🔮 Connect Wallet";
         connectBtn.className = "w-full bg-blue-600 text-white text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md active:scale-95 text-center block";
     }
 
+    // 3. Sembunyikan kembali section result
     document.getElementById("result-section")?.classList.add("hidden");
     renderNativeForecasterHub();
+
+    // 4. JURUS PAMUNGKAS MOBILE dAPP: Paksa reload halaman agar memori provider bersih total
+    setTimeout(() => {
+        window.location.reload();
+    }, 300);
 }
 
 function updateWalletUI(address) {
