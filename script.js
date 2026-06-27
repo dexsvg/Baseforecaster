@@ -73,59 +73,6 @@ const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENER
 
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
-// App Initialization On Load
-document.addEventListener("DOMContentLoaded", () => {
-    try { setupAppLogo(); } catch(e) { console.error("Logo error:", e); }
-    try { setupViewCounter(); } catch(e) { console.error("View counter error:", e); }
-    try { setupMintCounter(); } catch(e) { console.error("Mint counter error:", e); }
-    try { startLiveNotificationLoop(); } catch(e) { console.error("Notification error:", e); }
-    try { setupDailyLogin(); } catch(e) { console.error("Daily system error:", e); }
-    
-    const lookupBtn = document.getElementById("external-target-btn");
-    if (lookupBtn) lookupBtn.addEventListener("click", lookupExternalTarget);
-
-    const lookupInput = document.getElementById("external-target-input");
-    if (lookupInput) {
-        lookupInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") lookupExternalTarget();
-        });
-    }
-    
-    initWalletSystem();
-    
-    try { setupUniversalMintButton(); } catch(e) { console.error("Mint button error:", e); }
-    try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
-    try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
-
-    const spinBtn = document.getElementById("btn-spin");
-    if (spinBtn) spinBtn.addEventListener("click", spinTheWheel);
-
-    // Auto-detect wallet session asli tanpa simulasi
-    setTimeout(async () => {
-        const provider = getActiveProvider();
-        if (provider) {
-            try {
-                const accounts = await provider.request({ method: 'eth_accounts' });
-                if (accounts && accounts.length > 0) {
-                    userAddress = accounts[0];
-                    isConnected = true;
-                    updateWalletUI(userAddress);
-                    renderNativeForecasterHub(); 
-                    const rSec = document.getElementById("result-section");
-                    if (rSec) rSec.classList.remove("hidden");
-                    generateDestiny(userAddress);
-                } else {
-                    renderNativeForecasterHub(); 
-                }
-            } catch (err) {
-                renderNativeForecasterHub();
-            }
-        } else {
-            renderNativeForecasterHub();
-        }
-    }, 800);
-});
-
 // ====================================================================
 // CORE WEB3 MOBILE PROVIDER ENGINE
 // ====================================================================
@@ -149,11 +96,9 @@ function toSafeHexWei(amountETH) {
 }
 
 // ====================================================================
-// REAL CONNECT & DISCONNECT WALLET MODULE (NO SIMULATION)
+// REAL CONNECT & DISCONNECT WALLET MODULE
 // ====================================================================
 function initWalletSystem() {
-    // Kita tidak perlu cloneNode lagi, kita langsung serahkan logic klik-nya 
-    // ke Global Event Delegation di paling bawah agar anti-gagal di mobile.
     renderNativeForecasterHub();
 }
 
@@ -175,7 +120,6 @@ async function connectWallet() {
         userAddress = accounts[0];
         isConnected = true;
 
-        // HAPUS blacklist karena user sengaja melakukan koneksi manual
         localStorage.removeItem("wallet_blacklisted");
 
         updateWalletUI(userAddress);
@@ -196,9 +140,7 @@ function disconnectWallet() {
     const confirmDisconnect = confirm("Apakah Anda yakin ingin memutuskan koneksi wallet?");
     if (!confirmDisconnect) return;
 
-    // KUNCI UTAMA: Tandai di localStorage bahwa user sengaja memutuskan koneksi
     localStorage.setItem("wallet_blacklisted", "true");
-
     resetWalletState();
     alert("🔴 Wallet berhasil diputuskan!");
 }
@@ -217,10 +159,19 @@ function resetWalletState() {
     document.getElementById("result-section")?.classList.add("hidden");
     renderNativeForecasterHub();
 
-    // Paksa reload agar handshake di Coinbase/OKX terputus total dari memori skrip
     setTimeout(() => {
         window.location.reload();
     }, 200);
+}
+
+function updateWalletUI(address) {
+    const connectBtn = document.getElementById("connect-btn");
+    if (!connectBtn) return;
+    
+    // Set status terhubung agar terbaca oleh Global Click Handler di bawah
+    connectBtn.setAttribute("data-status", "connected");
+    connectBtn.innerHTML = `🔴 Disconnect (${address.slice(0, 6)}...${address.slice(-4)})`;
+    connectBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md active:scale-95 text-center block";
 }
 
 // ==========================================
@@ -369,6 +320,12 @@ function renderNativeForecasterHub() {
             </div>
         </div>
     `;
+
+    // Pasangkan event listener di dalam hub setelah dirender
+    document.getElementById("btn-action-presale")?.addEventListener("click", executePreListingBuy);
+    document.getElementById("btn-action-stake-yes")?.addEventListener("click", () => executeBaseBet("YES"));
+    document.getElementById("btn-action-stake-no")?.addEventListener("click", () => executeBaseBet("NO"));
+    document.getElementById("btn-action-mint-pass")?.addEventListener("click", executeMintPass);
 }
 
 // ================= TRANSACTION ROUTERS (REAL RPC DIRECT ROUTING) =================
@@ -748,6 +705,10 @@ function setupAIChatSystem() {
     const logs = document.getElementById("ai-chat-logs");
     if (!input || !sendBtn || !logs) return;
 
+    // Bersihkan listener lama agar tidak double trigger saat init ulang
+    const newSendBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+
     function handleSend() {
         const text = input.value.trim();
         if (!text) return;
@@ -780,7 +741,7 @@ function setupAIChatSystem() {
         }, 800);
     }
 
-    sendBtn.addEventListener("click", handleSend);
+    newSendBtn.addEventListener("click", handleSend);
     input.addEventListener("keypress", (e) => {
         if (e.key === "Enter") handleSend();
     });
@@ -799,37 +760,71 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ====================================================================
-// GLOBAL INITIALIZATION & SAFE SESSION CHECK
+// SINGLE INITIALIZATION & DELEGATION SYSTEM (ANTI-GAGAL MOBILE dAPP)
 // ====================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    initWalletSystem();
-    setupDailyLogin();
-    setupAIChatSystem();
-    
-    // Cek apakah user pernah menekan tombol disconnect sebelumnya
-    const isBlacklisted = localStorage.getItem("wallet_blacklisted");
+    // 1. Jalankan komponen bawaan UI dasar
+    try { setupAppLogo(); } catch(e) {}
+    try { setupViewCounter(); } catch(e) {}
+    try { setupMintCounter(); } catch(e) {}
+    try { startLiveNotificationLoop(); } catch(e) {}
+    try { setupDailyLogin(); } catch(e) {}
+    try { setupUniversalMintButton(); } catch(e) {}
+    try { setupTipSystem(); } catch(e) {}
+    try { setupAIChatSystem(); } catch(e) {}
 
-    const provider = getActiveProvider();
-    if (provider && isBlacklisted !== "true") {
-        // Hanya lakukan auto-detect jika user tidak sedang memblacklist koneksi
-        provider.request({ method: 'eth_accounts' })
-        .then((accounts) => {
-            if (accounts && accounts.length > 0) {
-                userAddress = accounts[0];
-                isConnected = true;
-                updateWalletUI(userAddress);
-                renderNativeForecasterHub();
-                document.getElementById("result-section")?.classList.remove("hidden");
-                generateDestiny(userAddress);
-            } else {
-                renderNativeForecasterHub();
-            }
-        })
-        .catch(() => {
-            renderNativeForecasterHub();
+    // 2. Setup Lookup Target
+    const lookupBtn = document.getElementById("external-target-btn");
+    if (lookupBtn) lookupBtn.addEventListener("click", lookupExternalTarget);
+    const lookupInput = document.getElementById("external-target-input");
+    if (lookupInput) {
+        lookupInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") lookupExternalTarget();
         });
-    } else {
-        // Jika di-blacklist atau provider tidak ada, kunci terminal ke kondisi awal
-        renderNativeForecasterHub();
+    }
+
+    // 3. Setup Spin Gacha Wheel
+    const spinBtn = document.getElementById("btn-spin");
+    if (spinBtn) spinBtn.addEventListener("click", spinTheWheel);
+
+    // 4. GLOBAL EVENT DELEGATION: Handler Klik Tombol Connect/Disconnect Utama
+    document.addEventListener("click", (e) => {
+        const target = e.target.closest("#connect-btn");
+        if (!target) return;
+        
+        e.preventDefault();
+        const status = target.getAttribute("data-status");
+        if (status === "connected") {
+            disconnectWallet();
+        } else {
+            connectWallet();
+        }
+    });
+
+    // 5. Inisialisasi awal UI terminal
+    initWalletSystem();
+    
+    // 6. SAFE AUTO-SESSION DETECT LAYER
+    const isBlacklisted = localStorage.getItem("wallet_blacklisted");
+    const provider = getActiveProvider();
+
+    if (provider && isBlacklisted !== "true") {
+        setTimeout(async () => {
+            try {
+                const accounts = await provider.request({ method: 'eth_accounts' });
+                if (accounts && accounts.length > 0) {
+                    userAddress = accounts[0];
+                    isConnected = true;
+                    updateWalletUI(userAddress);
+                    renderNativeForecasterHub(); 
+                    
+                    const rSec = document.getElementById("result-section");
+                    if (rSec) rSec.classList.remove("hidden");
+                    generateDestiny(userAddress);
+                }
+            } catch (err) {
+                console.error("Auto detect failed:", err);
+            }
+        }, 600);
     }
 });
