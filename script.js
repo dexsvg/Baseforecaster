@@ -465,37 +465,51 @@ function renderNativeForecasterHub() {
 // ================= TRANSACTION ROUTERS (PURE WEB3 NATIVE DIRECT ROUTING) =================
 
 async function executePreListingBuy() {
-    const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
-    
-    const inputEl = document.getElementById("presale-eth-input");
-    const amountETH = inputEl && inputEl.value ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
-    
-    if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
-        alert("Please enter a valid ETH amount!");
-        return;
-    }
-
-    const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
-    const confirmProceed = confirm(`Confirm Action:\nYou will swap ${amountETH} ETH to secure ${tokenAmount} $FORECAST tokens.\n\nProceed to your Web3 wallet signature layer?`);
-    if (!confirmProceed) return;
-
     try {
-        const hexValue = toSafeHexWei(amountETH);
+        const provider = await getWalletProvider();
+        if (!provider) {
+            alert("🔒 Web3 Wallet tidak terdeteksi! Silakan buka lewat browser dApp Coinbase Wallet.");
+            return;
+        }
+
+        // Paksa minta akun aktif (membangunkan session yang tertidur di mobile)
+        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+        userAddress = accounts[0];
+        
+        if (!userAddress) {
+            alert("Gagal mengaitkan alamat wallet.");
+            return;
+        }
+
+        // Ambil nilai angka langsung dari input box presale kamu
+        const inputEl = document.getElementById("presale-eth-input");
+        const amountETH = inputEl && inputEl.value ? inputEl.value : "0.005";
+        
+        if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
+            alert("Masukkan jumlah ETH yang valid!");
+            return;
+        }
+
+        const tokenAmount = (parseFloat(amountETH) * 1000000).toLocaleString();
+        
+        // Konversi ETH ke Hex Wei
+        const hexValue = "0x" + Math.floor(parseFloat(amountETH) * 1e18).toString(16);
+
+        // Kirim transaksi langsung lewat RPC provider mobile
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
-                to: DEVELOPER_WALLET,
+                to: DEVELOPER_WALLET, // Mengirim ke wallet developer sesuai file acuan asli
                 value: hexValue,
             }],
         });
         
-        alert(`🚀 Presale Swap Secured!\nAllocation of ${tokenAmount} $FORECAST assigned to your node ledger.\n\nHash: ${txHash}`);
+        alert(`🚀 Presale Swap Secured!\n${tokenAmount} $FORECAST berhasil dialokasikan.\n\nHash: ${txHash}`);
         if (typeof confetti === "function") confetti();
     } catch (err) {
         console.error("Presale Error:", err);
-        alert("Transaction routing execution aborted or failed: " + (err.message || err));
+        alert("Transaksi gagal atau dibatalkan: " + (err.message || err));
     }
 }
 
