@@ -97,6 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
     try { setupTipSystem(); } catch(e) { console.error("Tip system error:", e); }
     try { setupAIChatSystem(); } catch(e) { console.error("AI Chat error:", e); }
 
+    // Tambahkan listener untuk tombol Gacha Spin agar tidak kehilangan fungsi kliknya
+    const spinBtn = document.getElementById("btn-spin");
+    if (spinBtn) spinBtn.addEventListener("click", spinTheWheel);
+
     // Auto-detect wallet if already unlocked inside dApp mobile browser
     setTimeout(async () => {
         const provider = getActiveProvider();
@@ -108,12 +112,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     isConnected = true;
                     localStorage.setItem("user_wallet", userAddress);
                     updateWalletUI(userAddress);
-                    renderNativeForecasterHub(); // RENDER ULANG SETELAH WAALLET DETECTED
+                    renderNativeForecasterHub(); 
                     const rSec = document.getElementById("result-section");
                     if (rSec) rSec.classList.remove("hidden");
                     generateDestiny(userAddress);
                 } else {
-                    renderNativeForecasterHub(); // Tetap panggil biar nampil keadaan locked
+                    renderNativeForecasterHub(); 
                 }
             } catch (err) {
                 console.log("Auto-detection background trace cleared:", err);
@@ -159,12 +163,15 @@ function navigate(page) {
         return;
     }
     
-    if (page === 'glow') {
-        document.getElementById("modal-glow").classList.remove("hidden");
-        document.getElementById("modal-glow").classList.add("flex");
-    } else if (page === 'wheel') {
-        document.getElementById("modal-wheel").classList.remove("hidden");
-        document.getElementById("modal-wheel").classList.add("flex");
+    const modalGlow = document.getElementById("modal-glow");
+    const modalWheel = document.getElementById("modal-wheel");
+
+    if (page === 'glow' && modalGlow) {
+        modalGlow.classList.remove("hidden");
+        modalGlow.classList.add("flex");
+    } else if (page === 'wheel' && modalWheel) {
+        modalWheel.classList.remove("hidden");
+        modalWheel.classList.add("flex");
     } else if (page === 'ranks') {
         alert("🏆 Global Leaderboard Ranks is clearing decentralized nodes. Position: #24 Degen Matrix.");
     } else if (page === 'home') {
@@ -302,7 +309,7 @@ async function connectWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
+        renderNativeForecasterHub(); 
         const rSec = document.getElementById("result-section");
         if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
@@ -318,7 +325,7 @@ async function connectWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
+        renderNativeForecasterHub(); 
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -340,7 +347,7 @@ async function connectCoinbaseSmartWallet() {
         isConnected = true;
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
+        renderNativeForecasterHub(); 
         const rSec = document.getElementById("result-section");
         if (rSec) rSec.classList.remove("hidden");
         generateDestiny(userAddress);
@@ -356,7 +363,7 @@ async function connectCoinbaseSmartWallet() {
 
         localStorage.setItem("user_wallet", userAddress);
         updateWalletUI(userAddress);
-        renderNativeForecasterHub(); // UPDATE UI SEKARANG!
+        renderNativeForecasterHub(); 
 
         const resultSection = document.getElementById("result-section");
         if (resultSection) resultSection.classList.remove("hidden");
@@ -462,7 +469,7 @@ async function executePreListingBuy() {
     if (!provider || !isConnected) return alert("Please connect your Web3 Wallet first!");
     
     const inputEl = document.getElementById("presale-eth-input");
-    const amountETH = inputEl ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
+    const amountETH = inputEl && inputEl.value ? inputEl.value : prompt("Enter amount of Base ETH to invest:", "0.005");
     
     if (!amountETH || isNaN(amountETH) || parseFloat(amountETH) <= 0) {
         alert("Please enter a valid ETH amount!");
@@ -575,7 +582,7 @@ function generateDestiny(address) {
     const textEl = document.getElementById("fortune-text");
     if (textEl) {
         textEl.innerText = selectedFate.text;
-        textEl.parentElement.classList.remove("hidden");
+        if (textEl.parentElement) textEl.parentElement.classList.remove("hidden");
     }
     
     const emojiEl = document.getElementById("fortune-emoji");
@@ -788,7 +795,9 @@ function setupUniversalMintButton() {
         let currentMints = parseInt(localStorage.getItem("global_mints")) || 842;
         currentMints += 1;
         localStorage.setItem("global_mints", currentMints);
-        document.getElementById("mint-counter").innerText = currentMints;
+        
+        const mintCounterEl = document.getElementById("mint-counter");
+        if (mintCounterEl) mintCounterEl.innerText = currentMints;
 
         mintBtn.disabled = false;
         mintBtn.innerHTML = baseText;
