@@ -245,58 +245,69 @@ function setupDailyLogin() {
     });
 }
 
-// ==========================================
-// MODAL CONTROLLER & WALLET CONNECT TRIGGERS
-// ==========================================
+// ====================================================================
+// REAL CONNECT WALLET ONLY (NO SIMULATION)
+// ====================================================================
 function initWalletSystem() {
     const connectBtn = document.getElementById("connect-btn");
-    if (connectBtn) connectBtn.addEventListener("click", openWalletModal);
-
-    const closeModalBtn = document.getElementById("close-modal-btn");
-    if (closeModalBtn) closeModalBtn.addEventListener("click", closeWalletModal);
-
-    setupModalButtons();
-
-    const savedAddress = localStorage.getItem("user_wallet");
-    if (savedAddress) {
-        userAddress = savedAddress;
-        isConnected = true;
-        updateWalletUI(savedAddress);
-        generateDestiny(savedAddress);
+    if (connectBtn) {
+        // Hapus semua event listener lama dengan mengganti elemen (clean setup)
+        const newConnectBtn = connectBtn.cloneNode(true);
+        connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
+        
+        // Pasang event listener murni
+        newConnectBtn.addEventListener("click", connectWallet);
     }
 }
 
-function openWalletModal() {
-    const modal = document.getElementById("custom-modal");
-    if (modal) modal.classList.remove("hidden");
-}
+async function connectWallet() {
+    const provider = getActiveProvider();
+    const connectBtn = document.getElementById("connect-btn");
+    
+    if (!provider) {
+        alert("❌ Wallet Tidak Terdeteksi!\n\nSilakan buka situs ini langsung dari dalam menu Browser/dApp di aplikasi Coinbase Wallet atau OKX Wallet Anda.");
+        return;
+    }
 
-function closeWalletModal() {
-    const modal = document.getElementById("custom-modal");
-    if (modal) modal.classList.add("hidden");
-}
+    try {
+        if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
 
-function setupModalButtons() {
-    const wallets = ["choose-okx", "choose-metamask"];
-    wallets.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-            btn.addEventListener("click", () => {
-                closeWalletModal();
-                connectWallet();
-            });
+        // Murni meminta izin koneksi akun dari aplikasi wallet (Pop-up Real)
+        const accounts = await provider.request({ method: "eth_requestAccounts" });
+        
+        if (!accounts || accounts.length === 0) {
+            throw new Error("Tidak ada akun yang dikembalikan oleh wallet.");
         }
-    });
 
-    const coinbaseSmartBtn = document.getElementById("choose-coinbase-smart");
-    if (coinbaseSmartBtn) {
-        coinbaseSmartBtn.addEventListener("click", () => {
-            closeWalletModal();
-            connectCoinbaseSmartWallet();
-        });
+        userAddress = accounts[0];
+        isConnected = true;
+
+        // Hubungkan ke UI asli
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub(); 
+
+        // Tampilkan section hasil jika ada
+        document.getElementById("result-section")?.classList.remove("hidden");
+        generateDestiny(userAddress);
+
+        alert("🟢 Wallet berhasil terhubung secara real!");
+    } catch (error) {
+        console.error("Koneksi gagal:", error);
+        isConnected = false;
+        userAddress = "";
+        
+        // Kembalikan tombol ke status awal jika gagal/ditolak
+        if (connectBtn) {
+            connectBtn.innerHTML = "🔮 Connect Wallet";
+            connectBtn.className = "w-full bg-blue-600 text-white text-xs font-bold px-4 py-3 rounded-2xl transition-all shadow-md active:scale-95";
+        }
+        
+        // Kunci kembali hub transaksi agar tidak bisa diklik
+        renderNativeForecasterHub(); 
+        
+        alert("❌ Koneksi Gagal atau Dibatalkan: " + (error.message || error));
     }
 }
-
 // ==========================================
 // WEB3 WALLET CONNECTION CORE LOGIC
 // ==========================================
@@ -954,36 +965,33 @@ function setupTwitterShare(fateObj, score) {
 // ====================================================================
 // GLOBAL EVENT DELEGATION (FIXED & AGGRESSIVE ROUTING FOR MOBILE)
 // ====================================================================
-document.addEventListener("click", function(e) {
-    // 1. Deteksi Tombol Presale BUY NOW
-    if (e.target && (e.target.id === "btn-action-presale" || e.target.closest("#btn-action-presale"))) {
-        e.preventDefault();
-        e.stopPropagation();
-        executePreListingBuy();
-        return;
-    }
+document.addEventListener("DOMContentLoaded", () => {
+    // Inisialisasi tombol wallet murni
+    initWalletSystem();
+    setupDailyLogin();
+    setupAIChatSystem();
     
-    // 2. Deteksi Tombol Stake YES
-    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
-        e.preventDefault();
-        e.stopPropagation();
-        executeBaseBet('YES');
-        return;
-    }
-    
-    // 3. Deteksi Tombol Stake NO
-    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
-        e.preventDefault();
-        e.stopPropagation();
-        executeBaseBet('NO');
-        return;
-    }
-    
-    // 4. Deteksi Tombol Mint Premium Pass
-    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
-        e.preventDefault();
-        e.stopPropagation();
-        executeMintPass();
-        return;
+    // Cek apakah wallet sebelumnya SUDAH benar-benar terhubung (Session Check murni)
+    const provider = getActiveProvider();
+    if (provider) {
+        provider.request({ method: 'eth_accounts' })
+        .then((accounts) => {
+            if (accounts && accounts.length > 0) {
+                userAddress = accounts[0];
+                isConnected = true;
+                updateWalletUI(userAddress);
+                renderNativeForecasterHub();
+                document.getElementById("result-section")?.classList.remove("hidden");
+                generateDestiny(userAddress);
+            } else {
+                // Jika belum connect, biarkan terkunci (harus klik tombol dulu)
+                renderNativeForecasterHub();
+            }
+        })
+        .catch(() => {
+            renderNativeForecasterHub();
+        });
+    } else {
+        renderNativeForecasterHub();
     }
 });
