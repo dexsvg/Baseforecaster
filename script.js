@@ -175,6 +175,9 @@ async function connectWallet() {
         userAddress = accounts[0];
         isConnected = true;
 
+        // HAPUS blacklist karena user sengaja melakukan koneksi manual
+        localStorage.removeItem("wallet_blacklisted");
+
         updateWalletUI(userAddress);
         renderNativeForecasterHub(); 
 
@@ -192,16 +195,18 @@ async function connectWallet() {
 function disconnectWallet() {
     const confirmDisconnect = confirm("Apakah Anda yakin ingin memutuskan koneksi wallet?");
     if (!confirmDisconnect) return;
+
+    // KUNCI UTAMA: Tandai di localStorage bahwa user sengaja memutuskan koneksi
+    localStorage.setItem("wallet_blacklisted", "true");
+
     resetWalletState();
     alert("🔴 Wallet berhasil diputuskan!");
 }
 
 function resetWalletState() {
-    // 1. Bersihkan semua variabel global
     userAddress = "";
     isConnected = false;
 
-    // 2. Kembalikan UI tombol ke kondisi awal & hapus data-status
     const connectBtn = document.getElementById("connect-btn");
     if (connectBtn) {
         connectBtn.removeAttribute("data-status");
@@ -209,23 +214,13 @@ function resetWalletState() {
         connectBtn.className = "w-full bg-blue-600 text-white text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md active:scale-95 text-center block";
     }
 
-    // 3. Sembunyikan kembali section result
     document.getElementById("result-section")?.classList.add("hidden");
     renderNativeForecasterHub();
 
-    // 4. JURUS PAMUNGKAS MOBILE dAPP: Paksa reload halaman agar memori provider bersih total
+    // Paksa reload agar handshake di Coinbase/OKX terputus total dari memori skrip
     setTimeout(() => {
         window.location.reload();
-    }, 300);
-}
-
-function updateWalletUI(address) {
-    const connectBtn = document.getElementById("connect-btn");
-    if (!connectBtn) return;
-    // Menggunakan data-attribute agar Global Listener tahu kalau statusnya sekarang bisa di-disconnect
-    connectBtn.setAttribute("data-status", "connected");
-    connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)} (Click to Disconnect)`;
-    connectBtn.className = "w-full bg-slate-900 text-rose-400 border border-rose-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md text-center block hover:bg-rose-950/20";
+    }, 200);
 }
 
 // ==========================================
@@ -804,43 +799,37 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ====================================================================
-// GLOBAL EVENT DELEGATION FOR ALL BUTTONS (MANDATORY FOR MOBILE)
+// GLOBAL INITIALIZATION & SAFE SESSION CHECK
 // ====================================================================
-document.addEventListener("click", function(e) {
-    // 1. Logic untuk tombol Connect / Disconnect Wallet
-    if (e.target && (e.target.id === "connect-btn" || e.target.closest("#connect-btn"))) {
-        e.preventDefault();
-        const btn = document.getElementById("connect-btn");
-        
-        // Cek status real lewat atribut tombol
-        if (isConnected || btn.getAttribute("data-status") === "connected") {
-            disconnectWallet();
-        } else {
-            connectWallet();
-        }
-    }
+document.addEventListener("DOMContentLoaded", () => {
+    initWalletSystem();
+    setupDailyLogin();
+    setupAIChatSystem();
+    
+    // Cek apakah user pernah menekan tombol disconnect sebelumnya
+    const isBlacklisted = localStorage.getItem("wallet_blacklisted");
 
-    // 2. Tombol IDO Presale (BUY NOW)
-    if (e.target && (e.target.id === "btn-action-presale" || e.target.closest("#btn-action-presale"))) {
-        e.preventDefault();
-        executePreListingBuy();
-    }
-
-    // 3. Tombol Staking YES
-    if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
-        e.preventDefault();
-        executeBaseBet('YES');
-    }
-
-    // 4. Tombol Staking NO
-    if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
-        e.preventDefault();
-        executeBaseBet('NO');
-    }
-
-    // 5. Tombol Mint Premium Pass
-    if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
-        e.preventDefault();
-        executeMintPass();
+    const provider = getActiveProvider();
+    if (provider && isBlacklisted !== "true") {
+        // Hanya lakukan auto-detect jika user tidak sedang memblacklist koneksi
+        provider.request({ method: 'eth_accounts' })
+        .then((accounts) => {
+            if (accounts && accounts.length > 0) {
+                userAddress = accounts[0];
+                isConnected = true;
+                updateWalletUI(userAddress);
+                renderNativeForecasterHub();
+                document.getElementById("result-section")?.classList.remove("hidden");
+                generateDestiny(userAddress);
+            } else {
+                renderNativeForecasterHub();
+            }
+        })
+        .catch(() => {
+            renderNativeForecasterHub();
+        });
+    } else {
+        // Jika di-blacklist atau provider tidak ada, kunci terminal ke kondisi awal
+        renderNativeForecasterHub();
     }
 });
