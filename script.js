@@ -152,19 +152,9 @@ function toSafeHexWei(amountETH) {
 // REAL CONNECT & DISCONNECT WALLET MODULE (NO SIMULATION)
 // ====================================================================
 function initWalletSystem() {
-    const connectBtn = document.getElementById("connect-btn");
-    if (connectBtn) {
-        const newConnectBtn = connectBtn.cloneNode(true);
-        connectBtn.parentNode.replaceChild(newConnectBtn, connectBtn);
-        
-        newConnectBtn.addEventListener("click", () => {
-            if (isConnected) {
-                disconnectWallet();
-            } else {
-                connectWallet();
-            }
-        });
-    }
+    // Kita tidak perlu cloneNode lagi, kita langsung serahkan logic klik-nya 
+    // ke Global Event Delegation di paling bawah agar anti-gagal di mobile.
+    renderNativeForecasterHub();
 }
 
 async function connectWallet() {
@@ -223,6 +213,8 @@ function resetWalletState() {
 function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-btn");
     if (!connectBtn) return;
+    // Menggunakan data-attribute agar Global Listener tahu kalau statusnya sekarang bisa di-disconnect
+    connectBtn.setAttribute("data-status", "connected");
     connectBtn.innerHTML = `🟢 ${address.slice(0, 6)}...${address.slice(-4)} (Click to Disconnect)`;
     connectBtn.className = "w-full bg-slate-900 text-rose-400 border border-rose-500/30 text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md text-center block hover:bg-rose-950/20";
 }
@@ -803,21 +795,41 @@ function setupTwitterShare(fateObj, score) {
 }
 
 // ====================================================================
-// GLOBAL EVENT DELEGATION FOR TERMINAL BUTTONS (MANDATORY FOR MOBILE)
+// GLOBAL EVENT DELEGATION FOR ALL BUTTONS (MANDATORY FOR MOBILE)
 // ====================================================================
 document.addEventListener("click", function(e) {
+    // 1. Logic untuk tombol Connect / Disconnect Wallet
+    if (e.target && (e.target.id === "connect-btn" || e.target.closest("#connect-btn"))) {
+        e.preventDefault();
+        const btn = document.getElementById("connect-btn");
+        
+        // Cek status real lewat atribut tombol
+        if (isConnected || btn.getAttribute("data-status") === "connected") {
+            disconnectWallet();
+        } else {
+            connectWallet();
+        }
+    }
+
+    // 2. Tombol IDO Presale (BUY NOW)
     if (e.target && (e.target.id === "btn-action-presale" || e.target.closest("#btn-action-presale"))) {
         e.preventDefault();
         executePreListingBuy();
     }
+
+    // 3. Tombol Staking YES
     if (e.target && (e.target.id === "btn-action-stake-yes" || e.target.closest("#btn-action-stake-yes"))) {
         e.preventDefault();
         executeBaseBet('YES');
     }
+
+    // 4. Tombol Staking NO
     if (e.target && (e.target.id === "btn-action-stake-no" || e.target.closest("#btn-action-stake-no"))) {
         e.preventDefault();
         executeBaseBet('NO');
     }
+
+    // 5. Tombol Mint Premium Pass
     if (e.target && (e.target.id === "btn-action-mint-pass" || e.target.closest("#btn-action-mint-pass"))) {
         e.preventDefault();
         executeMintPass();
