@@ -1,11 +1,15 @@
 /**
  * Base Forecaster - Core Logic Script (Ultimate AI Edition)
  * Pure Native Base Ecosystem Layer - No Polymarket Dependency.
- * Fully functional with $FORECAST Presale, Native Prediction Staking, 
+ * Fully functional with $FORECAST Direct Buy, Native Prediction Staking, 
  * Premium NFT Pass, Destiny calculation, and AI Advisor Chatbot.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
+// CA Token BaseForecaster & Link Flaunch Resmi Anda
+const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
+const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
+
 let userAddress = "";
 let isConnected = false;
 let appLogoImg = null;
@@ -168,7 +172,6 @@ function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-btn");
     if (!connectBtn) return;
     
-    // Set status terhubung agar terbaca oleh Global Click Handler di bawah
     connectBtn.setAttribute("data-status", "connected");
     connectBtn.innerHTML = `🔴 Disconnect (${address.slice(0, 6)}...${address.slice(-4)})`;
     connectBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-3 rounded-2xl font-mono tracking-wide transition-all shadow-md active:scale-95 text-center block";
@@ -265,7 +268,7 @@ function setupDailyLogin() {
 }
 
 // ====================================================================
-// NATIVE MODULE: FORECASTER HUB
+// NATIVE MODULE: FORECASTER HUB (UPDATED TO FLAUNCH.GG DIRECT BUY)
 // ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
@@ -277,7 +280,7 @@ function renderNativeForecasterHub() {
                 <div class="text-xl">🔒</div>
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Forecaster Terminal Locked</h4>
                 <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                    Connect your Web3 Wallet to initialize $FORECAST presale matrix, direct staking routers, and native premium pass layers.
+                    Connect your Web3 Wallet to initialize $FORECAST direct trading matrix, routers, and native premium pass layers.
                 </p>
             </div>
         `;
@@ -286,16 +289,23 @@ function renderNativeForecasterHub() {
 
     container.innerHTML = `
         <div class="space-y-4 text-left">
+            <!-- LIVE DIRECT BUY FOR FLAUNCH.GG -->
             <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3 transition-all">
                 <div class="flex justify-between items-center text-[10px]">
-                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">🔥 TOKEN IDO PRESALE</span>
-                    <span class="text-amber-400 font-mono animate-pulse">● Live Protocol Phase 1</span>
+                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold tracking-wider">⚡ LIVE TRADING ACTIVATED</span>
+                    <span class="text-emerald-400 font-mono animate-pulse">● Instant Token Delivery</span>
                 </div>
-                <h4 class="text-xs font-bold text-slate-200 leading-snug">Secure Pre-Listing $FORECAST Tokens</h4>
-                <p class="text-[10px] text-slate-400 font-mono">Rate: 1 ETH = 1,000,000 $FORECAST</p>
+                <h4 class="text-xs font-bold text-slate-200 leading-snug">Buy $FORECAST Tokens Directly</h4>
+                <p class="text-[10px] text-slate-400 font-mono">Tokens will be minted/swapped instantly to your wallet via Base Chain Matrix.</p>
                 <div class="pt-1 flex gap-2">
-                    <input id="presale-eth-input" type="number" step="0.001" min="0.001" value="1" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                    <button id="btn-action-presale" class="w-1/3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">BUY NOW</button>
+                    <input id="presale-eth-input" type="number" step="0.001" min="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
+                    <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide transition-all shadow-md active:scale-95">BUY TOKENS</button>
+                </div>
+                <!-- DIRECT LIVE CHART VIA FLAUNCH SHARE LINK -->
+                <div class="pt-1">
+                    <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-mono text-cyan-400 font-bold rounded-xl transition-all active:scale-95">
+                        📈 VIEW LIVE CHART & MARKET ON FLAUNCH.GG
+                    </a>
                 </div>
             </div>
 
@@ -321,8 +331,7 @@ function renderNativeForecasterHub() {
         </div>
     `;
 
-    // Pasangkan event listener di dalam hub setelah dirender
-    document.getElementById("btn-action-presale")?.addEventListener("click", executePreListingBuy);
+    document.getElementById("btn-action-presale")?.addEventListener("click", executeDirectBuy);
     document.getElementById("btn-action-stake-yes")?.addEventListener("click", () => executeBaseBet("YES"));
     document.getElementById("btn-action-stake-no")?.addEventListener("click", () => executeBaseBet("NO"));
     document.getElementById("btn-action-mint-pass")?.addEventListener("click", executeMintPass);
@@ -330,29 +339,30 @@ function renderNativeForecasterHub() {
 
 // ================= TRANSACTION ROUTERS (REAL RPC DIRECT ROUTING) =================
 
-async function executePreListingBuy() {
+async function executeDirectBuy() {
     const provider = getActiveProvider();
     if (!provider || !isConnected) return alert("Please connect your wallet first!");
 
     const inputEl = document.getElementById("presale-eth-input");
-    const amountETH = inputEl && inputEl.value ? inputEl.value : "1";
+    const amountETH = inputEl && inputEl.value ? inputEl.value : "0.005";
 
     try {
         const hexValue = toSafeHexWei(amountETH);
-        alert("Memicu konfirmasi transaksi presale di Wallet Anda...");
+        alert(`Memicu transaksi pembelian $FORECAST sebesar ${amountETH} ETH langsung ke Kontrak...`);
         
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{
                 from: userAddress,
-                to: DEVELOPER_WALLET,
+                to: tokenContractAddress, 
                 value: hexValue,
+                data: "0x" 
             }],
         });
-        alert("🚀 Transaksi Presale Berhasil Dikirim! Hash: " + txHash);
+        alert("🚀 Pembelian Berhasil Dikirim ke Base Network via Flaunch Matrix! Hash: " + txHash);
         if (typeof confetti === "function") confetti();
     } catch (err) {
-        alert("Transaksi gagal atau dibatalkan: " + err.message);
+        alert("Pembelian gagal atau dibatalkan: " + err.message);
     }
 }
 
@@ -558,9 +568,9 @@ function lookupExternalTarget() {
     }, 1000);
 }
 
-// ==========================================
-// FEATURE: LIVE NOTIFICATION BANNER LOOP
-// ==========================================
+// ====================================================================
+// FEATURE: LIVE NOTIFICATION BANNER LOOP (UPDATED TO REFLECT LIVE TRADES)
+// ====================================================================
 function startLiveNotificationLoop() {
     const banner = document.getElementById("live-notification");
     const emojiEl = document.getElementById("live-notif-emoji");
@@ -574,7 +584,7 @@ function startLiveNotificationLoop() {
 
         if (randType === "MINT") {
             emojiEl.innerText = "🪙";
-            text = `User **${randName}** successfully secured their Presale allocation of **$FORECAST**!`;
+            text = `User **${randName}** successfully swapped ETH for **$FORECAST** directly via Flaunch matrix!`;
         } else if (randType === "NEW_USER") {
             emojiEl.innerText = "🔮";
             const fate = fakeFates[Math.floor(Math.random() * fakeFates.length)];
@@ -697,7 +707,7 @@ function spinTheWheel() {
 }
 
 // ==========================================
-// FEATURE: ORACLE AI CHAT SYSTEM
+// FEATURE: ORACLE AI CHAT SYSTEM (UPDATED TO FLAUNCH MARKET DIRECTION)
 // ==========================================
 function setupAIChatSystem() {
     const input = document.getElementById("ai-chat-input");
@@ -705,7 +715,6 @@ function setupAIChatSystem() {
     const logs = document.getElementById("ai-chat-logs");
     if (!input || !sendBtn || !logs) return;
 
-    // Bersihkan listener lama agar tidak double trigger saat init ulang
     const newSendBtn = sendBtn.cloneNode(true);
     sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
 
@@ -727,8 +736,8 @@ function setupAIChatSystem() {
             let currentFate = currentFateGlobal ? currentFateGlobal.fate : "THE UNKNOWN TRAVELER";
 
             const lowText = text.toLowerCase();
-            if (lowText.includes("forecast") || lowText.includes("presale") || lowText.includes("buy")) {
-                response = `🔮 **Oracle Analysis**: Token **$FORECAST** presale is route-active on Base chain layer.`;
+            if (lowText.includes("forecast") || lowText.includes("buy") || lowText.includes("trade") || lowText.includes("chart")) {
+                response = `🔮 **Oracle Analysis**: Token **$FORECAST** is officially LIVE on Base network via flaunch.gg. You can execute trades directly using our terminal or monitor the real-time bonding curve matrix here: [Flaunch Trading Room](${flaunchShareLink})`;
             } else if (lowText.includes("pass") || lowText.includes("premium")) {
                 response = `👑 **Premium Layer**: Minting the Access Pass upgrades your oracle accuracy vectors.`;
             } else {
@@ -750,11 +759,21 @@ function setupAIChatSystem() {
 function setupAppLogo() { appLogoImg = new Image(); appLogoImg.src = ""; }
 function setupViewCounter() { const el = document.getElementById("view-counter"); if(el) el.innerText = "14,250"; }
 function setupMintCounter() { const el = document.getElementById("mint-counter"); if(el) el.innerText = localStorage.getItem("global_mints") || "842"; }
+
+// ====================================================================
+// TWITTER SHARE ENGINE (UPDATED TO INCLUDE VIRAL FLAUNCH PROMOTION)
+// ====================================================================
 function setupTwitterShare(fateObj, score) {
     const shareBtn = document.getElementById("share-x-btn");
     if (!shareBtn) return;
     shareBtn.onclick = () => {
-        const tweetText = encodeURIComponent(`🔮 My Base Chain Destiny is sealed! \n\nFate: ${fateObj.fate}\nLuck Score: ${score}%`);
+        const tweetText = encodeURIComponent(
+            `🔮 My Base Chain Destiny is sealed!\n\n` +
+            `Fate: ${fateObj.fate} ${fateObj.emoji}\n` +
+            `Luck Score: ${score}% DEGEN LEVEL\n\n` +
+            `Trade $FORECAST token instantly via direct terminal at Flaunch:\n` +
+            `${flaunchShareLink}`
+        );
         window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, "_blank");
     };
 }
@@ -763,7 +782,6 @@ function setupTwitterShare(fateObj, score) {
 // SINGLE INITIALIZATION & DELEGATION SYSTEM (ANTI-GAGAL MOBILE dAPP)
 // ====================================================================
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Jalankan komponen bawaan UI dasar
     try { setupAppLogo(); } catch(e) {}
     try { setupViewCounter(); } catch(e) {}
     try { setupMintCounter(); } catch(e) {}
@@ -773,7 +791,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try { setupTipSystem(); } catch(e) {}
     try { setupAIChatSystem(); } catch(e) {}
 
-    // 2. Setup Lookup Target
     const lookupBtn = document.getElementById("external-target-btn");
     if (lookupBtn) lookupBtn.addEventListener("click", lookupExternalTarget);
     const lookupInput = document.getElementById("external-target-input");
@@ -783,11 +800,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 3. Setup Spin Gacha Wheel
     const spinBtn = document.getElementById("btn-spin");
     if (spinBtn) spinBtn.addEventListener("click", spinTheWheel);
 
-    // 4. GLOBAL EVENT DELEGATION: Handler Klik Tombol Connect/Disconnect Utama
     document.addEventListener("click", (e) => {
         const target = e.target.closest("#connect-btn");
         if (!target) return;
@@ -801,10 +816,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 5. Inisialisasi awal UI terminal
     initWalletSystem();
     
-    // 6. SAFE AUTO-SESSION DETECT LAYER
     const isBlacklisted = localStorage.getItem("wallet_blacklisted");
     const provider = getActiveProvider();
 
