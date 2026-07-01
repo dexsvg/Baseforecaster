@@ -20,11 +20,77 @@ const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyM
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
 const fateLibrary = [
-    { fate: "THE WHALE ASCENDANT", emoji: "🐋", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
-    { fate: "GENERATIONAL WEALTH", emoji: "👑", text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", score: 95 },
-    { fate: "THE BASE CHOSEN ONE", emoji: "🔵", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 },
-    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", score: 74 },
-    { fate: "THE MYSTERY ADDRESS", emoji: "❓", text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", score: 41 }
+const fateLibrary = [
+    { 
+        fate: "THE WHALE ASCENDANT", 
+        emoji: "🐋", 
+        imagePath: "images1.jpeg", 
+        text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", 
+        score: 98 
+    },
+    { 
+        fate: "GENERATIONAL WEALTH", 
+        emoji: "👑", 
+        imagePath: "images2.jpeg", 
+        text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", 
+        score: 95 
+    },
+    { 
+        fate: "THE BASE CHOSEN ONE", 
+        emoji: "🔵", 
+        imagePath: "images3.jpeg", 
+        text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", 
+        score: 99 
+    },
+    { 
+        fate: "THE DEGEN SURVIVOR", 
+        emoji: "🥷", 
+        imagePath: "images4.jpeg", 
+        text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", 
+        score: 74 
+    },
+    { 
+        fate: "THE MYSTERY ADDRESS", 
+        emoji: "❓", 
+        imagePath: "images5.jpeg", 
+        text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", 
+        score: 41 
+    },
+    { 
+        fate: "THE DIAMOND HANDS", 
+        emoji: "💎", 
+        imagePath: "images6.jpeg", 
+        text: "Your hands are forged in pure diamond. Pressure only makes your bags heavier and stronger.", 
+        score: 88 
+    },
+    { 
+        fate: "THE ALPHA STALKER", 
+        emoji: "🎯", 
+        imagePath: "images7.jpeg", 
+        text: "You spot narratives before they even exist. Your sniper entries are feared across the chain.", 
+        score: 92 
+    },
+    { 
+        fate: "THE RUGPROOF NINJA", 
+        emoji: "🛡️", 
+        imagePath: "images8.jpeg", 
+        text: "Honeypots and malicious contracts miss you completely. Your intuition is a natural shield.", 
+        score: 85 
+    },
+    { 
+        fate: "THE LIQUIDITY GOD", 
+        emoji: "🌊", 
+        imagePath: "images9.jpeg", 
+        text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", 
+        score: 96 
+    },
+    { 
+        fate: "THE PROPAGANDA KING", 
+        emoji: "📢", 
+        imagePath: "images10.jpeg", 
+        text: "Your conviction can pump any chart. When you speak, the community follows your vision.", 
+        score: 90 
+    }
 ];
 
 // ====================================================================
@@ -319,41 +385,76 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
+    // 1. Gambar Background Dasar Kartu
     ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, 350, 500);
 
-    // Grid Matrix Background Effect
+    // Efek Garis Grid Matrix
     ctx.strokeStyle = "rgba(56, 189, 248, 0.05)"; 
     ctx.lineWidth = 1;
     for (let x = 0; x < 350; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke(); }
     for (let y = 0; y < 500; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke(); }
 
-    // Dynamic Frame Color Injector
+    // 2. Gambar Bingkai Aura
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
     ctx.strokeRect(10, 10, 330, 480);
 
+    // Teks Header Kartu
     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
-    ctx.fillText("BASE FORECASTER CORES", 175, 52);
-    ctx.font = "64px serif"; ctx.fillText(fateObj.emoji, 175, 145);
-    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; ctx.fillText(fateObj.fate, 175, 210);
+    ctx.fillText("BASE FORECASTER CORES", 175, 45);
+
+    // 3. Proses Memuat Gambar JPEG Kamu Secara Otomatis
+    const characterImg = new Image();
+    characterImg.src = fateObj.imagePath; // Mengambil file imagesX.jpeg sesuai hasil ramalan
+
+    // Jika gambar berhasil dibaca, langsung gambar di canvas
+    characterImg.onload = function() {
+        // Menggambar karakter kamu di tengah kartu (X: 100, Y: 70, Lebar: 150, Tinggi: 150)
+        ctx.drawImage(characterImg, 100, 70, 150, 150);
+
+        // Setelah gambar muncul, render teks ramalan di bawahnya agar tidak bertabrakan
+        renderCardText(ctx, fateObj, score, address, seed);
+    };
+
+    // Jika gambar gagal dimuat (misal nama file salah), pakai emoji lama sebagai cadangan
+    characterImg.onerror = function() {
+        ctx.font = "64px serif"; 
+        ctx.fillText(fateObj.emoji, 175, 145);
+        renderCardText(ctx, fateObj, score, address, seed);
+    };
+}
+
+// Fungsi pembantu untuk menulis teks ramalan di bawah gambar
+function renderCardText(ctx, fateObj, score, address, seed) {
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
+    ctx.fillText(fateObj.fate, 175, 250); // Posisi Y diturunkan ke 250 supaya di bawah gambar
 
     ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11px serif";
-    const words = fateObj.text.split(" "); let line = ""; let y = 252;
+    const words = fateObj.text.split(" "); let line = ""; let y = 285;
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
-        if (ctx.measureText(testLine).width > 260 && n > 0) { ctx.fillText(line, 175, y); line = words[n] + " "; y += 17; } else { line = testLine; }
+        if (ctx.measureText(testLine).width > 260 && n > 0) { 
+            ctx.fillText(line, 175, y); 
+            line = words[n] + " "; 
+            y += 17; 
+        } else { 
+            line = testLine; 
+        }
     }
     ctx.fillText(line, 175, y);
 
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)"; ctx.fillRect(30, 395, 290, 62);
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.1)"; ctx.strokeRect(30, 395, 290, 62);
+    // Box Transparan Informasi Wallet di bagian bawah kartu
+    ctx.fillStyle = "rgba(15, 23, 42, 0.9)"; ctx.fillRect(30, 405, 290, 62);
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.1)"; ctx.strokeRect(30, 405, 290, 62);
     
     ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#94a3b8";
-    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 413);
-    ctx.fillStyle = "#22d3ee"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 430);
-    ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 447);
+    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 423);
+    ctx.fillStyle = "#22d3ee"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
+    ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
+
 
 function generateAIWalletAdvice(fate, score) {
     const el = document.getElementById("ai-wallet-advice");
