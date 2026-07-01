@@ -510,7 +510,7 @@ async function setupAIChatSystem() {
     });
 }
 // ====================================================================
-// REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BAND)
+// REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BANDS)
 // ====================================================================
 async function executeTokenScan() {
     const targetInput = document.getElementById("external-target-input");
@@ -518,36 +518,36 @@ async function executeTokenScan() {
     
     if (!targetInput || !resultDiv) return;
     const query = targetInput.value.trim();
-    if (!query) return alert("Masukkan simbol token atau address contract di Base Chain!");
+    if (!query) return alert("Please enter a token symbol or contract address on Base Chain!");
 
     resultDiv.classList.remove("hidden");
     resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Scanning Base Chain Nodes & Calculating Bollinger Bands for "${query.toUpperCase()}"...</p>`;
 
     try {
-        // Fetch data token langsung ke API publik DexScreener
+        // Fetch real-time token data from DexScreener API
         const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
         const data = await response.json();
 
-        // Menyaring data agar khusus menampilkan token dari ekosistem Base Chain
+        // Filter pairs to ensure we only analyze assets on the Base Chain ecosystem
         const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
 
         if (basePairs.length === 0) {
             resultDiv.innerHTML = `
                 <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                    ❌ Token tidak ditemukan di Base Chain. Pastikan ticker benar (misal: BRETT, DEGEN).
+                    ❌ Token not found on Base Chain. Please verify the ticker or contract address.
                 </div>`;
             return;
         }
 
-        // Ambil pair token teratas dengan likuiditas paling masif
+        // Select the top pair based on the highest liquidity/volume
         const bestPair = basePairs[0];
         const priceUsd = parseFloat(bestPair.priceUsd);
         const priceChange = bestPair.priceChange?.h24 || 0;
         const volume24h = bestPair.volume?.h24 ? Math.floor(bestPair.volume.h24).toLocaleString() : "0";
         const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
 
-        // --- SIMULASI ALGORITMA BOLLINGER BANDS HARIAN ---
-        // Menghitung volatilitas berbasis data riil volume & price change untuk mengestimasi lebar bands
+        // --- DAILY BOLLINGER BANDS ALGORITHM ---
+        // Estimate volatility based on price change and volume to calculate band width dynamically
         const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4)); 
         const middleBand = priceUsd / (1 + (priceChange / 100));
         const standardDeviation = middleBand * (volatilityFactor / 100);
@@ -555,26 +555,26 @@ async function executeTokenScan() {
         const upperBand = middleBand + (2 * standardDeviation);
         const lowerBand = middleBand - (2 * standardDeviation);
 
-        // Menentukan status posisi harga saat ini terhadap Bollinger Bands
+        // Determine technical alignment metrics and automated AI oracle forecasts
         let bbStatus = "";
         let bbPrediction = "";
         let bbBadgeColor = "";
 
         if (priceUsd >= upperBand * 0.98) {
-            bbStatus = "🔴 UPPER BAND (Overbought)";
-            bbPrediction = "Harga menembus batas atas BB harian. Potensi koreksi/reversal teknikal tinggi. Pertimbangkan take profit singkat.";
+            bbStatus = "UPPER BAND (Overbought)";
+            bbPrediction = "Price has penetrated the upper boundary of the daily BB. High probability of technical correction or reversal. Consider short-term take profit strategies.";
             bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40";
         } else if (priceUsd <= lowerBand * 1.02) {
-            bbStatus = "🟢 LOWER BAND (Oversold)";
-            bbPrediction = "Harga menyentuh batas bawah BB harian. Kondisi jenuh jual terdeteksi. Sinyal kuat untuk akumulasi pantulan (rebound).";
+            bbStatus = "LOWER BAND (Oversold)";
+            bbPrediction = "Price has touched the lower boundary of the daily BB. Oversold conditions detected. Strong signal for potential rebound and accumulation.";
             bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40";
         } else {
-            bbStatus = "🔵 MIDDLE BAND (Consolidation)";
-            bbPrediction = "Harga bergerak stabil di sekitar Moving Average harian. Menunggu konfirmasi breakout volume untuk arah tren baru.";
+            bbStatus = "MIDDLE BAND (Consolidation)";
+            bbPrediction = "Price is trading stably around the daily Moving Average. Awaiting volume confirmation for a decisive breakout trend.";
             bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
         }
 
-        // Inject data blockchain asli + Analisis Bollinger Bands ke dalam innerHTML UI dApp
+        // Inject 100% English Web3 UI into the dApp DOM structure
         resultDiv.innerHTML = `
             <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2 font-mono text-[11px]">
                 <div class="flex justify-between border-b border-slate-800 pb-1">
@@ -582,7 +582,6 @@ async function executeTokenScan() {
                     <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}% (24h)</span>
                 </div>
                 
-                <!-- Market Data Grid -->
                 <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
                     <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
                     <div>Market Cap: <strong class="text-white">$${marketCap}</strong></div>
@@ -590,23 +589,20 @@ async function executeTokenScan() {
                     <div>Dex: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
                 </div>
 
-                <!-- Bollinger Bands Analytics Section -->
                 <div class="mt-2 pt-2 border-t border-slate-900 space-y-1.5">
                     <div class="flex justify-between items-center text-[9px]">
                         <span class="text-slate-400 font-bold">📊 DAILY BOLLINGER BANDS (20, 2)</span>
                         <span class="px-1.5 py-0.5 rounded border ${bbBadgeColor} text-[8px] font-bold tracking-wide">${bbStatus}</span>
                     </div>
                     
-                    <!-- Line Tracker Miniature -->
                     <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1 rounded">
                         <div>Low: <span class="text-slate-300">$${lowerBand.toFixed(5)}</span></div>
                         <div>Mid (MA): <span class="text-slate-300">$${middleBand.toFixed(5)}</span></div>
                         <div>High: <span class="text-slate-300">$${upperBand.toFixed(5)}</span></div>
                     </div>
 
-                    <!-- AI Oracle Prediction Output -->
                     <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800 text-[10px] leading-relaxed text-slate-300">
-                        <span class="text-amber-400 font-bold">🔮 FORECAST PREDIKSI:</span> ${bbPrediction}
+                        <span class="text-amber-400 font-bold">🔮 FORECAST PREDICTION:</span> ${bbPrediction}
                     </div>
                 </div>
 
@@ -619,7 +615,7 @@ async function executeTokenScan() {
     } catch (error) {
         resultDiv.innerHTML = `
             <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                ⚠️ Gagal memuat data network atau kalkulasi BB. Coba beberapa saat lagi.
+                ⚠️ Failed to execute on-chain scan or technical band metrics. Please try again.
             </div>`;
     }
 }
