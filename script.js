@@ -378,40 +378,33 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Gambar Background Dasar Kartu
-    ctx.fillStyle = "#020617";
-    ctx.fillRect(0, 0, 350, 500);
+    // 1. Bersihkan Canvas
+    ctx.clearRect(0, 0, 350, 500);
 
-    // Efek Garis Grid Matrix (hanya di background teks bawah agar rapi)
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.05)"; 
-    ctx.lineWidth = 1;
-    for (let x = 0; x < 350; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke(); }
-    for (let y = 240; y < 500; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke(); }
-
-    // 2. Proses Memuat Gambar JPEG Kamu Secara Otomatis
+    // 2. Proses Memuat Gambar JPEG Sebagai Background Full Art
     const characterImg = new Image();
     characterImg.src = fateObj.imagePath; 
 
-    // Jika gambar berhasil dibaca, langsung gambar di canvas
+    // Jika gambar berhasil dibaca, langsung penuhi satu kartu
     characterImg.onload = function() {
-        // BARU: Menggambar karakter FULL KOTAK di bagian atas pas di dalam bingkai (seperti kartu Pokémon)
-        // Posisi X: 14, Y: 55, Lebar: 322 (melebar penuh), Tinggi: 185
-        ctx.drawImage(characterImg, 14, 55, 322, 185);
+        // BARU: Gambar dicetak FULL dari koordinat (0,0) sampai (350,500)
+        ctx.drawImage(characterImg, 0, 0, 350, 500);
 
-        // Gambar ulang border dalam tipis untuk merapikan pinggiran foto artwork
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(14, 55, 322, 185);
+        // KASIH FILTER LAPISAN GELAP TRANSPARAN (Supaya teks putih di atasnya tetap jelas dibaca)
+        ctx.fillStyle = "rgba(2, 6, 23, 0.4)"; // Menambahkan sedikit tint gelap di atas foto
+        ctx.fillRect(0, 0, 350, 500);
 
-        // Gambar teks ramalan di bawah artwork
+        // Render teks ramalan MENINDIH di atas gambar background
         renderCardText(ctx, fateObj, score, address, seed);
         
-        // Selalu gambar Bingkai Aura paling atas supaya menindih pinggiran foto dengan rapi
+        // Gambar Bingkai Aura paling luar agar mengunci foto dengan rapi
         drawCardFrame(ctx);
     };
 
-    // Jika gambar gagal dimuat (misal nama file salah), pakai emoji lama sebagai cadangan
+    // Cadangan jika gambar gagal dimuat
     characterImg.onerror = function() {
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, 350, 500);
         ctx.font = "64px serif"; 
         ctx.textAlign = "center";
         ctx.fillText(fateObj.emoji, 175, 145);
@@ -420,24 +413,20 @@ function drawDestinyCard(fateObj, score, address, seed) {
     };
 }
 
-// Fungsi terpisah untuk menggambar Bingkai Aura terluar
-function drawCardFrame(ctx) {
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = currentFrameColor || "#f59e0b";
-    ctx.strokeRect(10, 10, 330, 480);
-
-    // Teks Header Kartu di atas bingkai
-    ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
-    ctx.fillText("BASE FORECASTER CORES", 175, 35);
-}
-
+// Fungsi pembantu untuk menulis teks langsung di atas gambar Full Art
 function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.textAlign = "center";
-    ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
-    ctx.fillText(fateObj.fate, 175, 250); 
+    
+    // Nama Ramalan (Ditaruh agak ke atas sedikit, di koordinat Y: 210)
+    ctx.fillStyle = "#38bdf8"; 
+    ctx.font = "bold 20px sans-serif"; 
+    // Efek Shadow tipis biar teksnya menyala di atas gambar background
+    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 4;
+    ctx.fillText(fateObj.fate, 175, 210); 
 
-    ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11px serif";
-    const words = fateObj.text.split(" "); let line = ""; let y = 285;
+    // Deskripsi Teks Ramalan (Y: 245)
+    ctx.fillStyle = "#ffffff"; ctx.font = "italic 11px serif";
+    const words = fateObj.text.split(" "); let line = ""; let y = 245;
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
         if (ctx.measureText(testLine).width > 260 && n > 0) { 
@@ -449,14 +438,31 @@ function renderCardText(ctx, fateObj, score, address, seed) {
         }
     }
     ctx.fillText(line, 175, y);
+    
+    // Reset shadow agar tidak merusak teks info wallet
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = "rgba(15, 23, 42, 0.9)"; ctx.fillRect(30, 405, 290, 62);
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.1)"; ctx.strokeRect(30, 405, 290, 62);
+    // Box Transparan Informasi Wallet di bagian bawah kartu (Dibuat agak blur/gelap agar info wallet kontras)
+    ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
+    ctx.fillRect(30, 405, 290, 62);
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.3)"; 
+    ctx.strokeRect(30, 405, 290, 62);
     
     ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#94a3b8";
     ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 423);
     ctx.fillStyle = "#22d3ee"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
+}
+
+// Fungsi untuk menggambar Bingkai Aura terluar
+function drawCardFrame(ctx) {
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = currentFrameColor || "#f59e0b";
+    ctx.strokeRect(10, 10, 330, 480);
+
+    // Teks Header Kartu transparan di atas bingkai
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
+    ctx.fillText("BASE FORECASTER CORES", 175, 35);
 }
 
 function generateAIWalletAdvice(fate, score) {
