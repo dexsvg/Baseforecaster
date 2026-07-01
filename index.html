@@ -78,8 +78,12 @@
                 <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center max-w-[295px] mx-auto">
                     <p class="text-[10px] text-slate-400 italic mb-2">Feed the Based Developer Core 👇</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <button id="donate-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all">💸 Send 0.001 ETH Tip</button>
-                        <button id="mint-nft-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all">🪙 Mint Card NFT</button>
+                        <div class="grid grid-cols-2 gap-2">
+    <button id="donate-btn" id="tip-btn" onclick="if(window.sendTip) sendTip();" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all">💸 Send 0.001 ETH Tip</button>
+    
+    <button id="mint-nft-btn" id="mint-btn" onclick="if(window.mintNFT) mintNFT();" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all">🪙 Mint Card NFT</button>
+</div>
+
                     </div>
                 </div>
 
