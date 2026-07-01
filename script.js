@@ -19,7 +19,7 @@ const eventTypes = ["MINT", "NEW_USER", "TIP"];
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
-const fateLibrary = [
+// SUDAH DIPERBAIKI: Tidak ada lagi double declaration di sini
 const fateLibrary = [
     { 
         fate: "THE WHALE ASCENDANT", 
@@ -121,14 +121,11 @@ function navigate(targetTab) {
         return;
     }
 
-    // 1. Sembunyikan semua section kontainer kontent tab
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     
-    // 2. Tampilkan kontainer tab target
     const targetEl = document.getElementById(`tab-${targetTab}`);
     if (targetEl) targetEl.classList.remove('hidden');
 
-    // 3. Reset semua warna tombol menu navigasi bawah menjadi pasif
     const navButtons = {
         oracle: { id: 'nav-oracle', color: 'text-blue-400' },
         glow: { id: 'nav-glow', color: 'text-cyan-400' },
@@ -143,13 +140,11 @@ function navigate(targetTab) {
         }
     });
 
-    // 4. Nyalakan warna aktif pada tombol menu navigasi bawah terpilih
     const activeBtn = document.getElementById(navButtons[targetTab].id);
     if (activeBtn) {
         activeBtn.className = `flex flex-col items-center ${navButtons[targetTab].color} transition-all font-mono scale-105 font-bold`;
     }
 
-    // 5. Kondisi Khusus pemicu render Leaderboard secara real-time
     if (targetTab === 'ranks') {
         renderLeaderboardData();
     }
@@ -173,7 +168,6 @@ function applyGlow(type) {
         frameNameGlobal = "Ruby Vein Pulse";
     }
     
-    // Update label text di atas kartu
     const labelTitle = document.getElementById("card-glow-title");
     if (labelTitle) labelTitle.innerText = `✨ Generated ${frameNameGlobal.toUpperCase()} Card ✨`;
 
@@ -186,7 +180,7 @@ function applyGlow(type) {
     }
     
     alert(`✨ Particle alignment configured to ${frameNameGlobal}!`);
-    navigate('oracle'); // Otomatis balik ke halaman depan biar keliatan perubahannya
+    navigate('oracle');
 }
 
 // ==========================================
@@ -250,7 +244,6 @@ function spinTheWheel() {
         result.classList.remove("hidden");
         btn.disabled = false;
         
-        // Kasih hadiah Aura Points tambahan secara instan
         let currentAP = parseInt(localStorage.getItem("user_aura_points")) || 0;
         currentAP += 100;
         localStorage.setItem("user_aura_points", currentAP);
@@ -287,7 +280,7 @@ async function connectWallet() {
         document.getElementById("result-section").classList.remove("hidden");
         
         generateDestiny(userAddress);
-        navigate('oracle'); // Default set ke halaman depan
+        navigate('oracle'); 
     } catch (error) {
         resetWalletState();
         alert("❌ Koneksi Gagal: " + error.message);
@@ -385,39 +378,29 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Gambar Background Dasar Kartu
     ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, 350, 500);
 
-    // Efek Garis Grid Matrix
     ctx.strokeStyle = "rgba(56, 189, 248, 0.05)"; 
     ctx.lineWidth = 1;
     for (let x = 0; x < 350; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke(); }
     for (let y = 0; y < 500; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke(); }
 
-    // 2. Gambar Bingkai Aura
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
     ctx.strokeRect(10, 10, 330, 480);
 
-    // Teks Header Kartu
     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
     ctx.fillText("BASE FORECASTER CORES", 175, 45);
 
-    // 3. Proses Memuat Gambar JPEG Kamu Secara Otomatis
     const characterImg = new Image();
-    characterImg.src = fateObj.imagePath; // Mengambil file imagesX.jpeg sesuai hasil ramalan
+    characterImg.src = fateObj.imagePath; 
 
-    // Jika gambar berhasil dibaca, langsung gambar di canvas
     characterImg.onload = function() {
-        // Menggambar karakter kamu di tengah kartu (X: 100, Y: 70, Lebar: 150, Tinggi: 150)
         ctx.drawImage(characterImg, 100, 70, 150, 150);
-
-        // Setelah gambar muncul, render teks ramalan di bawahnya agar tidak bertabrakan
         renderCardText(ctx, fateObj, score, address, seed);
     };
 
-    // Jika gambar gagal dimuat (misal nama file salah), pakai emoji lama sebagai cadangan
     characterImg.onerror = function() {
         ctx.font = "64px serif"; 
         ctx.fillText(fateObj.emoji, 175, 145);
@@ -425,11 +408,10 @@ function drawDestinyCard(fateObj, score, address, seed) {
     };
 }
 
-// Fungsi pembantu untuk menulis teks ramalan di bawah gambar
 function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.textAlign = "center";
     ctx.fillStyle = "#38bdf8"; ctx.font = "bold 19px sans-serif"; 
-    ctx.fillText(fateObj.fate, 175, 250); // Posisi Y diturunkan ke 250 supaya di bawah gambar
+    ctx.fillText(fateObj.fate, 175, 250); 
 
     ctx.fillStyle = "#cbd5e1"; ctx.font = "italic 11px serif";
     const words = fateObj.text.split(" "); let line = ""; let y = 285;
@@ -445,7 +427,6 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     }
     ctx.fillText(line, 175, y);
 
-    // Box Transparan Informasi Wallet di bagian bawah kartu
     ctx.fillStyle = "rgba(15, 23, 42, 0.9)"; ctx.fillRect(30, 405, 290, 62);
     ctx.strokeStyle = "rgba(56, 189, 248, 0.1)"; ctx.strokeRect(30, 405, 290, 62);
     
@@ -454,7 +435,6 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.fillStyle = "#22d3ee"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
-
 
 function generateAIWalletAdvice(fate, score) {
     const el = document.getElementById("ai-wallet-advice");
@@ -508,11 +488,10 @@ function setupAIChatSystem() {
 document.addEventListener("DOMContentLoaded", () => {
     setupDailyLogin();
     setupAIChatSystem();
-    document.getElementById("view-counter").innerText = "14,250";
-    document.getElementById("mint-counter").innerText = "842";
+    if(document.getElementById("view-counter")) document.getElementById("view-counter").innerText = "14,250";
+    if(document.getElementById("mint-counter")) document.getElementById("mint-counter").innerText = "842";
 
     document.getElementById("connect-btn")?.addEventListener("click", (e) => {
         if (e.target.getAttribute("data-status") === "connected") disconnectWallet(); else connectWallet();
     });
 });
-
