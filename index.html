@@ -74,14 +74,14 @@
                     <p class="text-[9px] text-slate-500 mt-1 font-mono">Right-click card / Hold image to save manually</p>
                 </div>
 
-                <!-- BLOK TOMBOL FIX: Menggunakan ID tunggal yang kompatibel dengan script.js lama lo -->
-                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3.5 text-center max-w-[295px] mx-auto">
-                    <p class="text-[10px] font-mono text-slate-400 italic mb-2.5">Feed the Based Developer Core 👇</p>
-                    <div class="grid grid-cols-2 gap-2.5">
-                        <button id="tip-btn" onclick="if(window.sendTip) window.sendTip();" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all font-mono">
+                <!-- FIX TOTAL: Menggunakan struktur Grid tunggal bersih, ID asli lama dikembalikan agar fungsi transaksimu terpicu otomatis -->
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-center max-w-[295px] mx-auto">
+                    <p class="text-[10px] font-mono text-slate-400 italic mb-3">Feed the Based Developer Core 👇</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="tip-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
                             💸 Send Tip
                         </button>
-                        <button id="mint-btn" onclick="if(window.mintNFT) window.mintNFT();" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-2.5 px-2 rounded-xl transition-all font-mono">
+                        <button id="mint-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
                             🪙 Mint NFT
                         </button>
                     </div>
