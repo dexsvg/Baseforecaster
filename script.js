@@ -378,34 +378,57 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
+    // 1. Gambar Background Dasar Kartu
     ctx.fillStyle = "#020617";
     ctx.fillRect(0, 0, 350, 500);
 
+    // Efek Garis Grid Matrix (hanya di background teks bawah agar rapi)
     ctx.strokeStyle = "rgba(56, 189, 248, 0.05)"; 
     ctx.lineWidth = 1;
     for (let x = 0; x < 350; x += 20) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 500); ctx.stroke(); }
-    for (let y = 0; y < 500; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke(); }
+    for (let y = 240; y < 500; y += 20) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(350, y); ctx.stroke(); }
 
+    // 2. Proses Memuat Gambar JPEG Kamu Secara Otomatis
+    const characterImg = new Image();
+    characterImg.src = fateObj.imagePath; 
+
+    // Jika gambar berhasil dibaca, langsung gambar di canvas
+    characterImg.onload = function() {
+        // BARU: Menggambar karakter FULL KOTAK di bagian atas pas di dalam bingkai (seperti kartu Pokémon)
+        // Posisi X: 14, Y: 55, Lebar: 322 (melebar penuh), Tinggi: 185
+        ctx.drawImage(characterImg, 14, 55, 322, 185);
+
+        // Gambar ulang border dalam tipis untuk merapikan pinggiran foto artwork
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(14, 55, 322, 185);
+
+        // Gambar teks ramalan di bawah artwork
+        renderCardText(ctx, fateObj, score, address, seed);
+        
+        // Selalu gambar Bingkai Aura paling atas supaya menindih pinggiran foto dengan rapi
+        drawCardFrame(ctx);
+    };
+
+    // Jika gambar gagal dimuat (misal nama file salah), pakai emoji lama sebagai cadangan
+    characterImg.onerror = function() {
+        ctx.font = "64px serif"; 
+        ctx.textAlign = "center";
+        ctx.fillText(fateObj.emoji, 175, 145);
+        renderCardText(ctx, fateObj, score, address, seed);
+        drawCardFrame(ctx);
+    };
+}
+
+// Fungsi terpisah untuk menggambar Bingkai Aura terluar
+function drawCardFrame(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
     ctx.strokeRect(10, 10, 330, 480);
 
+    // Teks Header Kartu di atas bingkai
     ctx.fillStyle = "#94a3b8"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
-    ctx.fillText("BASE FORECASTER CORES", 175, 45);
-
-    const characterImg = new Image();
-    characterImg.src = fateObj.imagePath; 
-
-    characterImg.onload = function() {
-        ctx.drawImage(characterImg, 100, 70, 150, 150);
-        renderCardText(ctx, fateObj, score, address, seed);
-    };
-
-    characterImg.onerror = function() {
-        ctx.font = "64px serif"; 
-        ctx.fillText(fateObj.emoji, 175, 145);
-        renderCardText(ctx, fateObj, score, address, seed);
-    };
+    ctx.fillText("BASE FORECASTER CORES", 175, 35);
 }
 
 function renderCardText(ctx, fateObj, score, address, seed) {
