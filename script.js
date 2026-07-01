@@ -19,78 +19,17 @@ const eventTypes = ["MINT", "NEW_USER", "TIP"];
 const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
 const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
 
-// SUDAH DIPERBAIKI: Tidak ada lagi double declaration di sini
 const fateLibrary = [
-    { 
-        fate: "THE WHALE ASCENDANT", 
-        emoji: "🐋", 
-        imagePath: "images1.jpeg", 
-        text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", 
-        score: 98 
-    },
-    { 
-        fate: "GENERATIONAL WEALTH", 
-        emoji: "👑", 
-        imagePath: "images2.jpeg", 
-        text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", 
-        score: 95 
-    },
-    { 
-        fate: "THE BASE CHOSEN ONE", 
-        emoji: "🔵", 
-        imagePath: "images3.jpeg", 
-        text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", 
-        score: 99 
-    },
-    { 
-        fate: "THE DEGEN SURVIVOR", 
-        emoji: "🥷", 
-        imagePath: "images4.jpeg", 
-        text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", 
-        score: 74 
-    },
-    { 
-        fate: "THE MYSTERY ADDRESS", 
-        emoji: "❓", 
-        imagePath: "images5.jpeg", 
-        text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", 
-        score: 41 
-    },
-    { 
-        fate: "THE DIAMOND HANDS", 
-        emoji: "💎", 
-        imagePath: "images6.jpeg", 
-        text: "Your hands are forged in pure diamond. Pressure only makes your bags heavier and stronger.", 
-        score: 88 
-    },
-    { 
-        fate: "THE ALPHA STALKER", 
-        emoji: "🎯", 
-        imagePath: "images7.jpeg", 
-        text: "You spot narratives before they even exist. Your sniper entries are feared across the chain.", 
-        score: 92 
-    },
-    { 
-        fate: "THE RUGPROOF NINJA", 
-        emoji: "🛡️", 
-        imagePath: "images8.jpeg", 
-        text: "Honeypots and malicious contracts miss you completely. Your intuition is a natural shield.", 
-        score: 85 
-    },
-    { 
-        fate: "THE LIQUIDITY GOD", 
-        emoji: "🌊", 
-        imagePath: "images9.jpeg", 
-        text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", 
-        score: 96 
-    },
-    { 
-        fate: "THE PROPAGANDA KING", 
-        emoji: "📢", 
-        imagePath: "images10.jpeg", 
-        text: "Your conviction can pump any chart. When you speak, the community follows your vision.", 
-        score: 90 
-    }
+    { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
+    { fate: "GENERATIONAL WEALTH", emoji: "👑", imagePath: "images2.jpeg", text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", score: 95 },
+    { fate: "THE BASE CHOSEN ONE", emoji: "🔵", imagePath: "images3.jpeg", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 },
+    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", imagePath: "images4.jpeg", text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", score: 74 },
+    { fate: "THE MYSTERY ADDRESS", emoji: "❓", imagePath: "images5.jpeg", text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", score: 41 },
+    { fate: "THE DIAMOND HANDS", emoji: "💎", imagePath: "images6.jpeg", text: "Your hands are forged in pure diamond. Pressure only makes your bags heavier and stronger.", score: 88 },
+    { fate: "THE ALPHA STALKER", emoji: "🎯", imagePath: "images7.jpeg", text: "You spot narratives before they even exist. Your sniper entries are feared across the chain.", score: 92 },
+    { fate: "THE RUGPROOF NINJA", emoji: "🛡️", imagePath: "images8.jpeg", text: "Honeypots and malicious contracts miss you completely. Your intuition is a natural shield.", score: 85 },
+    { fate: "THE LIQUIDITY GOD", emoji: "🌊", imagePath: "images9.jpeg", text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", score: 96 },
+    { fate: "THE PROPAGANDA KING", emoji: "📢", imagePath: "images10.jpeg", text: "Your conviction can pump any chart. When you speak, the community follows your vision.", score: 90 }
 ];
 
 // ====================================================================
@@ -113,7 +52,55 @@ function toSafeHexWei(amountETH) {
 }
 
 // ====================================================================
-// PURE NATIVE SPA ROUTING NAVIGATION (Kunci Utama Pertukaran Halaman)
+// BARU & FIX: CORE TRANSACTION ROUTINE (MINT & TIP LOGIC)
+// ====================================================================
+async function sendTip() {
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("🔮 Connect your wallet first!");
+    try {
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: DEVELOPER_WALLET,
+                value: toSafeHexWei("0.001"),
+                data: "0x"
+            }],
+        });
+        alert("💸 Thank you for the tip! Tx Hash: " + txHash);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        alert("Transaction Canceled: " + err.message);
+    }
+}
+
+async function mintNFT() {
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("🔮 Connect your wallet first!");
+    try {
+        // Method standar minting '0x1249c5b8' / sesuaikan data bytecode smart contract lo jika ada
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: nftContractAddress,
+                value: toSafeHexWei("0.000"), // Set ke harga minting web3 lo (misal gratis/0)
+                data: "0x1249c5b8" 
+            }],
+        });
+        alert("🪙 Mint Core Request Broadcasted! Tx Hash: " + txHash);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        alert("Minting Failed: " + err.message);
+    }
+}
+
+// Daftarkan ke scope global window agar onclick di HTML bisa panggil langsung
+window.sendTip = sendTip;
+window.mintNFT = mintNFT;
+
+// ====================================================================
+// PURE NATIVE SPA ROUTING NAVIGATION
 // ====================================================================
 function navigate(targetTab) {
     if (!isConnected) {
@@ -149,6 +136,7 @@ function navigate(targetTab) {
         renderLeaderboardData();
     }
 }
+window.navigate = navigate;
 
 // ==========================================
 // FEATURE: GLOW AURA ALTER ENGINE
@@ -182,6 +170,7 @@ function applyGlow(type) {
     alert(`✨ Particle alignment configured to ${frameNameGlobal}!`);
     navigate('oracle');
 }
+window.applyGlow = applyGlow;
 
 // ==========================================
 // FEATURE: INTERACTIVE LEADERBOARD GENERATOR
@@ -198,11 +187,11 @@ function renderLeaderboardData() {
     const boardData = [
         { r: 1, addr: "0x71C9...8B29", s: 99, tag: "🐋 DEGEN WHALE" },
         { r: 2, addr: "0x3a2F...7F41", s: 95, tag: "⚡ HARDCORE APER" },
-        { r: 3, addr: `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, s: userScore, tag: "❓ ACTIVE ANOMALY (LO)", isUser: true }
+        { r: 3, addr: `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, s: userScore, tag: "❓ ACTIVE ANOMALY (YOU)", isUser: true }
     ];
 
     container.innerHTML = boardData.map(item => `
-        <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs font-mono ${item.isUser ? 'border-cyan-500 bg-cyan-950/20 shadow-md' : 'border-slate-800 bg-slate-950/40'}\">
+        <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs font-mono ${item.isUser ? 'border-cyan-500 bg-cyan-950/20 shadow-md' : 'border-slate-800 bg-slate-950/40'}">
             <div class="flex items-center gap-3">
                 <span class="font-black ${item.r === 1 ? 'text-amber-400' : 'text-slate-500'}">#${item.r}</span>
                 <div class="text-left">
@@ -252,6 +241,7 @@ function spinTheWheel() {
         if (typeof confetti === "function") confetti();
     }, 2000);
 }
+window.spinTheWheel = spinTheWheel;
 
 // ==========================================
 // CONNECT WALLET INTEGRATION SYSTEM
@@ -378,30 +368,19 @@ function drawDestinyCard(fateObj, score, address, seed) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // 1. Bersihkan Canvas
     ctx.clearRect(0, 0, 350, 500);
 
-    // 2. Proses Memuat Gambar JPEG Sebagai Background Full Art
     const characterImg = new Image();
     characterImg.src = fateObj.imagePath; 
 
-    // Jika gambar berhasil dibaca, langsung penuhi satu kartu
     characterImg.onload = function() {
-        // BARU: Gambar dicetak FULL dari koordinat (0,0) sampai (350,500)
         ctx.drawImage(characterImg, 0, 0, 350, 500);
-
-        // KASIH FILTER LAPISAN GELAP TRANSPARAN (Supaya teks putih di atasnya tetap jelas dibaca)
-        ctx.fillStyle = "rgba(2, 6, 23, 0.4)"; // Menambahkan sedikit tint gelap di atas foto
+        ctx.fillStyle = "rgba(2, 6, 23, 0.4)"; 
         ctx.fillRect(0, 0, 350, 500);
-
-        // Render teks ramalan MENINDIH di atas gambar background
         renderCardText(ctx, fateObj, score, address, seed);
-        
-        // Gambar Bingkai Aura paling luar agar mengunci foto dengan rapi
         drawCardFrame(ctx);
     };
 
-    // Cadangan jika gambar gagal dimuat
     characterImg.onerror = function() {
         ctx.fillStyle = "#020617";
         ctx.fillRect(0, 0, 350, 500);
@@ -413,38 +392,26 @@ function drawDestinyCard(fateObj, score, address, seed) {
     };
 }
 
-// Fungsi pembantu untuk menulis teks langsung di atas gambar Full Art
 function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.textAlign = "center";
-    
-    // ========================================================
-    // BARU: JUDUL TAKDIR DENGAN GAYA FANTASI EPIK (EMAS GRADASI)
-    // ========================================================
     const titleY = 210;
     
-    // 1. Set font menjadi bergaya klasik/serif tebal
     ctx.font = "bold 22px 'Georgia', 'Times New Roman', serif"; 
 
-    // 2. Buat warna gradasi emas vertikal dari atas ke bawah teks
     const goldGradient = ctx.createLinearGradient(0, titleY - 18, 0, titleY + 4);
-    goldGradient.addColorStop(0, "#ffe699");   // Emas muda berkilau di atas
-    goldGradient.addColorStop(0.5, "#f59e0b"); // Emas medium murni
-    goldGradient.addColorStop(1, "#b45309");   // Emas tua kecokelatan di bawah
+    goldGradient.addColorStop(0, "#ffe699");   
+    goldGradient.addColorStop(0.5, "#f59e0b"); 
+    goldGradient.addColorStop(1, "#b45309");   
 
-    // 3. Gambar efek border/stroke hitam tebal di belakang teks biar gak tenggelam
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 4;
     ctx.lineJoin = "round";
     ctx.miterLimit = 2;
     ctx.strokeText(fateObj.fate, 175, titleY);
 
-    // 4. Isi teks dengan gradasi emas yang sudah dibuat
     ctx.fillStyle = goldGradient;
     ctx.fillText(fateObj.fate, 175, titleY); 
 
-    // ========================================================
-    // DESKRIPSI TEKS RAMALAN (Diberi Stroke Tipis Biar Jelas)
-    // ========================================================
     ctx.font = "italic 12px 'Georgia', serif";
     
     const words = fateObj.text.split(" "); 
@@ -454,10 +421,8 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
         if (ctx.measureText(testLine).width > 280 && n > 0) { 
-            // Stroke hitam tipis untuk deskripsi
             ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
             ctx.strokeText(line, 175, y);
-            
             ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y); 
             line = words[n] + " "; 
             y += 18; 
@@ -469,15 +434,11 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.strokeText(line, 175, y);
     ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y);
     
-    // Reset properties canvas agar tidak merusak elemen lain
     ctx.shadowBlur = 0;
 
-    // ========================================================
-    // BOX INFORMASI WALLET (BAGIAN BAWAH KARTU)
-    // ========================================================
     ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
     ctx.fillRect(30, 405, 290, 62);
-    ctx.strokeStyle = "rgba(245, 158, 11, 0.4)"; // Menyesuaikan border box ke warna emas tipis
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.4)"; 
     ctx.strokeRect(30, 405, 290, 62);
     
     ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#94a3b8";
@@ -486,13 +447,11 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
 
-// Fungsi untuk menggambar Bingkai Aura terluar
 function drawCardFrame(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
     ctx.strokeRect(10, 10, 330, 480);
 
-    // Teks Header Kartu transparan di atas bingkai
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
     ctx.fillText("BASE FORECASTER CORES", 175, 35);
 }
@@ -555,4 +514,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("connect-btn")?.addEventListener("click", (e) => {
         if (e.target.getAttribute("data-status") === "connected") disconnectWallet(); else connectWallet();
     });
+
+    // Pasang event listener langsung ke ID tombol asli
+    document.getElementById("tip-btn")?.addEventListener("click", sendTip);
+    document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
 });
