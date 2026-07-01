@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Base Forecaster - Ultimate AI Edition</title>
     
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
     
-<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-center min-h-screen p-4 pb-24 relative overflow-x-hidden select-none matrix-grid-bg">
+<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
 
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
-    <div id="live-notification" class="fixed top-4 sm:top-6 max-w-sm w-full bg-slate-900/95 border border-blue-500/40 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 hidden flex items-center gap-3">
+    <div id="live-notification" class="fixed top-4 max-w-sm w-full bg-slate-900/95 border border-blue-500/40 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 hidden flex items-center gap-3">
         <div id="live-notif-emoji" class="text-2xl animate-bounce">✨</div>
         <p id="live-notif-text" class="text-xs text-slate-300 leading-snug"></p>
     </div>
@@ -26,7 +26,7 @@
         
         <div class="flex items-center justify-center gap-2 mb-2">
             <div class="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
-            <h1 class="text-3xl font-extrabold tracking-wider text-neon-matrix">
+            <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
                 BASE FORECASTER
             </h1>
         </div>
@@ -36,7 +36,7 @@
                 <span class="text-slate-400 block">🔮 Your Aura Points:</span>
                 <span id="aura-points-display" class="font-bold text-cyan-400 text-sm">0 AP</span>
             </div>
-            <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md shadow-blue-600/20">
+            <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md">
                 │ Claim Daily AP
             </button>
         </div>
@@ -45,128 +45,142 @@
             🔥 Total Destiny NFTs Minted: <span id="mint-counter" class="font-bold text-white">Loading...</span>
         </div>
 
-        <p class="text-slate-400 text-xs mb-6 italic px-2 leading-relaxed">
-            "Forget technical analysis. Stop staring at the charts. The true fate of your portfolio isn’t in the candles—it’s written in your wallet address. Base Forecaster hashes your hexadecimal identity into chaotic, 100% unique, and slightly unhinged destiny readings."
-        </p>
-
-        <div id="wallet-section">
-            <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 text-md">
+        <div id="wallet-section" class="mb-4">
+            <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
                 <span>🔮</span> Connect Wallet
             </button>
         </div>
 
-        <div id="result-section" class="hidden mt-6 border-t border-slate-800 pt-5 text-center">
-            
-            <div class="mb-5 flex flex-col items-center">
-                <span class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Generated Gold-Blue Destiny Card ✨</span>
-                <div class="border-2 border-amber-500/40 p-1.5 bg-slate-950 rounded-2xl shadow-xl shadow-amber-500/5">
-                    <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/30 shadow-inner"></canvas>
-                </div>
-                <p class="text-[9px] text-slate-500 mt-1 font-mono">Right-click card / Hold image to save manually</p>
-            </div>
-
-            <div id="fortune-emoji" class="text-6xl mb-3 hidden">🔮</div>
-            <h2 id="fortune-fate" class="text-xl font-bold text-blue-400 mb-2 tracking-wide uppercase">
-                LOADING YOUR DESTINY...
-            </h2>
-
-            <div class="bg-slate-950/80 border border-blue-500/20 rounded-2xl p-4 mb-4 text-slate-300 text-sm leading-relaxed font-serif hidden">
-                "<span id="fortune-text">Calculating the alignment of your hexadecimal sequence...</span>"
-            </div>
-
-            <div class="space-y-3 text-left mb-5">
-                <div>
-                    <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
-                        <span>Degen Luck Score:</span>
-                        <span id="luck-score" class="text-blue-400">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                        <div id="luck-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000"></div>
-                    </div>
-                </div>
-                <div class="text-center text-[10px] text-slate-500 font-mono mt-1">
-                    Deterministic Seed Anchor: <span id="seed-anchor" class="text-blue-400">#0000</span>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 mb-4 border-t border-slate-800/60 pt-4">
-                <button onclick="navigate('glow')" class="p-2.5 bg-slate-950 hover:bg-slate-900 border border-cyan-500/30 rounded-xl text-[11px] font-mono font-bold text-cyan-400 flex items-center justify-center gap-1">
-                    ✨ Custom Aura Glow
-                </button>
-                <button onclick="navigate('wheel')" class="p-2.5 bg-slate-950 hover:bg-slate-900 border border-purple-500/30 rounded-xl text-[11px] font-mono font-bold text-purple-400 flex items-center justify-center gap-1">
-                    🎡 Degen Lucky Wheel
-                </button>
-            </div>
-
-            <!-- ==================================================================== -->
-            <!-- NATIVE CORE MODULE CONTAINER (OTOMATIS DI-RENDER VIA SCRIPT.JS) -->
-            <!-- ==================================================================== -->
-            <div id="polymarket-top-container" class="mb-5">
-                <div class="text-center p-4 text-xs text-slate-500 font-mono">
-                    Uplink channel ready. Connect wallet to sync terminal nodes...
-                </div>
-            </div>
-
-            <div class="bg-slate-950 border border-blue-500/30 rounded-2xl p-3.5 text-left mb-5">
-                <div class="flex items-center gap-1.5 mb-2 text-cyan-400 text-xs font-bold tracking-wider uppercase">
-                    <span>🛡️</span> AI Wallet Auditor Advisor
-                </div>
-                <p id="ai-wallet-advice" class="text-[11px] text-slate-400 leading-relaxed italic">
-                    Connecting to security protocols... Mating address sequence history...
-                </p>
-            </div>
-
-            <div class="bg-slate-950 border border-slate-900 rounded-2xl p-3.5 text-left mb-4 relative z-10">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span class="text-xs font-bold font-mono tracking-wide text-slate-300">🧙‍♂️ Ask Oracle AI Assistant</span>
-                </div>
-                
-                <div id="ai-chat-logs" class="max-h-[140px] overflow-y-auto mb-3 space-y-2 pr-1 text-[11px] scrollbar-thin">
-                    <div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl">
-                        <strong>Oracle AI:</strong> Greetings, traveler. I know the secrets of your address hash. Ask me anything about your fortune, destiny, or next crypto move!
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-2 w-full relative z-20">
-                    <input type="text" id="ai-chat-input" placeholder="Will I get rich? Ask the oracle..." class="w-full bg-slate-900 border border-slate-800 focus:border-blue-500/50 rounded-xl px-3 py-2.5 text-xs text-white placeholder-slate-600 outline-none transition-all relative z-20">
-                    <button id="ai-chat-send-btn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2.5 rounded-xl text-xs font-bold transition-all relative z-20 whitespace-nowrap">Ask</button>
-                </div>
-            </div>
-
-            <div class="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl space-y-4 relative z-10">
-                <div>
-                    <h3 class="text-sm font-bold text-slate-200 tracking-wide">🔮 SECURE ORACLE STALKER</h3>
-                    <p class="text-[11px] text-slate-400">Scan external smart contract tokens or track influencer wallet addresses to compute their cosmic matrix alignment.</p>
-                </div>
-                
-                <div class="flex items-center space-x-2 w-full relative z-20">
-                    <input type="text" id="external-target-input" 
-                           placeholder="Enter 0x address or token symbol (e.g., BRETT, DENT, 0x71C...)" 
-                           class="bg-slate-950/60 border border-slate-800 text-xs rounded-xl px-3 py-2.5 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 monospace relative z-20" />
-                    <button id="external-target-btn" 
-                            class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-cyan-950/30 relative z-20 whitespace-nowrap">
-                        Scan
-                    </button>
-                </div>
-
-                <div id="external-target-result" class="hidden mt-2"></div>
-            </div>
-            
-            <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center mb-2 mt-4">
-                <p class="text-[10px] text-slate-400 italic mb-2">Saved from a rugpull? Feed the Based Dev 👇</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="donate-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/30 text-emerald-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
-                        💸 Send 0.001 ETH Tip
-                    </button>
-                    <button id="mint-nft-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/30 text-amber-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
-                        🪙 Mint Card NFT
-                    </button>
-                </div>
-            </div>
+        <div id="locked-state-view" class="py-10 px-4 border border-slate-800 border-dashed rounded-2xl space-y-3 bg-slate-950/40">
+            <div class="text-3xl animate-pulse">🔒</div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Access Required</h4>
+            <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                Hubungkan Web3 Wallet kamu untuk membuka kalkulasi parameter takdir degen, melakukan trading, dan membuka peringkat global.
+            </p>
         </div>
 
-        <div class="mt-6 border-t border-slate-800/60 pt-4">
+        <div id="result-section" class="hidden text-center">
+
+            <div id="tab-oracle" class="tab-content space-y-5">
+                <p class="text-slate-400 text-[11px] italic px-2 leading-relaxed">
+                    "The true fate of your portfolio isn’t in the candles—it’s written in your hexadecimal identity hash sequence."
+                </p>
+
+                <div class="flex flex-col items-center">
+                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Generated Gold-Blue Destiny Card ✨</span>
+                    <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
+                        <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/10 shadow-inner"></canvas>
+                    </div>
+                    <p class="text-[9px] text-slate-500 mt-1 font-mono">Right-click card / Hold image to save manually</p>
+                </div>
+
+                <div class="space-y-3 text-left">
+                    <div>
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
+                            <span>Degen Luck Score:</span>
+                            <span id="luck-score" class="text-blue-400">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="luck-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                    <div class="text-center text-[10px] text-slate-500 font-mono">
+                        Deterministic Seed Anchor: <span id="seed-anchor" class="text-blue-400">#0000</span>
+                    </div>
+                </div>
+
+                <div id="polymarket-top-container" class="mt-4"></div>
+
+                <div class="bg-slate-950 border border-blue-500/20 rounded-2xl p-3.5 text-left text-[11px]">
+                    <div class="flex items-center gap-1.5 mb-1 text-cyan-400 font-bold tracking-wider uppercase">
+                        <span>🛡️</span> AI Wallet Auditor Advisor
+                    </div>
+                    <p id="ai-wallet-advice" class="text-slate-400 leading-relaxed italic">Analyzing nodes...</p>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-3.5 text-left relative">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-bold font-mono text-slate-300">🧙‍♂️ Ask Oracle AI Assistant</span>
+                    </div>
+                    <div id="ai-chat-logs" class="max-h-[120px] overflow-y-auto mb-3 space-y-2 pr-1 text-[11px] scrollbar-thin">
+                        <div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl">
+                            <strong>Oracle AI:</strong> Greetings, traveler. Ask me anything about your fortune, destiny, or next crypto move!
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="ai-chat-input" placeholder="Will I get rich? Ask..." class="w-full bg-slate-900 border border-slate-800 focus:border-blue-500/50 rounded-xl px-3 py-2 text-xs text-white outline-none">
+                        <button id="ai-chat-send-btn" class="bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap">Ask</button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3 text-left">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-200 tracking-wide">🔮 SECURE ORACLE STALKER</h3>
+                        <p class="text-[10px] text-slate-400">Scan external tokens or influencer wallets to analyze their matrix alignment.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="external-target-input" placeholder="Enter address or token (e.g., BRETT, DENT...)" class="bg-slate-950 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 font-mono" />
+                        <button id="external-target-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap">Scan</button>
+                    </div>
+                    <div id="external-target-result" class="hidden mt-1"></div>
+                </div>
+
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3 text-center">
+                    <p class="text-[10px] text-slate-400 italic mb-2">Feed the Based Developer Core 👇</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="donate-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all">💸 Send 0.001 ETH Tip</button>
+                        <button id="mint-nft-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-2 px-3 rounded-xl transition-all">🪙 Mint Card NFT</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-glow" class="tab-content hidden space-y-4 text-center">
+                <h2 class="text-md font-bold uppercase tracking-wider text-cyan-400">✨ Aura Frame Customizer</h2>
+                <p class="text-xs text-slate-400">Ubah efek warna bingkai luar NFT takdirmu secara real-time sebelum di-mint.</p>
+                <div class="space-y-2.5 pt-2">
+                    <button onclick="applyGlow('neon')" class="w-full p-4 rounded-xl border border-cyan-500/20 bg-slate-950 hover:border-cyan-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-cyan-400">🔹 CYAN NEON PULSE</span>
+                        <div class="w-16 h-3.5 rounded-full bg-cyan-400" />
+                    </button>
+                    <button onclick="applyGlow('gold')" class="w-full p-4 rounded-xl border border-amber-500/20 bg-slate-950 hover:border-amber-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-amber-400">🔸 GOLD LUCK DESTINY</span>
+                        <div class="w-16 h-3.5 rounded-full bg-amber-500" />
+                    </button>
+                    <button onclick="applyGlow('matrix')" class="w-full p-4 rounded-xl border border-emerald-500/20 bg-slate-950 hover:border-emerald-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-emerald-400">🟢 MATRIX CYBER GREEN</span>
+                        <div class="w-16 h-3.5 rounded-full bg-emerald-500" />
+                    </button>
+                    <button onclick="applyGlow('rose')" class="w-full p-4 rounded-xl border border-rose-500/20 bg-slate-950 hover:border-rose-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-rose-400">🔴 RUBY VEIN PULSE</span>
+                        <div class="w-16 h-3.5 rounded-full bg-rose-500" />
+                    </button>
+                </div>
+            </div>
+
+            <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
+                <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
+                <p class="text-xs text-slate-400">Putar roda gratis setiap 24 jam sekali untuk mendapatkan bonus Aura Point atau reroll parameter keberuntungan!</p>
+                <div class="w-36 h-36 mx-auto rounded-full border-4 border-dashed border-purple-500 flex items-center justify-center relative bg-slate-950 shadow-lg">
+                    <div id="wheel-graphic" class="text-4xl transition-transform duration-1000">🔮</div>
+                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
+                </div>
+                <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl font-mono text-xs tracking-wider transition-all active:scale-95">
+                    🌀 SPIN THE WHEEL
+                </button>
+                <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-200 font-mono text-xs"></div>
+            </div>
+
+            <div id="tab-ranks" class="tab-content hidden space-y-4 text-center">
+                <h2 class="text-md font-bold uppercase tracking-wider text-yellow-500">🏆 Global Degen Leaderboard</h2>
+                <p class="text-xs text-slate-400">Daftar peringkat alamat wallet dengan tingkat anomali hoki tertinggi di Base Chain.</p>
+                <div id="ranks-list-container" class="space-y-2 pt-2">
+                    </div>
+            </div>
+
+        </div>
+
+        <div class="mt-5 border-t border-slate-800/60 pt-4">
             <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="block bg-gradient-to-r from-slate-950 via-blue-950/20 to-slate-950 border border-slate-800/60 hover:border-blue-500/40 rounded-xl p-2.5 transition-all text-left relative overflow-hidden group">
                 <span class="absolute top-0 right-0 bg-blue-600/30 text-blue-400 text-[8px] px-1.5 py-0.5 rounded-bl font-mono tracking-widest uppercase font-bold">ECOSYSTEM</span>
                 <div class="flex items-center gap-3">
@@ -193,7 +207,6 @@
                     </div>
                     <span class="text-[11px] text-slate-500 group-hover:text-blue-400">Launch ➜</span>
                 </button>
-
                 <button id="choose-metamask" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-3 rounded-2xl flex items-center justify-between transition-all group">
                     <div class="flex items-center gap-3">
                         <span class="text-lg">🦊</span>
@@ -201,70 +214,26 @@
                     </div>
                     <span class="text-[11px] text-slate-500 group-hover:text-blue-400">Launch ➜</span>
                 </button>
-
-                <button id="choose-coinbase-smart" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/50 p-3 rounded-2xl flex items-center justify-between transition-all group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-lg">⚡</span>
-                        <span class="text-xs font-semibold tracking-wide text-cyan-400">Coinbase Easy Email Login</span>
-                    </div>
-                    <span class="text-[11px] text-slate-500 group-hover:text-cyan-400">Instant ➜</span>
-                </button>
-            </div>
-            <div class="border-t border-slate-800 my-4"></div>
-            <h4 class="text-[10px] font-bold text-slate-500 mb-2 tracking-wider uppercase text-center">Don't have a Web3 Wallet?</h4>
-            <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="bg-gradient-to-br from-blue-500/10 to-cyan-600/10 border border-blue-500/20 hover:border-blue-500/50 p-2.5 rounded-xl text-center block transition-all group">
-                <div class="text-md mb-0.5">🔵</div>
-                <div class="text-[10px] font-bold text-blue-400">Join Base Network Ecosystem</div>
-            </a>
-        </div>
-    </div>
-
-    <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/50 flex justify-around items-center z-50">
-        <button onclick="navigate('home')" class="flex flex-col items-center text-blue-400">
-            <span class="text-xl">🔮</span><span class="text-[10px] font-bold">Oracle</span>
-        </button>
-        <button onclick="navigate('glow')" class="flex flex-col items-center text-gray-500 hover:text-cyan-400 transition-colors">
-            <span class="text-xl">✨</span><span class="text-[10px] font-bold">Glow</span>
-        </button>
-        <button onclick="navigate('wheel')" class="flex flex-col items-center text-gray-500 hover:text-purple-400 transition-colors">
-            <span class="text-xl">🎡</span><span class="text-[10px] font-bold">Wheel</span>
-        </button>
-        <button onclick="navigate('ranks')" class="flex flex-col items-center text-gray-500 hover:text-blue-400 transition-colors">
-            <span class="text-xl">🏆</span><span class="text-[10px] font-bold">Ranks</span>
-        </button>
-    </div>
-
-    <div id="modal-glow" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
-        <div class="bg-slate-950 border border-cyan-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(6,182,212,0.2)]">
-            <button onclick="closeModal('glow')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
-            <h3 class="text-cyan-400 font-bold text-lg mb-2">⚡ ENERGIZE CORE AURA</h3>
-            <p class="text-slate-400 text-xs mb-6 font-mono">Select the particle wavelength to change the internal grid glow of your Destiny Card.</p>
-            <div class="grid grid-cols-2 gap-3 font-mono text-xs">
-                <button onclick="applyGlow('neon')" class="p-3 bg-slate-900 border border-cyan-500/30 hover:border-cyan-400 text-cyan-400 rounded-xl transition shadow-[0_0_10px_rgba(6,182,212,0.1)]">🔹 CYAN NEON</button>
-                <button onclick="applyGlow('gold')" class="p-3 bg-slate-900 border border-amber-500/30 hover:border-amber-400 text-amber-400 rounded-xl transition shadow-[0_0_10px_rgba(245,158,11,0.1)]">🔸 GOLD LUCK</button>
-                <button onclick="applyGlow('matrix')" class="p-3 bg-slate-900 border border-green-500/30 hover:border-green-400 text-green-400 rounded-xl transition shadow-[0_0_10px_rgba(34,197,94,0.1)]">🟢 MATRIX GREEN</button>
-                <button onclick="applyGlow('rose')" class="p-3 bg-slate-900 border border-rose-500/30 hover:border-rose-400 text-rose-400 rounded-xl transition shadow-[0_0_10px_rgba(244,63,94,0.1)]">🔴 RUBY VECT</button>
             </div>
         </div>
     </div>
 
-    <div id="modal-wheel" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden justify-center items-center z-50 p-4">
-        <div class="bg-slate-950 border border-purple-500/40 p-6 rounded-2xl max-w-sm w-full text-center relative shadow-[0_0_30px_rgba(168,85,247,0.2)]">
-            <button onclick="closeModal('wheel')" class="absolute top-3 right-4 text-slate-400 hover:text-white font-mono text-xl">&times;</button>
-            <h3 class="text-purple-400 font-bold text-lg mb-2">🎰 DEGEN SPIN GACHA</h3>
-            <p class="text-slate-400 text-xs mb-6 font-mono">Use your remaining daily gas to spin the quantum wheel of destiny.</p>
-            <div class="w-32 h-32 mx-auto mb-6 relative flex items-center justify-center">
-                <div id="wheel-graphic" class="w-full h-full rounded-full border-4 border-dashed border-purple-500 flex items-center justify-center text-3xl bg-slate-900 shadow-[0_0_20px_rgba(168,85,247,0.2)]">🔮</div>
-                <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
-            </div>
-            <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-400 hover:to-pink-500 text-white font-bold rounded-xl shadow-lg font-mono text-sm tracking-wider transition-all transform active:scale-95 disabled:opacity-50">
-                🌀 SPIN THE WHEEL
-            </button>
-            <div id="spin-result" class="hidden mt-4 p-3 bg-slate-900/80 border border-dashed border-purple-500/30 rounded-xl text-slate-200 text-xs font-mono"></div>
-        </div>
+    <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/40 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-2xl">
+        <button id="nav-oracle" onclick="navigate('oracle')" class="flex flex-col items-center text-blue-400 transition-all font-mono scale-105">
+            <span class="text-xl">🔮</span><span class="text-[10px] font-bold mt-0.5">Oracle</span>
+        </button>
+        <button id="nav-glow" onclick="navigate('glow')" class="flex flex-col items-center text-slate-500 hover:text-cyan-400 transition-all font-mono">
+            <span class="text-xl">✨</span><span class="text-[10px] font-bold mt-0.5">Glow</span>
+        </button>
+        <button id="nav-wheel" onclick="navigate('wheel')" class="flex flex-col items-center text-slate-500 hover:text-purple-400 transition-all font-mono">
+            <span class="text-xl">🎡</span><span class="text-[10px] font-bold mt-0.5">Wheel</span>
+        </button>
+        <button id="nav-ranks" onclick="navigate('ranks')" class="flex flex-col items-center text-slate-500 hover:text-yellow-400 transition-all font-mono">
+            <span class="text-xl">🏆</span><span class="text-[10px] font-bold mt-0.5">Ranks</span>
+        </button>
     </div>
 
-    <footer class="mt-8 flex flex-col items-center gap-2 font-mono">
+    <footer class="mt-4 flex flex-col items-center gap-2 font-mono">
         <div class="bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-full flex items-center gap-4 text-[10px]">
             <div class="flex items-center gap-1.5 text-slate-400">
                 <span class="inline-block w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
