@@ -417,40 +417,72 @@ function drawDestinyCard(fateObj, score, address, seed) {
 function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.textAlign = "center";
     
-    // Nama Ramalan (Ditaruh agak ke atas sedikit, di koordinat Y: 210)
-    ctx.fillStyle = "#38bdf8"; 
-    ctx.font = "bold 20px sans-serif"; 
-    // Efek Shadow tipis biar teksnya menyala di atas gambar background
-    ctx.shadowColor = "rgba(0, 0, 0, 0.8)"; ctx.shadowBlur = 4;
-    ctx.fillText(fateObj.fate, 175, 210); 
+    // ========================================================
+    // BARU: JUDUL TAKDIR DENGAN GAYA FANTASI EPIK (EMAS GRADASI)
+    // ========================================================
+    const titleY = 210;
+    
+    // 1. Set font menjadi bergaya klasik/serif tebal
+    ctx.font = "bold 22px 'Georgia', 'Times New Roman', serif"; 
 
-    // Deskripsi Teks Ramalan (Y: 245)
-    ctx.fillStyle = "#ffffff"; ctx.font = "italic 11px serif";
-    const words = fateObj.text.split(" "); let line = ""; let y = 245;
+    // 2. Buat warna gradasi emas vertikal dari atas ke bawah teks
+    const goldGradient = ctx.createLinearGradient(0, titleY - 18, 0, titleY + 4);
+    goldGradient.addColorStop(0, "#ffe699");   // Emas muda berkilau di atas
+    goldGradient.addColorStop(0.5, "#f59e0b"); // Emas medium murni
+    goldGradient.addColorStop(1, "#b45309");   // Emas tua kecokelatan di bawah
+
+    // 3. Gambar efek border/stroke hitam tebal di belakang teks biar gak tenggelam
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 4;
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+    ctx.strokeText(fateObj.fate, 175, titleY);
+
+    // 4. Isi teks dengan gradasi emas yang sudah dibuat
+    ctx.fillStyle = goldGradient;
+    ctx.fillText(fateObj.fate, 175, titleY); 
+
+    // ========================================================
+    // DESKRIPSI TEKS RAMALAN (Diberi Stroke Tipis Biar Jelas)
+    // ========================================================
+    ctx.font = "italic 12px 'Georgia', serif";
+    
+    const words = fateObj.text.split(" "); 
+    let line = ""; 
+    let y = 245;
+    
     for (let n = 0; n < words.length; n++) {
         let testLine = line + words[n] + " ";
-        if (ctx.measureText(testLine).width > 260 && n > 0) { 
-            ctx.fillText(line, 175, y); 
+        if (ctx.measureText(testLine).width > 280 && n > 0) { 
+            // Stroke hitam tipis untuk deskripsi
+            ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
+            ctx.strokeText(line, 175, y);
+            
+            ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y); 
             line = words[n] + " "; 
-            y += 17; 
+            y += 18; 
         } else { 
             line = testLine; 
         }
     }
-    ctx.fillText(line, 175, y);
+    ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
+    ctx.strokeText(line, 175, y);
+    ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y);
     
-    // Reset shadow agar tidak merusak teks info wallet
+    // Reset properties canvas agar tidak merusak elemen lain
     ctx.shadowBlur = 0;
 
-    // Box Transparan Informasi Wallet di bagian bawah kartu (Dibuat agak blur/gelap agar info wallet kontras)
+    // ========================================================
+    // BOX INFORMASI WALLET (BAGIAN BAWAH KARTU)
+    // ========================================================
     ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
     ctx.fillRect(30, 405, 290, 62);
-    ctx.strokeStyle = "rgba(56, 189, 248, 0.3)"; 
+    ctx.strokeStyle = "rgba(245, 158, 11, 0.4)"; // Menyesuaikan border box ke warna emas tipis
     ctx.strokeRect(30, 405, 290, 62);
     
     ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#94a3b8";
     ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 423);
-    ctx.fillStyle = "#22d3ee"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
+    ctx.fillStyle = "#f59e0b"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
 
