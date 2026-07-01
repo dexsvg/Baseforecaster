@@ -515,3 +515,4 @@ document.addEventListener("DOMContentLoaded", () => {
         if (e.target.getAttribute("data-status") === "connected") disconnectWallet(); else connectWallet();
     });
 });
+
