@@ -55,9 +55,6 @@ function quickSelectToken(address, symbol) {
 }
 window.quickSelectToken = quickSelectToken;
 
-// ====================================================================
-// PREMIUM 100% LIVE TICKER ENGINE (GECKOTERMINAL + SECURE DEX BACKUP)
-// ====================================================================
 async function renderTopTrendingBaseCoins() {
     const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
     try {
@@ -154,9 +151,6 @@ async function executeDexScreenerFallback(wrapperElement) {
     }
 }
 
-// ====================================================================
-// B20 ENGINE & WALLET METRICS BROADCASTER
-// ====================================================================
 async function deployNewB20Token(tokenName, tokenSymbol) {
     if (!tokenName || !tokenSymbol) return alert("Please fill Token Name & Symbol data slots!");
     const provider = getActiveProvider();
@@ -180,9 +174,6 @@ async function deployNewB20Token(tokenName, tokenSymbol) {
 }
 window.deployNewB20Token = deployNewB20Token;
 
-// ====================================================================
-// SOCIAL CORE SHARING MODULES (X & TELEGRAM INTEGRATION)
-// ====================================================================
 function setupSocialEngines() {
     document.getElementById("share-x-btn")?.addEventListener("click", () => {
         const fateName = currentFateGlobal ? currentFateGlobal.fate : "THE DEGEN ANOMALY";
@@ -191,13 +182,10 @@ function setupSocialEngines() {
     });
 
     document.getElementById("share-tg-btn")?.addEventListener("click", () => {
-        window.open("https://t.专/BaseForecaster", '_blank'); // Redirection endpoint for username @BaseForecaster
+        window.open("https://t.me/BaseForecaster", '_blank'); // FIXED: Typo t.专 -> t.me
     });
 }
 
-// ====================================================================
-// CORE CONTRACT INTERACTION (MINT / TIPS / SWAPS)
-// ====================================================================
 async function sendTip() {
     const provider = getActiveProvider();
     if (!provider || !isConnected) return alert("Connect system node to your wallet!");
@@ -224,9 +212,6 @@ async function mintNFT() {
     } catch (err) { alert("Execution Failed: " + err.message); }
 }
 
-// ====================================================================
-// RADAR FORECAST EXTRACTOR & DYNAMIC TECHNICAL ALIGNMENT
-// ====================================================================
 async function executeTokenScan() {
     const targetInput = document.getElementById("external-target-input");
     const resultDiv = document.getElementById("external-target-result");
@@ -324,9 +309,6 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
 }
 window.triggerWeb3Buy = triggerWeb3Buy;
 
-// ====================================================================
-// NAVIGATION & LEADERBOARD CONTROLS
-// ====================================================================
 function navigate(targetTab) {
     if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -406,9 +388,6 @@ function spinTheWheel() {
 }
 window.spinTheWheel = spinTheWheel;
 
-// ====================================================================
-// SECURITY ROOT INTERFACES & CONNECT LOGIC
-// ====================================================================
 async function connectWallet() {
     const provider = getActiveProvider();
     if (!provider) return alert("❌ Web3 Node Client missing. Open via OKX/Coinbase wallet portal.");
@@ -487,9 +466,6 @@ async function executeDirectBuy() {
     } catch (err) { alert("Refused: " + err.message); }
 }
 
-// ====================================================================
-// CANVAS RENDER & MATHEMATICAL SEED ANALYSIS
-// ====================================================================
 function generateDestiny(address) {
     let seed = 0;
     const cleanAddress = address.toLowerCase().replace("0x", "");
@@ -501,6 +477,10 @@ function generateDestiny(address) {
     document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
     document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
     document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
+
+    // Load AP dari localStorage saat login berhasil
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
 
     drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
 }
@@ -553,40 +533,38 @@ function drawDestinyCard(fateObj, score, address, seed) {
     characterImg.onerror = () => { ctx.fillStyle = "#090d16"; ctx.fillRect(0, 0, 350, 500); finalizeDraw(); };
 }
 
-// ====================================================================
-// INITIALIZATION LIFE CYCLES
-// ====================================================================
 document.addEventListener("DOMContentLoaded", () => {
+    // Render initial balance dari local storage jika ada
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+
     renderTopTrendingBaseCoins();
     setupSocialEngines();
-    setInterval(renderTopTrendingBaseCoins, 30000); // Sinkronisasi otomatis setiap 30 detik
+    setInterval(renderTopTrendingBaseCoins, 30000);
 
     document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
     document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
     
-document.getElementById("daily-login-btn")?.addEventListener("click", () => {
-    const today = new Date().toDateString(); // Mengambil string tanggal hari ini (e.g., "Thu Jul 02 2026")
-    const lastClaim = localStorage.getItem("last_aura_claim_date");
+    document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+        const today = new Date().toDateString();
+        const lastClaim = localStorage.getItem("last_aura_claim_date");
 
-    // Cek apakah user sudah klaim hari ini
-    if (lastClaim === today) {
-        alert("🔒 Matrix Reset Required: You have already secured today's Aura alignment. Come back tomorrow!");
-        return; // Hentikan fungsi agar tidak bisa di-spam
-    }
+        if (lastClaim === today) {
+            alert("🔒 Matrix Reset Required: You have already secured today's Aura alignment. Come back tomorrow!");
+            return;
+        }
 
-    // Jika belum, proses klaim seperti biasa
-    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-    currentAP += 100;
-    
-    // Simpan saldo baru dan kunci tanggal hari ini
-    localStorage.setItem("premium_aura", currentAP);
-    localStorage.setItem("last_aura_claim_date", today);
+        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+        currentAP += 100;
+        
+        localStorage.setItem("premium_aura", currentAP);
+        localStorage.setItem("last_aura_claim_date", today);
 
-    // Update UI
-    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-    
-    if (typeof confetti === "function") confetti();
-    alert("🎁 +100 Aura Points successfully synchronized onto database cluster!");
+        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+        
+        if (typeof confetti === "function") confetti();
+        alert("🎁 +100 Aura Points successfully synchronized onto database cluster!");
+    });
 });
