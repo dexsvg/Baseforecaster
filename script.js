@@ -521,33 +521,38 @@ async function executeTokenScan() {
     if (!query) return alert("Please enter a token symbol or contract address on Base Chain!");
 
     resultDiv.classList.remove("hidden");
-    resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Scanning Base Chain Nodes & Calculating Bollinger Bands for "${query.toUpperCase()}"...</p>`;
+    resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Extracting Fundamental Metrics & Bollinger Bands for "${query.toUpperCase()}"...</p>`;
 
     try {
-        // Fetch real-time token data from DexScreener API
         const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
         const data = await response.json();
-
-        // Filter pairs to ensure we only analyze assets on the Base Chain ecosystem
         const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
 
         if (basePairs.length === 0) {
             resultDiv.innerHTML = `
                 <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                    ❌ Token not found on Base Chain. Please verify the ticker or contract address.
+                    ❌ Token not found on Base Chain. Please verify the contract or ticker.
                 </div>`;
             return;
         }
 
-        // Select the top pair based on the highest liquidity/volume
         const bestPair = basePairs[0];
         const priceUsd = parseFloat(bestPair.priceUsd);
         const priceChange = bestPair.priceChange?.h24 || 0;
         const volume24h = bestPair.volume?.h24 ? Math.floor(bestPair.volume.h24).toLocaleString() : "0";
         const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
 
-        // --- DAILY BOLLINGER BANDS ALGORITHM ---
-        // Estimate volatility based on price change and volume to calculate band width dynamically
+        // --- EXTRACTING FUNDAMENTAL DATA FROM DEXSCREENER ---
+        const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
+        const buys24h = bestPair.txns?.h24?.buys || 0;
+        const sells24h = bestPair.txns?.h24?.sells || 0;
+        const totalTxns = (buys24h + sells24h).toLocaleString();
+
+        // Check if project has registered links (Fundamental Trust Check)
+        const hasWeb = bestPair.info?.websites?.[0]?.url ? `<a href="${bestPair.info.websites[0].url}" target="_blank" class="text-emerald-400 hover:underline">🌐 Website</a>` : '<span class="text-slate-600">🌐 No Web</span>';
+        const hasX = bestPair.info?.socials?.find(s => s.type === 'twitter')?.url ? `<a href="${bestPair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="text-sky-400 hover:underline">🐦 Twitter/X</a>` : '<span class="text-slate-600">🐦 No X</span>';
+
+        // --- DAILY BOLLINGER BANDS CALCULATION ---
         const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4)); 
         const middleBand = priceUsd / (1 + (priceChange / 100));
         const standardDeviation = middleBand * (volatilityFactor / 100);
@@ -555,7 +560,6 @@ async function executeTokenScan() {
         const upperBand = middleBand + (2 * standardDeviation);
         const lowerBand = middleBand - (2 * standardDeviation);
 
-        // Determine technical alignment metrics and automated AI oracle forecasts
         let bbStatus = "";
         let bbPrediction = "";
         let bbBadgeColor = "";
@@ -574,22 +578,39 @@ async function executeTokenScan() {
             bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
         }
 
-        // Inject 100% English Web3 UI into the dApp DOM structure
+        // --- RENDER 100% ENGLISH UI WITH FUNDAMENTALS ---
         resultDiv.innerHTML = `
-            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2 font-mono text-[11px]">
-                <div class="flex justify-between border-b border-slate-800 pb-1">
+            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
+                <!-- Header -->
+                <div class="flex justify-between border-b border-slate-800 pb-1.5">
                     <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
                     <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}% (24h)</span>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
+                <!-- Core Market Stats -->
+                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400">
                     <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
-                    <div>Market Cap: <strong class="text-white">$${marketCap}</strong></div>
+                    <div>Market Cap (FDV): <strong class="text-white">$${marketCap}</strong></div>
                     <div>Volume 24h: <strong class="text-white">$${volume24h}</strong></div>
-                    <div>Dex: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
+                    <div>Dex Platform: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
                 </div>
 
-                <div class="mt-2 pt-2 border-t border-slate-900 space-y-1.5">
+                <!-- NEW: Token Fundamental Metrics Panel -->
+                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-lg space-y-1 text-[10px]">
+                    <div class="text-[9px] text-amber-400 font-bold tracking-wider">🔬 FUNDAMENTAL METRICS</div>
+                    <div class="grid grid-cols-2 gap-1 text-slate-400">
+                        <div>Total Pool Liquidity: <strong class="text-white">$${liquidity}</strong></div>
+                        <div>Transactions (24h): <strong class="text-white">${totalTxns}</strong></div>
+                        <div>Buys: <strong class="text-emerald-400">${buys24h}</strong></div>
+                        <div>Sells: <strong class="text-rose-400">${sells24h}</strong></div>
+                    </div>
+                    <div class="flex gap-3 pt-1 border-t border-slate-900 mt-1 text-[9px]">
+                        <span class="text-slate-500">Links:</span> ${hasWeb} | ${hasX}
+                    </div>
+                </div>
+
+                <!-- Technical Analytics Panel (Bollinger Bands) -->
+                <div class="pt-1 space-y-1.5">
                     <div class="flex justify-between items-center text-[9px]">
                         <span class="text-slate-400 font-bold">📊 DAILY BOLLINGER BANDS (20, 2)</span>
                         <span class="px-1.5 py-0.5 rounded border ${bbBadgeColor} text-[8px] font-bold tracking-wide">${bbStatus}</span>
@@ -606,7 +627,7 @@ async function executeTokenScan() {
                     </div>
                 </div>
 
-                <a href="${bestPair.url}" target="_blank" class="block text-center mt-1 text-[9px] text-cyan-400 underline">
+                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline">
                     Open Chart on DexScreener ➜
                 </a>
             </div>
@@ -615,7 +636,7 @@ async function executeTokenScan() {
     } catch (error) {
         resultDiv.innerHTML = `
             <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                ⚠️ Failed to execute on-chain scan or technical band metrics. Please try again.
+                ⚠️ Failed to extract secure fundamental data. Please try again.
             </div>`;
     }
 }
