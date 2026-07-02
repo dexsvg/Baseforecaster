@@ -445,9 +445,6 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
 
-// ==========================================
-// CARD FRAME CREATOR LOGIC
-// ==========================================
 function drawCardFrame(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
@@ -466,50 +463,77 @@ function generateAIWalletAdvice(fate, score) {
 }
 
 // ====================================================================
-// REAL FEATURE: INTEGRATED DYNAMIC AI CHAT SYSTEM
+// REAL FEATURE: TOP TRENDING REAL-TIME MARKET DATA (BASE NETWORK)
 // ====================================================================
-async function setupAIChatSystem() {
-    const input = document.getElementById("ai-chat-input");
-    const btn = document.getElementById("ai-chat-send-btn");
-    const logs = document.getElementById("ai-chat-logs");
+async function renderTopTrendingBaseCoins() {
+    const logsContainer = document.getElementById("ai-chat-logs"); 
+    const inputArea = document.getElementById("ai-chat-input")?.parentElement; 
+    
+    if (!logsContainer) return;
 
-    btn?.addEventListener("click", async () => {
-        const text = input.value.trim();
-        if (!text) return;
+    // Sembunyikan form chat input bawaan lama karena sekarang beralih ke live monitoring widget
+    if (inputArea) inputArea.style.display = "none";
 
-        logs.innerHTML += `<div class="text-white bg-slate-900 p-2 rounded-xl text-right mb-2"><strong>You:</strong> ${text}</div>`;
-        input.value = "";
-        logs.scrollTop = logs.scrollHeight;
+    logsContainer.innerHTML = `
+        <div class="text-cyan-400 font-mono text-[11px] animate-pulse p-3 text-center">
+            📡 Fetching Top 5 Trending Pairs on Base Chain via DexScreener Matrix Node...
+        </div>
+    `;
 
-        const loadingId = "ai-loading-" + Date.now();
-        logs.innerHTML += `<div id="${loadingId}" class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2 animate-pulse"><strong>Oracle AI:</strong> Connect to Matrix Node...</div>`;
-        logs.scrollTop = logs.scrollHeight;
+    try {
+        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
+        const data = await response.json();
+        
+        let basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
+        let top5Pairs = basePairs.slice(0, 5);
 
-        try {
-            const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(text + " crypto context")}&format=json`);
-            const data = await response.json();
-            
-            let aiReply = "";
-            if (data.AbstractText) {
-                aiReply = data.AbstractText;
-            } else {
-                const smartFallback = [
-                    `Berdasarkan kalkulasi hash alamat dompetmu, pergerakan market saat ini sangat sinkron dengan takdir $FORECAST. Momentum mu sedang kuat!`,
-                    `Matrix mendeteksi volatilitas tinggi pada jaringan Base. Strategi terbaik saat ini adalah memantau liquidity pool secara ketat.`,
-                    `Pertanyaan yang luar biasa. Node blockchain menyarankan untuk tidak panik menjual (panic sell) saat kondisi grafik sedang konsolidasi.`
-                ];
-                aiReply = smartFallback[Math.floor(Math.random() * smartFallback.length)];
-            }
-
-            document.getElementById(loadingId)?.remove();
-            logs.innerHTML += `<div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> 🔮 ${aiReply}</div>`;
-            logs.scrollTop = logs.scrollHeight;
-
-        } catch (error) {
-            document.getElementById(loadingId)?.remove();
-            logs.innerHTML += `<div class="text-rose-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> Node gangguan. Pastikan koneksi internet aman, Bro.</div>`;
+        if (top5Pairs.length === 0) {
+            logsContainer.innerHTML = `<div class="text-rose-400 font-mono text-[10px] p-2">⚠️ No active trending pairs found on Base.</div>`;
+            return;
         }
-    });
+
+        let trendingHTML = `
+            <div class="space-y-2.5 font-mono text-[11px]">
+                <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-2">
+                    <span class="text-cyan-400 font-bold tracking-wider">🔥 TOP 5 TRENDING COINS (BASE)</span>
+                    <span class="text-[9px] bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded animate-pulse">● LIVE DATA</span>
+                </div>
+        `;
+
+        top5Pairs.forEach((pair, index) => {
+            const price = parseFloat(pair.priceUsd);
+            const priceChange = pair.priceChange?.h24 || 0;
+            const volume24h = pair.volume?.h24 ? Math.floor(pair.volume.h24).toLocaleString() : "0";
+            const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
+            
+            trendingHTML += `
+                <div class="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-200 font-bold">#${index + 1} ${pair.baseToken.name} (${pair.baseToken.symbol})</span>
+                        <span class="${changeColor} font-black">${priceChange >= 0 ? '▲' : '▼'} ${priceChange}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400 pt-0.5 border-t border-slate-900/50">
+                        <div>Price: <strong class="text-white">$${price < 0.01 ? price.toFixed(6) : price.toFixed(2)}</strong></div>
+                        <div>Volume 24h: <strong class="text-slate-300">$${volume24h}</strong></div>
+                    </div>
+                    <div class="flex justify-between items-center pt-1 text-[9px]">
+                        <span class="text-slate-500">Dex: <span class="text-cyan-500 uppercase">${pair.dexId}</span></span>
+                        <a href="${pair.url}" target="_blank" class="text-cyan-400 hover:underline">View Matrix Chart ➜</a>
+                    </div>
+                </div>
+            `;
+        });
+
+        trendingHTML += `</div>`;
+        logsContainer.innerHTML = trendingHTML;
+
+    } catch (error) {
+        console.error("Failed to load trending tokens:", error);
+        logsContainer.innerHTML = `
+            <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400 text-center">
+                ⚠️ Connection Matrix Timeout. Failed to sync real-time Base metrics.
+            </div>`;
+    }
 }
 
 // ====================================================================
@@ -545,7 +569,6 @@ async function executeTokenScan() {
         const volume24h = bestPair.volume?.h24 ? Math.floor(bestPair.volume.h24).toLocaleString() : "0";
         const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
 
-        // --- EXTRACTING FUNDAMENTAL DATA FROM DEXSCREENER ---
         const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
         const buys24h = bestPair.txns?.h24?.buys || 0;
         const sells24h = bestPair.txns?.h24?.sells || 0;
@@ -554,7 +577,6 @@ async function executeTokenScan() {
         const hasWeb = bestPair.info?.websites?.[0]?.url ? `<a href="${bestPair.info.websites[0].url}" target="_blank" class="text-emerald-400 hover:underline">🌐 Website</a>` : '<span class="text-slate-600">🌐 No Web</span>';
         const hasX = bestPair.info?.socials?.find(s => s.type === 'twitter')?.url ? `<a href="${bestPair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="text-sky-400 hover:underline">🐦 Twitter/X</a>` : '<span class="text-slate-600">🐦 No X</span>';
 
-        // --- DAILY BOLLINGER BANDS CALCULATION ---
         const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4)); 
         const middleBand = priceUsd / (1 + (priceChange / 100));
         const standardDeviation = middleBand * (volatilityFactor / 100);
@@ -580,25 +602,21 @@ async function executeTokenScan() {
             bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
         }
 
-        // --- RENDER 100% ENGLISH UI WITH HIGHLY HIGHLIGHTED BUY TERMINAL ---
         resultDiv.innerHTML = `
-            <div class="p-3.5 bg-slate-950 border border-cyan-500/30 rounded-2xl space-y-3 font-mono text-[11px] shadow-2xl">
-                <!-- Header -->
-                <div class="flex justify-between border-b border-slate-800 pb-2">
-                    <span class="font-bold text-white text-xs">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
-                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-xs">${priceChange}% (24h)</span>
+            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
+                <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                    <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
+                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}% (24h)</span>
                 </div>
                 
-                <!-- Core Market Stats -->
-                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 bg-slate-900/20 p-2 rounded-xl border border-slate-900">
+                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400">
                     <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
                     <div>Market Cap (FDV): <strong class="text-white">$${marketCap}</strong></div>
                     <div>Volume 24h: <strong class="text-white">$${volume24h}</strong></div>
                     <div>Dex Platform: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
                 </div>
 
-                <!-- Token Fundamental Metrics Panel -->
-                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-xl space-y-1 text-[10px]">
+                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-lg space-y-1 text-[10px]">
                     <div class="text-[9px] text-amber-400 font-bold tracking-wider">🔬 FUNDAMENTAL METRICS</div>
                     <div class="grid grid-cols-2 gap-1 text-slate-400">
                         <div>Total Pool Liquidity: <strong class="text-white">$${liquidity}</strong></div>
@@ -611,51 +629,26 @@ async function executeTokenScan() {
                     </div>
                 </div>
 
-                <!-- Technical Analytics Panel (Bollinger Bands) -->
-                <div class="space-y-1.5">
+                <div class="pt-1 space-y-1.5">
                     <div class="flex justify-between items-center text-[9px]">
                         <span class="text-slate-400 font-bold">📊 DAILY BOLLINGER BANDS (20, 2)</span>
                         <span class="px-1.5 py-0.5 rounded border ${bbBadgeColor} text-[8px] font-bold tracking-wide">${bbStatus}</span>
                     </div>
                     
-                    <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1.5 rounded-lg">
+                    <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1 rounded">
                         <div>Low: <span class="text-slate-300">$${lowerBand.toFixed(5)}</span></div>
                         <div>Mid (MA): <span class="text-slate-300">$${middleBand.toFixed(5)}</span></div>
                         <div>High: <span class="text-slate-300">$${upperBand.toFixed(5)}</span></div>
                     </div>
 
-                    <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800 text-[10px] leading-relaxed text-slate-300">
+                    <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800 text-[10px] leading-relaxed text-slate-300">
                         <span class="text-amber-400 font-bold">🔮 FORECAST PREDICTION:</span> ${bbPrediction}
                     </div>
                 </div>
 
-                <!-- ⚡ INSTANT MATRIX SWAP TERMINAL -->
-                <div class="p-3 bg-gradient-to-b from-cyan-950/40 to-slate-950 border-2 border-cyan-500/40 rounded-xl space-y-2 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-                    <div class="flex justify-between items-center">
-                        <span class="text-[9px] text-cyan-400 font-black tracking-widest uppercase">⚡ INSTANT MATRIX SWAP</span>
-                        <span class="text-[8px] text-slate-500 font-bold uppercase">Slippage: Auto (1%)</span>
-                    </div>
-                    
-                    <div class="flex gap-2">
-                        <div class="relative w-7/12">
-                            <input type="number" id="buy-amount-eth" placeholder="0.005" value="0.005" step="0.001"
-                                class="w-full bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none rounded-lg px-2.5 py-2 text-xs font-bold text-white font-mono">
-                            <span class="absolute right-2 top-2.5 text-[9px] font-black text-cyan-400">ETH</span>
-                        </div>
-                        
-                        <button id="execute-buy-btn" onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')"
-                            class="w-5/12 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 hover:from-cyan-500 hover:to-indigo-700 text-slate-950 font-black rounded-lg text-[11px] uppercase tracking-wider transition-all duration-200 shadow-md active:scale-95">
-                            Buy Now
-                        </button>
-                    </div>
-                    <div id="tx-status-output" class="text-[9px] text-slate-400 font-mono text-center pt-0.5 hidden"></div>
-                </div>
-
-                <div class="text-center pt-0.5">
-                    <a href="${bestPair.url}" target="_blank" class="text-[9px] text-slate-500 hover:text-cyan-400 underline transition-colors">
-                        Open Chart on DexScreener ➜
-                    </a>
-                </div>
+                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline">
+                    Open Chart on DexScreener ➜
+                </a>
             </div>
         `;
 
@@ -694,9 +687,9 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
             });
         }
 
-        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Uniswap V3 Router Base
+        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
         if (dexId.toLowerCase() === 'aerodrome') {
-            targetRouterAddress = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; // Aerodrome Router Address
+            targetRouterAddress = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
         }
 
         const valueHex = toSafeHexWei(ethAmount);
@@ -704,14 +697,16 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
         statusDiv.className = "text-[9px] text-cyan-400 font-mono text-center animate-pulse";
         statusDiv.innerText = "🚀 Awaiting biometric confirmation in your Web3 wallet...";
 
+        const txParameters = {
+            from: userAddress,
+            to: targetRouterAddress,
+            value: valueHex,
+            data: "0x" 
+        };
+
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [{
-                from: userAddress,
-                to: targetRouterAddress,
-                value: valueHex,
-                data: "0x"
-            }],
+            params: [txParameters],
         });
 
         statusDiv.className = "text-[9px] text-emerald-400 font-mono text-center font-bold";
@@ -750,7 +745,12 @@ function setupDailyLogin() {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupDailyLogin();
-    setupAIChatSystem();
+    
+    // Eksekusi data live trending token Base saat aplikasi dimuat pertama kali
+    renderTopTrendingBaseCoins();
+    // Loop interval otomatis agar data ter-refresh real-time setiap 30 detik
+    setInterval(renderTopTrendingBaseCoins, 30000);
+
     if(document.getElementById("view-counter")) document.getElementById("view-counter").innerText = "14,250";
     if(document.getElementById("mint-counter")) document.getElementById("mint-counter").innerText = "842";
 
