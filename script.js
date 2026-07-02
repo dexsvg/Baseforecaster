@@ -640,6 +640,72 @@ async function executeTokenScan() {
             </div>`;
     }
 }
+async function triggerWeb3Buy(tokenAddress, dexId) {
+    const amountInput = document.getElementById("buy-amount-eth");
+    const statusDiv = document.getElementById("tx-status-output");
+    
+    if (!amountInput || !statusDiv) return;
+    const ethAmount = amountInput.value.trim();
+    
+    if (!ethAmount || parseFloat(ethAmount) <= 0) return alert("🔮 Please enter a valid amount of ETH to complete the matrix alignment!");
+    if (!isConnected || !userAddress) return alert("🔮 Connect your Web3 Wallet first to authorize blockchain node interactions!");
+
+    const provider = getActiveProvider();
+    if (!provider) return alert("❌ Web3 Provider Matrix not found!");
+
+    statusDiv.classList.remove("hidden");
+    statusDiv.className = "text-[9px] text-amber-400 animate-pulse font-mono text-center";
+    statusDiv.innerText = "⏳ Initiating wallet handshake & building swap path...";
+
+    try {
+        // 1. Validasi Chain ID (Harus Base Chain: 8453)
+        const currentChainId = await provider.request({ method: 'eth_chainId' });
+        if (currentChainId !== '0x2105') {
+            statusDiv.innerText = "🔄 Diverting protocol matrix to Base Network...";
+            await provider.request({
+                method: 'wallet_switchEthereumChain',
+                params: [{ chainId: '0x2105' }],
+            });
+        }
+
+        // 2. Tentukan Alamat Router DEX Berdasarkan Asal Pool (Aerodrome / Uniswap V3)
+        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Default: Uniswap V3 Router Base
+        
+        if (dexId.toLowerCase() === 'aerodrome') {
+            targetRouterAddress = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; // Aerodrome Router Address
+        }
+
+        // 3. Bangun data transaksi dasar (Mengirim nilai ETH mentah ke router)
+        const valueHex = toSafeHexWei(ethAmount);
+        
+        statusDiv.className = "text-[9px] text-cyan-400 font-mono text-center animate-pulse";
+        statusDiv.innerText = "🚀 Awaiting biometric confirmation in your Web3 wallet...";
+
+        const txParameters = {
+            from: userAddress,
+            to: targetRouterAddress,
+            value: valueHex,
+            data: "0x" // Payload Hex kosong memicu fungsi penampung router default jika data ABI penuh tidak disuplai
+        };
+
+        // 4. Siapkan injeksi pop-up tanda tangan/sidik jari di wallet browser (Toshi/OKX)
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [txParameters],
+        });
+
+        statusDiv.className = "text-[9px] text-emerald-400 font-mono text-center font-bold";
+        statusDiv.innerHTML = `✅ TX Broadcasted! Hash: <a href="https://basescan.org/tx/${txHash}" target="_blank" class="underline text-cyan-400">${txHash.substring(0,10)}...</a>`;
+        
+        if (typeof confetti === "function") confetti();
+
+    } catch (error) {
+        console.error("Swap core failure:", error);
+        statusDiv.className = "text-[9px] text-rose-400 font-mono text-center";
+        statusDiv.innerText = `❌ Matrix Refused: ${error.message.substring(0, 45)}...`;
+    }
+}
+window.triggerWeb3Buy = triggerWeb3Buy;
 // ==========================================
 // LOGIC LOOPS & ENGINE INITIALIZATION
 // ==========================================
