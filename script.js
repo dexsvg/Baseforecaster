@@ -563,6 +563,7 @@ async function renderTopTrendingBaseCoins() {
     }
 }
 
+
 // ====================================================================
 // NEW HELPER FUNCTION: QUICK SELECT FOR INTERACTIVE IN-APP TRADING
 // ====================================================================
