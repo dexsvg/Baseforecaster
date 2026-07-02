@@ -461,7 +461,6 @@ function generateAIWalletAdvice(fate, score) {
         ? `📊 [AI AUDIT]: Parameter aman. Status: ${fate.fate}. Momentum takdir lo mendukung akumulasi instan token $FORECAST.` 
         : `⚠️ [AI AUDIT]: Risiko tinggi terdeteksi. Gunakan parameter harian Gacha Wheel untuk menetralisir node sial.`;
 }
-
 // ====================================================================
 // REAL FEATURE: TOP TRENDING REAL-TIME MARKET DATA (BASE NETWORK)
 // ====================================================================
@@ -474,55 +473,104 @@ async function renderTopTrendingBaseCoins() {
     // Sembunyikan form chat input bawaan lama karena sekarang beralih ke live monitoring widget
     if (inputArea) inputArea.style.display = "none";
 
-    logsContainer.innerHTML = `
-        <div class="text-cyan-400 font-mono text-[11px] animate-pulse p-3 text-center">
-            📡 Fetching Top 5 Trending Pairs on Base Chain via DexScreener Matrix Node...
-        </div>
-    `;
+    // Dinamis mengubah judul kontainer utama agar tidak lagi "Ask Oracle AI Assistant" sesuai Screenshot_2026-07-02-11-50-18-850_org.toshi.jpg
+    const parentContainer = logsContainer.closest('.bg-slate-950') || logsContainer.parentElement;
+    const titleEl = parentContainer?.querySelector('h3') || parentContainer?.querySelector('.text-base') || parentContainer?.querySelector('div');
+    if (titleEl && !titleEl.innerHTML.includes("TRENDING COINS")) {
+        titleEl.innerHTML = `🟢 🚀 TOP TRENDING COINS (BASE NETWORK)`;
+    }
 
     try {
-        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
-        const data = await response.json();
+        // Menggunakan endpoint token terpopuler/boosted terbaru dari DexScreener API resmi
+        const response = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
+        const boostedTokens = await response.json();
         
-        let basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
-        let top5Pairs = basePairs.slice(0, 5);
+        // Saring koin yang hanya berada di jaringan Base Chain
+        let baseTokens = Array.isArray(boostedTokens) ? boostedTokens.filter(t => t.chainId === 'base') : [];
+        
+        if (baseTokens.length === 0) {
+            // Fallback cerdas: Jika token-boosts kosong, gunakan pencarian volume tertinggi di pasar dex base
+            const fallbackRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=aero");
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.pairs) {
+                baseTokens = fallbackData.pairs.filter(p => p.chainId === 'base').map(p => ({
+                    tokenAddress: p.baseToken.address,
+                    icon: p.info?.imageUrl || "",
+                    header: p.baseToken.name,
+                    description: p.baseToken.symbol
+                }));
+            }
+        }
 
-        if (top5Pairs.length === 0) {
-            logsContainer.innerHTML = `<div class="text-rose-400 font-mono text-[10px] p-2">⚠️ No active trending pairs found on Base.</div>`;
+        // Ambil maksimal 5 koin teratas di jaringan Base (seperti AERO, BRETT, VVV, dll.)
+        let top5Tokens = baseTokens.slice(0, 5);
+
+        if (top5Tokens.length === 0) {
+            logsContainer.innerHTML = `<div class="text-rose-400 font-mono text-[10px] p-2">⚠️ No active trending pairs found on Base Network matrix.</div>`;
             return;
         }
 
         let trendingHTML = `
             <div class="space-y-2.5 font-mono text-[11px]">
                 <div class="flex items-center justify-between border-b border-cyan-500/30 pb-2 mb-2">
-                    <span class="text-cyan-400 font-bold tracking-wider">🔥 TOP 5 TRENDING COINS (BASE)</span>
-                    <span class="text-[9px] bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded animate-pulse">● LIVE DATA</span>
+                    <span class="text-cyan-400 font-bold tracking-wider">🔥 TOP REAL-TIME RADAR (BASE)</span>
+                    <span class="text-[9px] bg-emerald-950 text-emerald-400 px-1.5 py-0.5 rounded animate-pulse">● SYNCED</span>
                 </div>
         `;
 
-        top5Pairs.forEach((pair, index) => {
-            const price = parseFloat(pair.priceUsd);
-            const priceChange = pair.priceChange?.h24 || 0;
-            const volume24h = pair.volume?.h24 ? Math.floor(pair.volume.h24).toLocaleString() : "0";
+        // Lakukan fetch detail harga per token agar data harga, volume, & price change muncul akurat secara real-time
+        for (let i = 0; i < top5Tokens.length; i++) {
+            const token = top5Tokens[i];
+            let priceUsd = "0.00";
+            let priceChange = 0;
+            let volume24h = "0";
+            let dexName = "Uniswap";
+            let chartUrl = `https://dexscreener.com/base/${token.tokenAddress}`;
+            let symbol = token.description || "TOKEN";
+            let name = token.header || "Base Asset";
+
+            try {
+                const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${token.tokenAddress}`);
+                const pairDetails = await pairDetailsRes.json();
+                const primaryPair = pairDetails.pairs ? pairDetails.pairs.find(p => p.chainId === 'base') : null;
+                
+                if (primaryPair) {
+                    priceUsd = parseFloat(primaryPair.priceUsd).toFixed(primaryPair.priceUsd < 0.01 ? 6 : 3);
+                    priceChange = primaryPair.priceChange?.h24 || 0;
+                    volume24h = primaryPair.volume?.h24 ? Math.floor(primaryPair.volume.h24).toLocaleString() : "0";
+                    dexName = primaryPair.dexId;
+                    chartUrl = primaryPair.url;
+                    symbol = primaryPair.baseToken.symbol;
+                    name = primaryPair.baseToken.name;
+                }
+            } catch (err) {
+                console.log("Error fetching specific pair metrics, working with metadata fallback.");
+            }
+
             const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
             
             trendingHTML += `
-                <div class="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-1">
+                <div class="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl space-y-1 shadow-md">
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-200 font-bold">#${index + 1} ${pair.baseToken.name} (${pair.baseToken.symbol})</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 font-bold">#${i + 1}</span>
+                            <span class="text-slate-200 font-extrabold">${name} (${symbol})</span>
+                        </div>
                         <span class="${changeColor} font-black">${priceChange >= 0 ? '▲' : '▼'} ${priceChange}%</span>
                     </div>
                     <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400 pt-0.5 border-t border-slate-900/50">
-                        <div>Price: <strong class="text-white">$${price < 0.01 ? price.toFixed(6) : price.toFixed(2)}</strong></div>
+                        <div>Price: <strong class="text-white">$${priceUsd}</strong></div>
                         <div>Volume 24h: <strong class="text-slate-300">$${volume24h}</strong></div>
                     </div>
                     <div class="flex justify-between items-center pt-1 text-[9px]">
-                        <span class="text-slate-500">Dex: <span class="text-cyan-500 uppercase">${pair.dexId}</span></span>
-                        <a href="${pair.url}" target="_blank" class="text-cyan-400 hover:underline">View Matrix Chart ➜</a>
+                        <span class="text-slate-500">Dex ID: <span class="text-cyan-500 uppercase font-bold">${dexName}</span></span>
+                        <a href="${chartUrl}" target="_blank" class="text-cyan-400 hover:underline flex items-center gap-0.5">
+                            View Live Chart ➜
+                        </a>
                     </div>
                 </div>
             `;
-        });
+        }
 
         trendingHTML += `</div>`;
         logsContainer.innerHTML = trendingHTML;
@@ -531,11 +579,10 @@ async function renderTopTrendingBaseCoins() {
         console.error("Failed to load trending tokens:", error);
         logsContainer.innerHTML = `
             <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400 text-center">
-                ⚠️ Connection Matrix Timeout. Failed to sync real-time Base metrics.
+                ⚠️ Connection Matrix Timeout. Failed to sync authentic Base metrics.
             </div>`;
     }
 }
-
 // ====================================================================
 // REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BANDS)
 // ====================================================================
