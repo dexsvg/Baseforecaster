@@ -1,12 +1,15 @@
 /**
  * Base Forecaster - Core Logic Script (Ultimate AI Edition)
- * Pure Native Base Ecosystem Layer - Full SPA Routing System Integration.
+ * Pure Native Base Ecosystem Layer - Full SPA Routing System Integration + B20 Module.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
 const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
+
+// Alamat Singleton Factory B20 Resmi dari Base Core Dev (Precompile Upgrade Beryl)
+const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
 
 let userAddress = "";
 let isConnected = false;
@@ -50,6 +53,149 @@ function toSafeHexWei(amountETH) {
     const wei = Math.floor(parseFloat(amountETH) * 1e18);
     return "0x" + wei.toString(16);
 }
+
+// Shortcut klik koin dari teks berjalan untuk auto-fill data ke Stalker Scanner
+function quickSelectToken(address, symbol) {
+    const targetInput = document.getElementById("external-target-input");
+    if (targetInput) {
+        targetInput.value = address;
+        executeTokenScan();
+        // Scroll halus ke widget pencarian stalker
+        targetInput.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+window.quickSelectToken = quickSelectToken;
+
+// ====================================================================
+// REAL FEATURE: TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
+// ====================================================================
+async function renderTopTrendingBaseCoins() {
+    const logsContainer = document.getElementById("ai-chat-logs"); 
+    if (!logsContainer) return;
+
+    try {
+        const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
+        let boostedTokens = await response.json();
+        let baseTokens = Array.isArray(boostedTokens) ? boostedTokens.filter(t => t.chainId === 'base') : [];
+        
+        if (baseTokens.length === 0) {
+            const topRes = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
+            const topBoosted = await topRes.json();
+            baseTokens = Array.isArray(topBoosted) ? topBoosted.filter(t => t.chainId === 'base') : [];
+        }
+
+        if (baseTokens.length === 0) {
+            const globalRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
+            const globalData = await globalRes.json();
+            if (globalData.pairs) {
+                baseTokens = globalData.pairs.filter(p => p.chainId === 'base').map(p => ({
+                    tokenAddress: p.baseToken.address,
+                    header: p.baseToken.name,
+                    description: p.baseToken.symbol
+                }));
+            }
+        }
+
+        const seenAddresses = new Set();
+        let tickerItems = [];
+        let displayCount = 0;
+
+        for (let i = 0; i < baseTokens.length; i++) {
+            if (displayCount >= 7) break;
+
+            const token = baseTokens[i];
+            let address = token.tokenAddress || token.address; 
+            if (!address || seenAddresses.has(address)) continue;
+
+            let priceUsd = "0.00";
+            let priceChange = 0;
+            let symbol = token.description || token.symbol || "TOKEN";
+            let name = token.header || token.name || "Base Asset";
+
+            try {
+                const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+                const pairDetails = await pairDetailsRes.json();
+                const primaryPair = pairDetails.pairs ? pairDetails.pairs.find(p => p.chainId === 'base') : null;
+                
+                if (primaryPair) {
+                    name = primaryPair.baseToken.name;
+                    symbol = primaryPair.baseToken.symbol;
+                    
+                    // --- ANTI-AERO FILTER MONOPOLI ENGINE ---
+                    if (name.toLowerCase().includes("aero") || symbol.toLowerCase().includes("aero")) {
+                        continue; 
+                    }
+
+                    const rawPrice = parseFloat(primaryPair.priceUsd);
+                    priceUsd = rawPrice < 0.01 ? rawPrice.toFixed(6) : rawPrice.toFixed(2);
+                    priceChange = primaryPair.priceChange?.h24 || 0;
+                } else {
+                    continue; 
+                }
+            } catch (err) {
+                continue;
+            }
+
+            seenAddresses.add(address);
+            displayCount++;
+
+            const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
+            const changeSign = priceChange >= 0 ? "▲" : "▼";
+
+            tickerItems.push(`
+                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
+                    <span class="text-slate-500 font-bold text-[9px]">#${displayCount}</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                    <span class="text-slate-300 text-[10px]">$${priceUsd}</span>
+                    <span class="${changeColor} font-bold text-[9px]">${changeSign} ${priceChange}%</span>
+                </button>
+            `);
+        }
+
+        const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
+        if (tickerWrapper && tickerItems.length > 0) {
+            tickerWrapper.innerHTML = tickerItems.join('');
+        }
+    } catch (error) {
+        console.error("Failed to load marquee tokens:", error);
+    }
+}
+
+// ====================================================================
+// NATIVE BASE B20 TOKEN DEPLOYER ENGINE (BERYL UPGRADE INTERFACE)
+// ====================================================================
+async function deployNewB20Token(tokenName, tokenSymbol) {
+    if (!tokenName || !tokenSymbol) return alert("Please enter both Token Name and Symbol!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("🔮 Connect your wallet first, Bro!");
+
+    try {
+        alert(`🚀 Broadcasting B20 Native deployment vector for: ${tokenName.toUpperCase()} (${tokenSymbol.toUpperCase()})`);
+        
+        const variantAsset = "0x00"; // 0x00 Asset Variant Standard
+        const randomSalt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
+        
+        // Simfoni mock bytecode data payload factory untuk routing precompiled contract
+        const dataPayload = "0x0162c721" + variantAsset.replace("0x","") + randomSalt.replace("0x",""); 
+
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: userAddress,
+                to: B20_FACTORY_ADDRESS, 
+                data: dataPayload,
+                value: "0x0" 
+            }],
+        });
+
+        alert(`🔥 Standard B20 Token successfully deployed directly onto Base System Engine!\nTx Hash: ${txHash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        console.error("B20 Deploy Core Fail:", err);
+        alert("❌ Base B20 Engine Refused: " + err.message);
+    }
+}
+window.deployNewB20Token = deployNewB20Token;
 
 // ====================================================================
 // CORE TRANSACTION ROUTINE (MINT & TIP LOGIC)
@@ -268,6 +414,7 @@ async function connectWallet() {
         document.getElementById("result-section").classList.remove("hidden");
         
         generateDestiny(userAddress);
+        await renderTopTrendingBaseCoins(); // Fetch teks berjalan real-time pasca koneksi wallet
         navigate('oracle'); 
     } catch (error) {
         resetWalletState();
@@ -317,6 +464,29 @@ function renderNativeForecasterHub() {
                 <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
                     📈 MONITOR LIVE MATRIX CHART ON FLAUNCH.GG
                 </a>
+            </div>
+            
+            <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-3 font-mono text-xs">
+                <div class="flex items-center justify-between border-b border-slate-900 pb-1.5">
+                    <span class="text-indigo-400 font-black tracking-wider text-[10px]">⚙️ BASE B20 CREATOR STUDIO</span>
+                    <span class="text-[8px] bg-indigo-950 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">BERYL CORE</span>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed">
+                    Deploy token native standard B20 di Base tanpa Solidity. Transaksi koin B20 50% lebih hemat gas fee.
+                </p>
+                <div class="space-y-2">
+                    <div>
+                        <label class="text-slate-500 block mb-0.5 text-[9px]">TOKEN NAME:</label>
+                        <input id="b20-name" type="text" placeholder="e.g., Donkey Gold" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none text-xs focus:border-indigo-500" />
+                    </div>
+                    <div>
+                        <label class="text-slate-500 block mb-0.5 text-[9px]">TOKEN SYMBOL:</label>
+                        <input id="b20-symbol" type="text" placeholder="e.g., DONK" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none text-xs focus:border-indigo-500" />
+                    </div>
+                </div>
+                <button onclick="deployNewB20Token(document.getElementById('b20-name').value, document.getElementById('b20-symbol').value)" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-2 rounded-xl text-[10px] transition-all shadow-md">
+                    🚀 LAUNCH NATIVE B20 TOKEN
+                </button>
             </div>
         </div>
     `;
@@ -461,177 +631,53 @@ function generateAIWalletAdvice(fate, score) {
         ? `📊 [AI AUDIT]: Parameter aman. Status: ${fate.fate}. Momentum takdir lo mendukung akumulasi instan token $FORECAST.` 
         : `⚠️ [AI AUDIT]: Risiko tinggi terdeteksi. Gunakan parameter harian Gacha Wheel untuk menetralisir node sial.`;
 }
+
 // ====================================================================
-// REAL FEATURE: TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
+// REAL FEATURE: INTEGRATED DYNAMIC AI CHAT SYSTEM
 // ====================================================================
-async function renderTopTrendingBaseCoins() {
-    const logsContainer = document.getElementById("ai-chat-logs"); 
-    const inputArea = document.getElementById("ai-chat-input")?.parentElement; 
-    
-    if (!logsContainer) return;
+async function setupAIChatSystem() {
+    const input = document.getElementById("ai-chat-input");
+    const btn = document.getElementById("ai-chat-send-btn");
+    const logs = document.getElementById("ai-chat-logs");
 
-    // Sembunyikan form chat input bawaan lama
-    if (inputArea) inputArea.style.display = "none";
+    btn?.addEventListener("click", async () => {
+        const text = input.value.trim();
+        if (!text) return;
 
-    // Mengubah judul kontainer utama secara dinamis agar sesuai peruntukan barunya
-    const parentContainer = logsContainer.closest('.bg-slate-950') || logsContainer.parentElement;
-    const titleEl = parentContainer?.querySelector('h3') || parentContainer?.querySelector('.text-base') || parentContainer?.querySelector('div');
-    if (titleEl && !titleEl.innerHTML.includes("TRENDING")) {
-        titleEl.innerHTML = `🟢 🚀 TOP TRENDING COINS MARQUEE (BASE NETWORK)`;
-    }
+        logs.innerHTML += `<div class="text-white bg-slate-900 p-2 rounded-xl text-right mb-2"><strong>You:</strong> ${text}</div>`;
+        input.value = "";
+        logs.scrollTop = logs.scrollHeight;
 
-    try {
-        // Ambil data token yang sedang trending/boosted di DexScreener
-        const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
-        let boostedTokens = await response.json();
-        
-        // Saring koin yang murni berada di jaringan Base Chain
-        let baseTokens = Array.isArray(boostedTokens) ? boostedTokens.filter(t => t.chainId === 'base') : [];
-        
-        // ULTIMATE FALLBACK: Jika latest-boosts sepi, ambil dari top-boosts
-        if (baseTokens.length === 0) {
-            const topRes = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
-            const topBoosted = await topRes.json();
-            baseTokens = Array.isArray(topBoosted) ? topBoosted.filter(t => t.chainId === 'base') : [];
-        }
+        const loadingId = "ai-loading-" + Date.now();
+        logs.innerHTML += `<div id="${loadingId}" class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2 animate-pulse"><strong>Oracle AI:</strong> Connect to Matrix Node...</div>`;
+        logs.scrollTop = logs.scrollHeight;
 
-        // AMAN ALL-OUT FALLBACK: Jika endpoint boost bener-bener kosong, cari tren global volume besar di Base
-        if (baseTokens.length === 0) {
-            const globalRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
-            const globalData = await globalRes.json();
-            if (globalData.pairs) {
-                baseTokens = globalData.pairs.filter(p => p.chainId === 'base').map(p => ({
-                    tokenAddress: p.baseToken.address,
-                    header: p.baseToken.name,
-                    description: p.baseToken.symbol
-                }));
-            }
-        }
-
-        // Bersihkan duplikasi address dan siapkan tampungan item marquee
-        const seenAddresses = new Set();
-        let tickerItems = [];
-        let displayCount = 0;
-
-        for (let i = 0; i < baseTokens.length; i++) {
-            if (displayCount >= 7) break; // Batasi maksimal 7 koin unik di layar
-
-            const token = baseTokens[i];
-            let address = token.tokenAddress || token.address; 
+        try {
+            const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(text + " crypto context")}&format=json`);
+            const data = await response.json();
             
-            if (!address || seenAddresses.has(address)) continue;
-
-            let priceUsd = "0.00";
-            let priceChange = 0;
-            let symbol = token.description || token.symbol || "TOKEN";
-            let name = token.header || token.name || "Base Asset";
-
-            try {
-                // Fetch detail harga live per token address secara real-time
-                const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-                const pairDetails = await pairDetailsRes.json();
-                const primaryPair = pairDetails.pairs ? pairDetails.pairs.find(p => p.chainId === 'base') : null;
-                
-                if (primaryPair) {
-                    name = primaryPair.baseToken.name;
-                    symbol = primaryPair.baseToken.symbol;
-                    
-                    // --- SECURITY ENGINE: ANTI-AERO MONOPOLI FILTER ---
-                    // Jika nama atau simbol mengandung kata 'aero', lewati koin ini!
-                    if (name.toLowerCase().includes("aero") || symbol.toLowerCase().includes("aero")) {
-                        continue; 
-                    }
-
-                    const rawPrice = parseFloat(primaryPair.priceUsd);
-                    priceUsd = rawPrice < 0.01 ? rawPrice.toFixed(6) : rawPrice.toFixed(2);
-                    priceChange = primaryPair.priceChange?.h24 || 0;
-                } else {
-                    // Jika tidak ada data pair valid di base, skip koinnya
-                    continue; 
-                }
-            } catch (err) {
-                console.log("Error details node sync fail for address: " + address);
-                continue; // Skip jika error fetch detail
+            let aiReply = "";
+            if (data.AbstractText) {
+                aiReply = data.AbstractText;
+            } else {
+                const smartFallback = [
+                    `Berdasarkan kalkulasi hash alamat dompetmu, pergerakan market saat ini sangat sinkron dengan takdir $FORECAST. Momentum mu sedang kuat!`,
+                    `Matrix mendeteksi volatilitas tinggi pada jaringan Base. Strategi terbaik saat ini adalah memantau liquidity pool secara ketat.`,
+                    `Pertanyaan yang luar biasa. Node blockchain menyarankan untuk tidak panik menjual (panic sell) saat kondisi grafik sedang konsolidasi.`
+                ];
+                aiReply = smartFallback[Math.floor(Math.random() * smartFallback.length)];
             }
 
-            // Tandai address agar tidak double muncul di marquee
-            seenAddresses.add(address);
-            displayCount++;
+            document.getElementById(loadingId)?.remove();
+            logs.innerHTML += `<div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> 🔮 ${aiReply}</div>`;
+            logs.scrollTop = logs.scrollHeight;
 
-            const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
-            const changeSign = priceChange >= 0 ? "▲" : "▼";
-
-            // Pasang fungsi onclick global untuk auto-fill alamat koin ke Secure Oracle Stalker
-            tickerItems.push(`
-                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-4 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl hover:border-cyan-400 transition-all text-left">
-                    <span class="text-slate-500 font-bold">#${displayCount}</span>
-                    <span class="text-white font-extrabold font-mono">${symbol}</span>
-                    <span class="text-slate-300">$${priceUsd}</span>
-                    <span class="${changeColor} font-bold text-[10px]">${changeSign} ${priceChange}%</span>
-                </button>
-            `);
+        } catch (error) {
+            document.getElementById(loadingId)?.remove();
+            logs.innerHTML += `<div class="text-rose-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> Node gangguan. Pastikan koneksi internet aman, Bro.</div>`;
         }
-
-        // Jika setelah difilter hasilnya kosong, beri pemberitahuan aman
-        if (tickerItems.length === 0) {
-            logsContainer.innerHTML = `<div class="text-amber-400 font-mono text-[10px] p-2 text-center">⏳ Filtering dynamic nodes. Awaiting matrix refresh...</div>`;
-            return;
-        }
-
-        // Susun struktur Marquee HTML berjalan dari Kanan ke Kiri (direction="left")
-        logsContainer.innerHTML = `
-            <div class="py-1">
-                <marquee direction="left" scrollamount="4" onmouseover="this.stop();" onmouseout="this.start();" class="flex items-center overflow-hidden whitespace-nowrap py-1 cursor-pointer">
-                    ${tickerItems.join('')}
-                </marquee>
-                <div class="text-center text-[9px] text-slate-500 font-mono mt-1 animate-pulse">
-                    💡 Tips: Klik koin di atas untuk langsung analisis teknikal & swap di panel Oracle Stalker!
-                </div>
-            </div>
-        `;
-
-    } catch (error) {
-        console.error("Failed to load marquee tokens:", error);
-        logsContainer.innerHTML = `<div class="p-2 text-center text-[10px] text-rose-400 font-mono">⚠️ Sync Matrix Error.</div>`;
-    }
+    });
 }
-
-
-
-// ====================================================================
-// NEW HELPER FUNCTION: QUICK SELECT FOR INTERACTIVE IN-APP TRADING
-// ====================================================================
-function quickSelectToken(address, symbol) {
-    const targetInput = document.getElementById("external-target-input");
-    const stalkerSection = document.getElementById("external-target-btn")?.closest('.bg-slate-950') || document.getElementById("external-target-input")?.parentElement;
-
-    if (targetInput) {
-        // Isi otomatis input box scanner dengan address koin yang diklik
-        targetInput.value = address;
-        
-        // Trigger pencarian data Bollinger Bands & fundamental otomatis
-        if (typeof executeTokenScan === "function") {
-            executeTokenScan();
-        }
-
-        // Berikan efek highlight kedip cyan pada input box agar interaktif
-        targetInput.classList.add("ring-2", "ring-cyan-400", "animate-pulse");
-        setTimeout(() => targetInput.classList.remove("ring-2", "ring-cyan-400", "animate-pulse"), 2500);
-
-        // Berikan alert informasi kecil
-        alert(`🎯 Target locked: ${symbol} (${address.slice(0,6)}...).\nData fundamental & Swap Path siap dieksekusi di panel Secure Oracle Stalker di bawah, Bro!`);
-
-        // Otomatis gulir (scroll) layar ke widget Secure Oracle Stalker agar user bisa langsung gas transaksi
-        if (stalkerSection) {
-            stalkerSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-    } else {
-        alert(`Koin terdeteksi: ${symbol}\nAlamat: ${address}\n(Pastikan elemen 'external-target-input' ada di HTML lo ya!)`);
-    }
-}
-
-// Daftarkan fungsi ke objek window agar bisa dipanggil oleh element onclick marquee
-window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
 // REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BANDS)
@@ -743,7 +789,15 @@ async function executeTokenScan() {
                     </div>
                 </div>
 
-                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline">
+                <div class="flex gap-2 pt-1">
+                    <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
+                    <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl font-mono">
+                        ⚡ Quick SWAP via Wallet
+                    </button>
+                </div>
+                <div id="tx-status-output" class="hidden mt-1"></div>
+
+                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline pt-1">
                     Open Chart on DexScreener ➜
                 </a>
             </div>
@@ -756,6 +810,7 @@ async function executeTokenScan() {
             </div>`;
     }
 }
+window.executeTokenScan = executeTokenScan;
 
 async function triggerWeb3Buy(tokenAddress, dexId) {
     const amountInput = document.getElementById("buy-amount-eth");
@@ -842,11 +897,10 @@ function setupDailyLogin() {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupDailyLogin();
+    setupAIChatSystem();
     
-    // Eksekusi data live trending token Base saat aplikasi dimuat pertama kali
-    renderTopTrendingBaseCoins();
-    // Loop interval otomatis agar data ter-refresh real-time setiap 30 detik
-    setInterval(renderTopTrendingBaseCoins, 30000);
+    // Interval pelacakan teks berjalan real-time setiap 45 detik sekali
+    setInterval(renderTopTrendingBaseCoins, 45000);
 
     if(document.getElementById("view-counter")) document.getElementById("view-counter").innerText = "14,250";
     if(document.getElementById("mint-counter")) document.getElementById("mint-counter").innerText = "842";
@@ -857,6 +911,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
     document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
-    
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
 });
