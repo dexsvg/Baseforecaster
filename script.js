@@ -1,5 +1,5 @@
 /**
- * Base Forecaster - Core Logic Script (Ultimate AI Edition)
+ * Base Forecaster - Core Logic Script
  * Pure Native Base Ecosystem Layer - Full SPA Routing System Integration + B20 Module.
  */
 
@@ -8,7 +8,7 @@ const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
 const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 
-// Alamat Singleton Factory B20 Resmi dari Base Core Dev (Precompile Upgrade Beryl)
+// Official B20 Native Singleton Factory Address from Base Core Devs
 const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
 
 let userAddress = "";
@@ -54,25 +54,20 @@ function toSafeHexWei(amountETH) {
     return "0x" + wei.toString(16);
 }
 
-// Shortcut klik koin dari teks berjalan untuk auto-fill data ke Stalker Scanner
 function quickSelectToken(address, symbol) {
     const targetInput = document.getElementById("external-target-input");
     if (targetInput) {
         targetInput.value = address;
         executeTokenScan();
-        // Scroll halus ke widget pencarian stalker
         targetInput.scrollIntoView({ behavior: 'smooth' });
     }
 }
 window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
-// REAL FEATURE: TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
+// TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
 // ====================================================================
 async function renderTopTrendingBaseCoins() {
-    const logsContainer = document.getElementById("ai-chat-logs"); 
-    if (!logsContainer) return;
-
     try {
         const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
         let boostedTokens = await response.json();
@@ -121,7 +116,7 @@ async function renderTopTrendingBaseCoins() {
                     name = primaryPair.baseToken.name;
                     symbol = primaryPair.baseToken.symbol;
                     
-                    // --- ANTI-AERO FILTER MONOPOLI ENGINE ---
+                    // --- ANTI-AERO FILTER ENGINE ---
                     if (name.toLowerCase().includes("aero") || symbol.toLowerCase().includes("aero")) {
                         continue; 
                     }
@@ -162,20 +157,18 @@ async function renderTopTrendingBaseCoins() {
 }
 
 // ====================================================================
-// NATIVE BASE B20 TOKEN DEPLOYER ENGINE (BERYL UPGRADE INTERFACE)
+// NATIVE BASE B20 TOKEN DEPLOYER ENGINE
 // ====================================================================
 async function deployNewB20Token(tokenName, tokenSymbol) {
     if (!tokenName || !tokenSymbol) return alert("Please enter both Token Name and Symbol!");
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("🔮 Connect your wallet first, Bro!");
+    if (!provider || !isConnected) return alert("Connect your wallet first!");
 
     try {
         alert(`🚀 Broadcasting B20 Native deployment vector for: ${tokenName.toUpperCase()} (${tokenSymbol.toUpperCase()})`);
         
-        const variantAsset = "0x00"; // 0x00 Asset Variant Standard
+        const variantAsset = "0x00"; 
         const randomSalt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
-        
-        // Simfoni mock bytecode data payload factory untuk routing precompiled contract
         const dataPayload = "0x0162c721" + variantAsset.replace("0x","") + randomSalt.replace("0x",""); 
 
         const txHash = await provider.request({
@@ -202,7 +195,7 @@ window.deployNewB20Token = deployNewB20Token;
 // ====================================================================
 async function sendTip() {
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("🔮 Connect your wallet first!");
+    if (!provider || !isConnected) return alert("Connect your wallet first!");
     try {
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
@@ -222,7 +215,7 @@ async function sendTip() {
 
 async function mintNFT() {
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("🔮 Connect your wallet first!");
+    if (!provider || !isConnected) return alert("Connect your wallet first!");
     try {
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
@@ -248,7 +241,7 @@ window.mintNFT = mintNFT;
 // ====================================================================
 function navigate(targetTab) {
     if (!isConnected) {
-        alert("🔮 Connect your Web3 Wallet first to unlock this dimension!");
+        alert("Connect your Web3 Wallet first to unlock this dimension!");
         return;
     }
 
@@ -283,7 +276,7 @@ function navigate(targetTab) {
 window.navigate = navigate;
 
 // ==========================================
-// FEATURE: GLOW AURA ALTER ENGINE
+// GLOW AURA ALTER ENGINE
 // ==========================================
 function applyGlow(type) {
     if (type === 'neon') {
@@ -317,7 +310,7 @@ function applyGlow(type) {
 window.applyGlow = applyGlow;
 
 // ==========================================
-// FEATURE: INTERACTIVE LEADERBOARD GENERATOR
+// INTERACTIVE LEADERBOARD GENERATOR
 // ==========================================
 function renderLeaderboardData() {
     const container = document.getElementById("ranks-list-container");
@@ -349,7 +342,7 @@ function renderLeaderboardData() {
 }
 
 // ==========================================
-// FEATURE: DEGEN LUCKY WHEEL ENGINE
+// DEGEN LUCKY WHEEL ENGINE
 // ==========================================
 function spinTheWheel() {
     const btn = document.getElementById("btn-spin");
@@ -395,7 +388,7 @@ async function connectWallet() {
     const connectBtn = document.getElementById("connect-btn");
     
     if (!provider) {
-        alert("❌ Wallet Tidak Terdeteksi!\nBuka langsung dari Browser aplikasi Web3 Wallet (Coinbase/OKX).");
+        alert("❌ Wallet Not Detected!\nPlease open this dApp directly inside your Web3 Wallet Browser (Coinbase/OKX Wallet).");
         return;
     }
 
@@ -414,16 +407,16 @@ async function connectWallet() {
         document.getElementById("result-section").classList.remove("hidden");
         
         generateDestiny(userAddress);
-        await renderTopTrendingBaseCoins(); // Fetch teks berjalan real-time pasca koneksi wallet
+        await renderTopTrendingBaseCoins(); 
         navigate('oracle'); 
     } catch (error) {
         resetWalletState();
-        alert("❌ Koneksi Gagal: " + error.message);
+        alert("❌ Connection Failed: " + error.message);
     }
 }
 
 function disconnectWallet() {
-    if (!confirm("Putuskan koneksi wallet?")) return;
+    if (!confirm("Disconnect wallet?")) return;
     localStorage.setItem("wallet_blacklisted", "true");
     resetWalletState();
 }
@@ -434,6 +427,9 @@ function resetWalletState() {
     window.location.reload();
 }
 
+// ==========================================
+// THE FORECASTER ENGINE INTERFACE TERMINAL
+// ==========================================
 function updateWalletUI(address) {
     const connectBtn = document.getElementById("connect-btn");
     if (!connectBtn) return;
@@ -442,9 +438,6 @@ function updateWalletUI(address) {
     connectBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 px-4 rounded-2xl font-mono tracking-wide transition-all text-center block shadow-lg";
 }
 
-// ====================================================================
-// NATIVE CORE MODULE COMPONENT FOR TRADING ($FORECAST DIRECT BUY)
-// ====================================================================
 function renderNativeForecasterHub() {
     const container = document.getElementById("polymarket-top-container"); 
     if (!container || !isConnected) return;
@@ -466,13 +459,14 @@ function renderNativeForecasterHub() {
                 </a>
             </div>
             
+            <!-- B20 TOKEN GENERATOR MODULE INTEGRATION -->
             <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-3 font-mono text-xs">
                 <div class="flex items-center justify-between border-b border-slate-900 pb-1.5">
                     <span class="text-indigo-400 font-black tracking-wider text-[10px]">⚙️ BASE B20 CREATOR STUDIO</span>
                     <span class="text-[8px] bg-indigo-950 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">BERYL CORE</span>
                 </div>
                 <p class="text-[10px] text-slate-400 leading-relaxed">
-                    Deploy token native standard B20 di Base tanpa Solidity. Transaksi koin B20 50% lebih hemat gas fee.
+                    Deploy standard B20 native tokens on Base without Solidity coding. B20 coin transactions utilize up to 50% less gas fees.
                 </p>
                 <div class="space-y-2">
                     <div>
@@ -504,10 +498,10 @@ async function executeDirectBuy() {
             method: 'eth_sendTransaction',
             params: [{ from: userAddress, to: tokenContractAddress, value: toSafeHexWei(amountETH), data: "0x" }],
         });
-        alert("🚀 Transaksi Berhasil Dikirim! Hash: " + txHash);
+        alert("🚀 Transaction Broadcast Success! Hash: " + txHash);
         if (typeof confetti === "function") confetti();
     } catch (err) {
-        alert("Gagal: " + err.message);
+        alert("Failed: " + err.message);
     }
 }
 
@@ -528,7 +522,6 @@ function generateDestiny(address) {
     document.getElementById("seed-anchor").innerText = `#${seed}`;
 
     drawDestinyCard(selectedFate, finalLuckScore, address, seed);
-    generateAIWalletAdvice(selectedFate, finalLuckScore);
 }
 
 function drawDestinyCard(fateObj, score, address, seed) {
@@ -624,63 +617,8 @@ function drawCardFrame(ctx) {
     ctx.fillText("BASE FORECASTER CORES", 175, 35);
 }
 
-function generateAIWalletAdvice(fate, score) {
-    const el = document.getElementById("ai-wallet-advice");
-    if (!el) return;
-    el.innerText = score > 60 
-        ? `📊 [AI AUDIT]: Parameter aman. Status: ${fate.fate}. Momentum takdir lo mendukung akumulasi instan token $FORECAST.` 
-        : `⚠️ [AI AUDIT]: Risiko tinggi terdeteksi. Gunakan parameter harian Gacha Wheel untuk menetralisir node sial.`;
-}
-
 // ====================================================================
-// REAL FEATURE: INTEGRATED DYNAMIC AI CHAT SYSTEM
-// ====================================================================
-async function setupAIChatSystem() {
-    const input = document.getElementById("ai-chat-input");
-    const btn = document.getElementById("ai-chat-send-btn");
-    const logs = document.getElementById("ai-chat-logs");
-
-    btn?.addEventListener("click", async () => {
-        const text = input.value.trim();
-        if (!text) return;
-
-        logs.innerHTML += `<div class="text-white bg-slate-900 p-2 rounded-xl text-right mb-2"><strong>You:</strong> ${text}</div>`;
-        input.value = "";
-        logs.scrollTop = logs.scrollHeight;
-
-        const loadingId = "ai-loading-" + Date.now();
-        logs.innerHTML += `<div id="${loadingId}" class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2 animate-pulse"><strong>Oracle AI:</strong> Connect to Matrix Node...</div>`;
-        logs.scrollTop = logs.scrollHeight;
-
-        try {
-            const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(text + " crypto context")}&format=json`);
-            const data = await response.json();
-            
-            let aiReply = "";
-            if (data.AbstractText) {
-                aiReply = data.AbstractText;
-            } else {
-                const smartFallback = [
-                    `Berdasarkan kalkulasi hash alamat dompetmu, pergerakan market saat ini sangat sinkron dengan takdir $FORECAST. Momentum mu sedang kuat!`,
-                    `Matrix mendeteksi volatilitas tinggi pada jaringan Base. Strategi terbaik saat ini adalah memantau liquidity pool secara ketat.`,
-                    `Pertanyaan yang luar biasa. Node blockchain menyarankan untuk tidak panik menjual (panic sell) saat kondisi grafik sedang konsolidasi.`
-                ];
-                aiReply = smartFallback[Math.floor(Math.random() * smartFallback.length)];
-            }
-
-            document.getElementById(loadingId)?.remove();
-            logs.innerHTML += `<div class="text-slate-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> 🔮 ${aiReply}</div>`;
-            logs.scrollTop = logs.scrollHeight;
-
-        } catch (error) {
-            document.getElementById(loadingId)?.remove();
-            logs.innerHTML += `<div class="text-rose-400 bg-slate-900/60 p-2 rounded-xl mb-2"><strong>Oracle AI:</strong> Node gangguan. Pastikan koneksi internet aman, Bro.</div>`;
-        }
-    });
-}
-
-// ====================================================================
-// REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BANDS)
+// MARKET STALKER SCANNER (DEXSCREENER API + BOLLINGER BANDS)
 // ====================================================================
 async function executeTokenScan() {
     const targetInput = document.getElementById("external-target-input");
@@ -869,7 +807,7 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
     } catch (error) {
         console.error("Swap core failure:", error);
         statusDiv.className = "text-[9px] text-rose-400 font-mono text-center";
-        statusDiv.innerText = `❌ Matrix Refused: ${error.message.substring(0, 45)}...`;
+        statusDiv.innerText = `❌ Swap Refused: ${error.message.substring(0, 45)}...`;
     }
 }
 window.triggerWeb3Buy = triggerWeb3Buy;
@@ -884,22 +822,20 @@ function setupDailyLogin() {
 
     dailyBtn?.addEventListener("click", () => {
         const lastClaim = localStorage.getItem("last_daily_claim");
-        if (lastClaim === new Date().toDateString()) return alert("🔒 Aura Points harian sudah diambil!");
+        if (lastClaim === new Date().toDateString()) return alert("🔒 Daily Aura Points already claimed for today!");
         
         currentAP += 50;
         localStorage.setItem("user_aura_points", currentAP);
         localStorage.setItem("last_daily_claim", new Date().toDateString());
         document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
         if (typeof confetti === "function") confetti();
-        alert("🎁 +50 Aura Points Berhasil Diklaim!");
+        alert("🎁 +50 Aura Points Successfully Claimed!");
     });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     setupDailyLogin();
-    setupAIChatSystem();
     
-    // Interval pelacakan teks berjalan real-time setiap 45 detik sekali
     setInterval(renderTopTrendingBaseCoins, 45000);
 
     if(document.getElementById("view-counter")) document.getElementById("view-counter").innerText = "14,250";
