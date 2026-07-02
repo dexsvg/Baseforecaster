@@ -461,6 +461,7 @@ function generateAIWalletAdvice(fate, score) {
         ? `📊 [AI AUDIT]: Parameter aman. Status: ${fate.fate}. Momentum takdir lo mendukung akumulasi instan token $FORECAST.` 
         : `⚠️ [AI AUDIT]: Risiko tinggi terdeteksi. Gunakan parameter harian Gacha Wheel untuk menetralisir node sial.`;
 }
+
 // ====================================================================
 // REAL FEATURE: TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
 // ====================================================================
@@ -544,10 +545,10 @@ async function renderTopTrendingBaseCoins() {
             `);
         }
 
-        // Susun struktur Marquee HTML berjalan dari Kiri ke Kanan (direction="right")
+        // Susun struktur Marquee HTML berjalan dari Kanan ke Kiri (direction="left")
         logsContainer.innerHTML = `
             <div class="py-1">
-                <marquee direction="right" scrollamount="4" onmouseover="this.stop();" onmouseout="this.start();" class="flex items-center overflow-hidden whitespace-nowrap py-1 cursor-pointer">
+                <marquee direction="left" scrollamount="4" onmouseover="this.stop();" onmouseout="this.start();" class="flex items-center overflow-hidden whitespace-nowrap py-1 cursor-pointer">
                     ${tickerItems.join('')}
                 </marquee>
                 <div class="text-center text-[9px] text-slate-500 font-mono mt-1 animate-pulse">
