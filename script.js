@@ -65,103 +65,57 @@ function quickSelectToken(address, symbol) {
 window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
-// TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK) - 100% LIVE & DYNAMIC
+// TICKER TOP GAINERS REAL-TIME (BASE NETWORK) - SORTED BY 24H PERFORMANCE
 // ====================================================================
 async function renderTopTrendingBaseCoins() {
     try {
-        // 1. Tembak endpoint token paling aktif/baru di-boost secara live
-        const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
-        let baseTokens = [];
+        // 1. Mengambil data pair yang sedang aktif di jaringan Base
+        // Kita menggunakan endpoint pencarian umum agar mendapatkan list yang luas
+        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
+        const data = await response.json();
         
-        if (response.ok) {
-            let boostedTokens = await response.json();
-            if (Array.isArray(boostedTokens)) {
-                baseTokens = boostedTokens.filter(t => t.chainId === 'base');
-            }
-        }
-        
-        // 2. JIKA API boosted kosong/error, cari token trending via query dinamis harian di Base
-        // Kita menggunakan pencarian volume tertinggi secara live, BUKAN list yang ditentukan manual
-        if (baseTokens.length === 0) {
-            const dynamicRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=usd"); // Query 'usd' untuk memancing pair likuiditas utama
-            if (dynamicRes.ok) {
-                const dynamicData = await dynamicRes.json();
-                if (dynamicData.pairs) {
-                    // Hanya ambil pair yang berjalan di jaringan Base secara live
-                    baseTokens = dynamicData.pairs
-                        .filter(p => p.chainId === 'base' && p.baseToken)
-                        .map(p => ({ tokenAddress: p.baseToken.address }));
-                }
-            }
-        }
+        if (!data.pairs) return;
 
-        const seenAddresses = new Set();
-        let tickerItems = [];
+        // 2. Filter & Sort: Hanya ambil jaringan 'base', buang stablecoin, lalu sort berdasarkan kenaikan % tertinggi
+        const topGainers = data.pairs
+            .filter(p => p.chainId === 'base' && p.baseToken && p.priceChange && p.priceChange.h24)
+            .filter(p => p.liquidity && p.liquidity.usd > 5000) // Filter likuiditas biar nggak kena token scam murahan
+            .sort((a, b) => b.priceChange.h24 - a.priceChange.h24); // URUTKAN DARI GAINERS TERTINGGI
+
+        const tickerItems = [];
+        const seen = new Set();
         let displayCount = 0;
 
-        // 3. Looping data yang didapat dari pasar secara live
-        for (let i = 0; i < baseTokens.length; i++) {
-            if (displayCount >= 8) break; // Batasi maksimal 8 token teratas yang unik
+        for (const pair of topGainers) {
+            if (displayCount >= 10) break; // Ambil 10 teratas
+            if (seen.has(pair.baseToken.symbol.toLowerCase())) continue;
 
-            const token = baseTokens[i];
-            let address = token.tokenAddress || token.address; 
-            if (!address || seenAddresses.has(address.toLowerCase())) continue;
+            const symbol = pair.baseToken.symbol;
+            const priceChange = pair.priceChange.h24;
+            const priceUsd = parseFloat(pair.priceUsd).toFixed(6);
 
-            try {
-                // Ambil data harga dan volume paling update dari pair tersebut
-                const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-                if (!pairDetailsRes.ok) continue;
-                
-                const pairDetails = await pairDetailsRes.json();
-                if (!pairDetails.pairs || pairDetails.pairs.length === 0) continue;
-                
-                const primaryPair = pairDetails.pairs.find(p => p.chainId === 'base');
-                
-                if (primaryPair) {
-                    let name = primaryPair.baseToken.name;
-                    let symbol = primaryPair.baseToken.symbol;
-                    
-                    // --- ANTI-DUPLIKAT AGAR TIDAK MUNCUL TULISAN 'BASE' TERUS-MENERUS ---
-                    // Jika token name hanya bertuliskan 'Base' atau 'Wrapped Native' murni, kita skip demi variasi ticker
-                    if (symbol.toLowerCase() === 'base' || symbol.toLowerCase() === 'weth') {
-                        continue;
-                    }
+            seen.add(symbol.toLowerCase());
+            displayCount++;
 
-                    let rawPrice = parseFloat(primaryPair.priceUsd);
-                    let priceUsd = rawPrice < 0.0001 ? rawPrice.toFixed(7) : (rawPrice < 0.01 ? rawPrice.toFixed(5) : rawPrice.toFixed(2));
-                    let priceChange = primaryPair.priceChange?.h24 || 0;
-
-                    seenAddresses.add(address.toLowerCase());
-                    displayCount++;
-
-                    const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
-                    const changeSign = priceChange >= 0 ? "▲" : "▼";
-
-                    tickerItems.push(`
-                        <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
-                            <span class="text-slate-500 font-bold text-[9px]">#${displayCount}</span>
-                            <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                            <span class="text-slate-300 text-[10px]">$${priceUsd}</span>
-                            <span class="${changeColor} font-bold text-[9px]">${changeSign} ${priceChange}%</span>
-                        </button>
-                    `);
-                }
-            } catch (err) {
-                console.error("Error fetching pair live data:", err);
-            }
+            // Visualisasi untuk top gainers (pasti hijau semua karena di-sort)
+            tickerItems.push(`
+                <button onclick="quickSelectToken('${pair.baseToken.address}', '${symbol}')" 
+                    class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-emerald-900/50 px-2.5 py-1 rounded-xl hover:border-emerald-400 transition-all text-left">
+                    <span class="text-emerald-500 font-bold text-[9px]">#${displayCount}</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                    <span class="text-slate-400 text-[10px]">$${priceUsd}</span>
+                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${priceChange}%</span>
+                </button>
+            `);
         }
 
-        // 4. Masukkan ke komponen UI marquee
+        // 3. Inject ke UI
         const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
         if (tickerWrapper) {
-            if (tickerItems.length > 0) {
-                tickerWrapper.innerHTML = tickerItems.join('');
-            } else {
-                tickerWrapper.innerHTML = `<span class="text-slate-500 text-[10px] font-mono px-4">🔮 Syncing live data stream from Base Network...</span>`;
-            }
+            tickerWrapper.innerHTML = tickerItems.length > 0 ? tickerItems.join('') : "<span>No trending data...</span>";
         }
     } catch (error) {
-        console.error("Failed to load marquee tokens:", error);
+        console.error("Error loading top gainers:", error);
     }
 }
 
