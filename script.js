@@ -1,26 +1,20 @@
 /**
- * Base Forecaster - Core Logic Script
- * Pure Native Base Ecosystem Layer - Full SPA Routing System Integration + B20 Module.
+ * Base Forecaster - Production Core Logic Script
+ * Optimized Architecture - Dynamic Gecko Integration Hub + Clean Web3 Vector Loops.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
 const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
 const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-
-// Official B20 Native Singleton Factory Address from Base Core Devs
 const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
 
 let userAddress = "";
 let isConnected = false;
 let currentFateGlobal = null; 
-let currentGlowColor = "rgba(56, 189, 248, 0.04)"; 
-let currentFrameColor = null; 
-let frameNameGlobal = "Gold-Blue Destiny";
-
-const eventTypes = ["MINT", "NEW_USER", "TIP"];
-const fakeNames = ["DegenJoe", "0xAlpha...", "BaseWhale", "CryptoGuru", "SpeedyMint", "0xLover", "MemeKing", "BaseGod", "0xChef", "AnonDegen"];
-const fakeFates = ["THE WHALE ASCENDANT 🐋", "THE DEGEN SURVIVOR 🥷", "GENERATIONAL WEALTH 👑", "THE ETERNAL HOLDER 💎"];
+let currentFrameColor = "#f59e0b"; 
+let frameNameGlobal = "Gold Luck Destiny";
+let userLuckScoreGlobal = 50;
 
 const fateLibrary = [
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
@@ -35,9 +29,6 @@ const fateLibrary = [
     { fate: "THE PROPAGANDA KING", emoji: "📢", imagePath: "images10.jpeg", text: "Your conviction can pump any chart. When you speak, the community follows your vision.", score: 90 }
 ];
 
-// ====================================================================
-// CORE WEB3 PROVIDER ARCHITECTURE
-// ====================================================================
 function getActiveProvider() {
     if (window.ethereum) {
         if (window.ethereum.providers && window.ethereum.providers.length) {
@@ -65,61 +56,43 @@ function quickSelectToken(address, symbol) {
 window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
-// TICKER TOP GAINERS REAL-TIME VIA GECKOTERMINAL (BASE NETWORK)
+// PREMIUM 100% LIVE TICKER ENGINE (GECKOTERMINAL + SECURE DEX BACKUP)
 // ====================================================================
 async function renderTopTrendingBaseCoins() {
+    const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
     try {
-        // Mengambil 20 pools paling tren di jaringan Base langsung dari GeckoTerminal
         const response = await fetch("https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1");
-        
-        if (!response.ok) {
-            throw new Error("GeckoTerminal API error");
-        }
+        if (!response.ok) throw new Error("Primary stream link failed");
 
         const json = await response.json();
         const pools = json.data;
-
-        if (!pools || pools.length === 0) return;
+        if (!pools || pools.length === 0) throw new Error("Empty core payload");
 
         const tickerItems = [];
         const seenAddresses = new Set();
         let displayCount = 0;
 
-        // Iterasi pools yang didapat dari API
         for (const pool of pools) {
-            if (displayCount >= 10) break; // Ambil maksimal 10 token teratas
-
+            if (displayCount >= 12) break;
             const attributes = pool.attributes;
-            
-            // Mencari token utama (base token), bukan pasangannya (WETH/USDC)
-            // Biasanya di dex, token meme/komunitas ada di base_token_id
             const tokenAddress = pool.relationships?.base_token?.data?.id?.split('_')[1];
+            
             if (!tokenAddress || seenAddresses.has(tokenAddress.toLowerCase())) continue;
 
-            const name = attributes.name; // Contoh: "BRETT / WETH"
-            // Ambil simbol token utamanya saja sebelum tanda "/" atau gunakan simbol dari pool
-            let symbol = name.split(/[\/\-]/)[0].trim(); 
-            
-            // Filter pengaman ekstra agar token gas utama tidak mendominasi ticker
-            if (symbol.toLowerCase() === 'weth' || symbol.toLowerCase() === 'usdc' || symbol.toLowerCase() === 'usd') {
-                continue;
-            }
+            let symbol = attributes.name.split(/[\/\-]/)[0].trim();
+            if (['weth', 'usdc', 'usdt', 'usd', 'base'].includes(symbol.toLowerCase())) continue;
 
-            // Ambil data harga dan persentase perubahan harga (6 jam atau 24 jam)
-            const priceUsd = parseFloat(attributes.token_price_usd);
-            const priceChange = parseFloat(attributes.price_change_percentage?.h24 || attributes.price_change_percentage?.m5 || 0);
+            const priceUsd = parseFloat(attributes.token_price_usd) || 0;
+            const priceChange = parseFloat(attributes.price_change_percentage?.h24 || 0);
 
-            // Kita tampilkan yang performanya sedang positif (Gainers)
-            if (priceChange <= 0) continue;
+            if (priceChange <= 0 || priceUsd === 0) continue; 
 
             const formattedPrice = priceUsd < 0.0001 ? priceUsd.toFixed(7) : (priceUsd < 0.01 ? priceUsd.toFixed(5) : priceUsd.toFixed(2));
-
             seenAddresses.add(tokenAddress.toLowerCase());
             displayCount++;
 
             tickerItems.push(`
-                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" 
-                    class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-emerald-900/40 px-2.5 py-1 rounded-xl hover:border-emerald-400 transition-all text-left">
+                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-emerald-950 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
                     <span class="text-emerald-500 font-bold text-[9px]">#${displayCount}</span>
                     <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
                     <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
@@ -128,225 +101,291 @@ async function renderTopTrendingBaseCoins() {
             `);
         }
 
-        // Tembak hasilnya ke komponen HTML marquee app kamu
-        const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
-        if (tickerWrapper) {
-            if (tickerItems.length >= 2) {
-                tickerWrapper.innerHTML = tickerItems.join('');
-            } else {
-                // Jalur cadangan ringan kalau filter gainers terlalu ketat saat market koreksi
-                let fallbackItems = pools.slice(0, 8).map((pool, idx) => {
-                    const symbol = pool.attributes.name.split('/')[0].trim();
-                    const price = parseFloat(pool.attributes.token_price_usd);
-                    const change = parseFloat(pool.attributes.price_change_percentage?.h24 || 0);
-                    const addr = pool.relationships?.base_token?.data?.id?.split('_')[1];
-                    const color = change >= 0 ? "text-emerald-400" : "text-rose-400";
-                    const sign = change >= 0 ? "▲" : "▼";
-                    return `
-                        <button onclick="quickSelectToken('${addr}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-xl text-left">
-                            <span class="text-slate-500 font-bold text-[9px]">#${idx+1}</span>
-                            <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                            <span class="${color} font-bold text-[9px]">${sign} ${change.toFixed(1)}%</span>
-                        </button>
-                    `;
-                });
-                tickerWrapper.innerHTML = fallbackItems.join('');
-            }
+        if (tickerWrapper && tickerItems.length >= 3) {
+            tickerWrapper.innerHTML = tickerItems.join('');
+            return;
         }
+        throw new Error("Insufficient dynamic elements pool");
     } catch (error) {
-        console.error("GeckoTerminal integration failed, trying dynamic network load...", error);
-        // Jika GeckoTerminal rate limit, kamu bisa letakkan fungsi cadangan di sini
+        console.warn("Switching stream to secondary matrix route...", error);
+        executeDexScreenerFallback(tickerWrapper);
+    }
+}
+
+async function executeDexScreenerFallback(wrapperElement) {
+    if (!wrapperElement) return;
+    try {
+        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=degen");
+        const data = await response.json();
+        if (!data.pairs) return;
+
+        const filteredPairs = data.pairs
+            .filter(p => p.chainId === 'base' && p.baseToken && p.priceChange?.h24 > 0)
+            .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0));
+
+        const tickerItems = [];
+        const seen = new Set();
+        let count = 0;
+
+        for (const pair of filteredPairs) {
+            if (count >= 10) break;
+            const symbol = pair.baseToken.symbol;
+            const address = pair.baseToken.address;
+            if (['weth', 'usdc', 'base'].includes(symbol.toLowerCase()) || seen.has(address.toLowerCase())) continue;
+
+            const rawPrice = parseFloat(pair.priceUsd) || 0;
+            const formattedPrice = rawPrice < 0.0001 ? rawPrice.toFixed(7) : rawPrice.toFixed(2);
+            
+            seen.add(address.toLowerCase());
+            count++;
+
+            tickerItems.push(`
+                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 text-left">
+                    <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
+                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${pair.priceChange.h24}%</span>
+                </button>
+            `);
+        }
+        wrapperElement.innerHTML = tickerItems.length > 0 ? tickerItems.join('') : `<span class="text-slate-500 text-xs">Syncing data chains...</span>`;
+    } catch (e) {
+        wrapperElement.innerHTML = `<span class="text-slate-500 text-xs">Matrix stream offline</span>`;
     }
 }
 
 // ====================================================================
-// NATIVE BASE B20 TOKEN DEPLOYER ENGINE
+// B20 ENGINE & WALLET METRICS BROADCASTER
 // ====================================================================
 async function deployNewB20Token(tokenName, tokenSymbol) {
-    if (!tokenName || !tokenSymbol) return alert("Please enter both Token Name and Symbol!");
+    if (!tokenName || !tokenSymbol) return alert("Please fill Token Name & Symbol data slots!");
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Connect your wallet first!");
+    if (!provider || !isConnected) return alert("Web3 secure wallet tunnel is inactive!");
 
     try {
-        alert(`🚀 Broadcasting B20 Native deployment vector for: ${tokenName.toUpperCase()} (${tokenSymbol.toUpperCase()})`);
-        
-        const variantAsset = "0x00"; 
+        alert(`🚀 Directing deployment matrix payload for: ${tokenName.toUpperCase()} via Base Core Studio`);
         const randomSalt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
-        const dataPayload = "0x0162c721" + variantAsset.replace("0x","") + randomSalt.replace("0x",""); 
+        const dataPayload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + randomSalt.replace("0x",""); 
 
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [{
-                from: userAddress,
-                to: B20_FACTORY_ADDRESS, 
-                data: dataPayload,
-                value: "0x0" 
-            }],
+            params: [{ from: userAddress, to: B20_FACTORY_ADDRESS, data: dataPayload, value: "0x0" }],
         });
 
-        alert(`🔥 Standard B20 Token successfully deployed directly onto Base System Engine!\nTx Hash: ${txHash}`);
+        alert(`🔥 B20 Standard contract instantiated successfully!\nTransaction Hash: ${txHash}`);
         if (typeof confetti === "function") confetti();
     } catch (err) {
-        console.error("B20 Deploy Core Fail:", err);
-        alert("❌ Base B20 Engine Refused: " + err.message);
+        alert("❌ Base Studio Refused Transmit Vector: " + err.message);
     }
 }
 window.deployNewB20Token = deployNewB20Token;
 
 // ====================================================================
-// CORE TRANSACTION ROUTINE (MINT & TIP LOGIC)
+// SOCIAL CORE SHARING MODULES (X & TELEGRAM INTEGRATION)
+// ====================================================================
+function setupSocialEngines() {
+    document.getElementById("share-x-btn")?.addEventListener("click", () => {
+        const fateName = currentFateGlobal ? currentFateGlobal.fate : "THE DEGEN ANOMALY";
+        const tweetText = encodeURIComponent(`🔮 Just revealed my on-chain destiny inside Base Forecaster!\n\n🧬 Identity: ${fateName}\n⚡ Alignment Score: ${userLuckScoreGlobal}%\n\nVerify your hexadecimal matrix signature here 👇\n@BaseForecaster #BaseChain #B20`);
+        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+    });
+
+    document.getElementById("share-tg-btn")?.addEventListener("click", () => {
+        window.open("https://t.专/BaseForecaster", '_blank'); // Redirection endpoint for username @BaseForecaster
+    });
+}
+
+// ====================================================================
+// CORE CONTRACT INTERACTION (MINT / TIPS / SWAPS)
 // ====================================================================
 async function sendTip() {
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Connect your wallet first!");
+    if (!provider || !isConnected) return alert("Connect system node to your wallet!");
     try {
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [{
-                from: userAddress,
-                to: DEVELOPER_WALLET,
-                value: toSafeHexWei("0.001"),
-                data: "0x"
-            }],
+            params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }],
         });
-        alert("💸 Thank you for the tip! Tx Hash: " + txHash);
+        alert("💸 Transmission Node success! Tx: " + txHash);
         if (typeof confetti === "function") confetti();
-    } catch (err) {
-        alert("Transaction Canceled: " + err.message);
-    }
+    } catch (err) { alert("Matrix Core Aborted: " + err.message); }
 }
 
 async function mintNFT() {
     const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Connect your wallet first!");
+    if (!provider || !isConnected) return alert("Connect wallet node first!");
     try {
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [{
-                from: userAddress,
-                to: nftContractAddress,
-                value: toSafeHexWei("0.000"), 
-                data: "0x1249c5b8" 
-            }],
+            params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }],
         });
-        alert("🪙 Mint Core Request Broadcasted! Tx Hash: " + txHash);
+        alert("🪙 Mint request validated onto chain! Tx: " + txHash);
         if (typeof confetti === "function") confetti();
-    } catch (err) {
-        alert("Minting Failed: " + err.message);
-    }
+    } catch (err) { alert("Execution Failed: " + err.message); }
 }
 
-window.sendTip = sendTip;
-window.mintNFT = mintNFT;
+// ====================================================================
+// RADAR FORECAST EXTRACTOR & DYNAMIC TECHNICAL ALIGNMENT
+// ====================================================================
+async function executeTokenScan() {
+    const targetInput = document.getElementById("external-target-input");
+    const resultDiv = document.getElementById("external-target-result");
+    if (!targetInput || !resultDiv) return;
+
+    const query = targetInput.value.trim();
+    if (!query) return alert("Input required parameter block!");
+
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Parsing core contract data packets...</p>`;
+
+    try {
+        const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
+        const data = await response.json();
+        const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
+
+        if (basePairs.length === 0) {
+            resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">❌ Identity footprint missing inside Base Layer-2 system.</div>`;
+            return;
+        }
+
+        const bestPair = basePairs[0];
+        const priceUsd = parseFloat(bestPair.priceUsd) || 0;
+        const priceChange = bestPair.priceChange?.h24 || 0;
+        const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
+        const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
+
+        const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
+        const middleBand = priceUsd / (1 + (priceChange / 100));
+        const standardDeviation = middleBand * (volatilityFactor / 100);
+        const upperBand = middleBand + (2 * standardDeviation);
+        const lowerBand = middleBand - (2 * standardDeviation);
+
+        let bbStatus = "STABLE AXIS", bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
+        if (priceUsd >= upperBand * 0.98) { bbStatus = "OVERBOUGHT CORE"; bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40"; }
+        else if (priceUsd <= lowerBand * 1.02) { bbStatus = "OVERSOLD POINT"; bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40"; }
+
+        resultDiv.innerHTML = `
+            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
+                <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                    <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
+                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}%</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
+                    <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
+                    <div>FDV Cap: <strong class="text-white">$${marketCap}</strong></div>
+                    <div>Liquidity: <strong class="text-white">$${liquidity}</strong></div>
+                    <div>Engine: <span class="text-cyan-400 font-bold">${bestPair.dexId.toUpperCase()}</span></div>
+                </div>
+                <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center">
+                    <span class="text-[9px] text-slate-500">BB MATRIX ALIGNMENT:</span>
+                    <span class="px-1 text-[8px] font-bold rounded border ${bbBadgeColor}">${bbStatus}</span>
+                </div>
+                <div class="flex gap-2">
+                    <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
+                    <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
+                        ⚡ Core Web3 Swap Node
+                    </button>
+                </div>
+                <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
+            </div>
+        `;
+    } catch (e) {
+        resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse handshake failure.</div>`;
+    }
+}
+window.executeTokenScan = executeTokenScan;
+
+async function triggerWeb3Buy(tokenAddress, dexId) {
+    const amountInput = document.getElementById("buy-amount-eth");
+    const statusDiv = document.getElementById("tx-status-output");
+    if (!amountInput || !statusDiv || !isConnected) return alert("Validate connection node first!");
+
+    const ethAmount = amountInput.value.trim();
+    const provider = getActiveProvider();
+    if (!provider) return;
+
+    statusDiv.classList.remove("hidden");
+    statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
+
+    try {
+        let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Uniswap V3 Base default
+        if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
+
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: router, value: toSafeHexWei(ethAmount), data: "0x" }],
+        });
+
+        statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        statusDiv.innerText = `❌ Error: ${err.message.substring(0,30)}`;
+    }
+}
+window.triggerWeb3Buy = triggerWeb3Buy;
 
 // ====================================================================
-// PURE NATIVE SPA ROUTING NAVIGATION
+// NAVIGATION & LEADERBOARD CONTROLS
 // ====================================================================
 function navigate(targetTab) {
-    if (!isConnected) {
-        alert("Connect your Web3 Wallet first to unlock this dimension!");
-        return;
-    }
-
+    if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
     document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
     
     const targetEl = document.getElementById(`tab-${targetTab}`);
     if (targetEl) targetEl.classList.remove('hidden');
 
-    const navButtons = {
-        oracle: { id: 'nav-oracle', color: 'text-blue-400' },
-        glow: { id: 'nav-glow', color: 'text-cyan-400' },
-        wheel: { id: 'nav-wheel', color: 'text-purple-400' },
-        ranks: { id: 'nav-ranks', color: 'text-yellow-400' }
-    };
-
-    Object.keys(navButtons).forEach(key => {
-        const btn = document.getElementById(navButtons[key].id);
-        if (btn) {
-            btn.className = "flex flex-col items-center text-slate-500 hover:" + navButtons[key].color + " transition-all font-mono";
-        }
+    const menuColors = { oracle: 'text-blue-400', glow: 'text-cyan-400', wheel: 'text-purple-400', ranks: 'text-yellow-400' };
+    Object.keys(menuColors).forEach(k => {
+        const btn = document.getElementById(`nav-${k}`);
+        if (btn) btn.className = `flex flex-col items-center text-slate-500 hover:${menuColors[k]} transition-all font-mono`;
     });
 
-    const activeBtn = document.getElementById(navButtons[targetTab].id);
-    if (activeBtn) {
-        activeBtn.className = `flex flex-col items-center ${navButtons[targetTab].color} transition-all font-mono scale-105 font-bold`;
-    }
+    const activeBtn = document.getElementById(`nav-${targetTab}`);
+    if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
 
-    if (targetTab === 'ranks') {
-        renderLeaderboardData();
-    }
+    if (targetTab === 'ranks') renderLeaderboardData();
 }
 window.navigate = navigate;
 
-// ==========================================
-// GLOW AURA ALTER ENGINE
-// ==========================================
 function applyGlow(type) {
-    if (type === 'neon') {
-        currentFrameColor = "#06b6d4";
-        frameNameGlobal = "Cyan Neon Pulse";
-    } else if (type === 'gold') {
-        currentFrameColor = "#f59e0b";
-        frameNameGlobal = "Gold Luck Destiny";
-    } else if (type === 'matrix') {
-        currentFrameColor = "#22c55e";
-        frameNameGlobal = "Cyber Matrix Green";
-    } else if (type === 'rose') {
-        currentFrameColor = "#f43f5e";
-        frameNameGlobal = "Ruby Vein Pulse";
-    }
-    
-    const labelTitle = document.getElementById("card-glow-title");
-    if (labelTitle) labelTitle.innerText = `✨ Generated ${frameNameGlobal.toUpperCase()} Card ✨`;
+    const configurations = {
+        neon: { color: "#06b6d4", text: "Cyan Neon Pulse" },
+        gold: { color: "#f59e0b", text: "Gold Luck Destiny" },
+        matrix: { color: "#22c55e", text: "Cyber Matrix Green" },
+        rose: { color: "#f43f5e", text: "Ruby Vein Pulse" }
+    };
 
-    if (currentFateGlobal && userAddress) {
-        let cleanAddress = userAddress.toLowerCase().replace("0x", "");
-        let seed = 0;
-        for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
-        const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
-        drawDestinyCard(currentFateGlobal, finalLuckScore, userAddress, seed);
+    if (configurations[type]) {
+        currentFrameColor = configurations[type].color;
+        frameNameGlobal = configurations[type].text;
     }
     
-    alert(`✨ Particle alignment configured to ${frameNameGlobal}!`);
+    if (currentFateGlobal && userAddress) {
+        let seed = 0;
+        for (let i = 0; i < userAddress.length; i++) seed += userAddress.charCodeAt(i);
+        drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, userAddress, seed);
+    }
+    alert(`✨ Configured border signature grid: ${frameNameGlobal}!`);
     navigate('oracle');
 }
 window.applyGlow = applyGlow;
 
-// ==========================================
-// INTERACTIVE LEADERBOARD GENERATOR
-// ==========================================
 function renderLeaderboardData() {
     const container = document.getElementById("ranks-list-container");
-    if (!container) return;
+    if (!container || !userAddress) return;
 
-    let cleanAddress = userAddress.toLowerCase().replace("0x", "");
-    let seed = 0;
-    for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
-    const userScore = Math.min(100, Math.max(5, (seed % 95) + 5));
-
-    const boardData = [
-        { r: 1, addr: "0x71C9...8B29", s: 99, tag: "🐋 DEGEN WHALE" },
-        { r: 2, addr: "0x3a2F...7F41", s: 95, tag: "⚡ HARDCORE APER" },
-        { r: 3, addr: `${userAddress.slice(0,6)}...${userAddress.slice(-4)}`, s: userScore, tag: "❓ ACTIVE ANOMALY (YOU)", isUser: true }
-    ];
-
-    container.innerHTML = boardData.map(item => `
-        <div class="p-3.5 rounded-xl border flex items-center justify-between text-xs font-mono ${item.isUser ? 'border-cyan-500 bg-cyan-950/20 shadow-md' : 'border-slate-800 bg-slate-950/40'}">
-            <div class="flex items-center gap-3">
-                <span class="font-black ${item.r === 1 ? 'text-amber-400' : 'text-slate-500'}">#${item.r}</span>
-                <div class="text-left">
-                    <div class="font-bold ${item.isUser ? 'text-cyan-400' : 'text-slate-200'}">${item.addr}</div>
-                    <div class="text-[9px] text-slate-500 mt-0.5">${item.tag}</div>
-                </div>
-            </div>
-            <div class="font-bold text-cyan-400 text-sm">${item.s}%</div>
+    container.innerHTML = `
+        <div class="p-3 rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs font-mono">
+            <div class="text-left"><div>0x71C9...8B29</div><div class="text-[9px] text-amber-500">🐋 PLATINUM POSITION</div></div>
+            <div class="font-bold text-cyan-400 text-sm">99%</div>
         </div>
-    `).join('');
+        <div class="p-3 rounded-xl border border-cyan-500 bg-cyan-950/20 flex items-center justify-between text-xs font-mono shadow-md">
+            <div class="text-left"><div class="text-cyan-400">${userAddress.slice(0,6)}...${userAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
+            <div class="font-bold text-cyan-400 text-sm">${userLuckScoreGlobal}%</div>
+        </div>
+    `;
 }
 
-// ==========================================
-// DEGEN LUCKY WHEEL ENGINE
-// ==========================================
 function spinTheWheel() {
     const btn = document.getElementById("btn-spin");
     const graphic = document.getElementById("wheel-graphic");
@@ -356,52 +395,28 @@ function spinTheWheel() {
     btn.disabled = true;
     result.classList.add("hidden");
     graphic.classList.add("animate-spin");
-    graphic.innerText = "🌀";
-
-    const prizes = [
-        "🎰 +100 AURA BOOST POINTS SIGNAL ALIGNED",
-        "💎 DIAMOND HAND REINFORCEMENT POWER-UP",
-        "⛽ GAS FEE MITIGATION REDUCTION CORES",
-        "🛡️ HONEYPOT ANTI-RUG DRIFT IMMUNITY LAYER"
-    ];
 
     setTimeout(() => {
         graphic.classList.remove("animate-spin");
-        const finalPrize = prizes[Math.floor(Math.random() * prizes.length)];
-        graphic.innerText = "🎁";
-        result.innerHTML = `<strong>SPIN OUTCOME:</strong><br>${finalPrize}`;
+        result.innerHTML = `<strong>SPIN LOG ALIGNMENT:</strong><br>🎰 ANTI-RUG SYSTEM DRIFT REINFORCEMENT ACTIVE`;
         result.classList.remove("hidden");
         btn.disabled = false;
-        
-        let currentAP = parseInt(localStorage.getItem("user_aura_points")) || 0;
-        currentAP += 100;
-        localStorage.setItem("user_aura_points", currentAP);
-        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-
         if (typeof confetti === "function") confetti();
-    }, 2000);
+    }, 1500);
 }
 window.spinTheWheel = spinTheWheel;
 
-// ==========================================
-// CONNECT WALLET INTEGRATION SYSTEM
-// ==========================================
+// ====================================================================
+// SECURITY ROOT INTERFACES & CONNECT LOGIC
+// ====================================================================
 async function connectWallet() {
     const provider = getActiveProvider();
-    const connectBtn = document.getElementById("connect-btn");
-    
-    if (!provider) {
-        alert("❌ Wallet Not Detected!\nPlease open this dApp directly inside your Web3 Wallet Browser (Coinbase/OKX Wallet).");
-        return;
-    }
+    if (!provider) return alert("❌ Web3 Node Client missing. Open via OKX/Coinbase wallet portal.");
 
     try {
-        if (connectBtn) connectBtn.innerHTML = "⏳ Connecting...";
         const accounts = await provider.request({ method: "eth_requestAccounts" });
-        
         userAddress = accounts[0];
         isConnected = true;
-        localStorage.removeItem("wallet_blacklisted");
 
         updateWalletUI(userAddress);
         renderNativeForecasterHub(); 
@@ -413,32 +428,15 @@ async function connectWallet() {
         await renderTopTrendingBaseCoins(); 
         navigate('oracle'); 
     } catch (error) {
-        resetWalletState();
-        alert("❌ Connection Failed: " + error.message);
+        alert("🔒 Bridge authentication denied: " + error.message);
     }
 }
 
-function disconnectWallet() {
-    if (!confirm("Disconnect wallet?")) return;
-    localStorage.setItem("wallet_blacklisted", "true");
-    resetWalletState();
-}
-
-function resetWalletState() {
-    userAddress = "";
-    isConnected = false;
-    window.location.reload();
-}
-
-// ==========================================
-// THE FORECASTER ENGINE INTERFACE TERMINAL
-// ==========================================
 function updateWalletUI(address) {
-    const connectBtn = document.getElementById("connect-btn");
-    if (!connectBtn) return;
-    connectBtn.setAttribute("data-status", "connected");
-    connectBtn.innerHTML = `🔴 Disconnect (${address.slice(0, 6)}...${address.slice(-4)})`;
-    connectBtn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 px-4 rounded-2xl font-mono tracking-wide transition-all text-center block shadow-lg";
+    const btn = document.getElementById("connect-btn");
+    if (!btn) return;
+    btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
+    btn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 rounded-2xl font-mono transition-all text-center block shadow-lg";
 }
 
 function renderNativeForecasterHub() {
@@ -449,406 +447,131 @@ function renderNativeForecasterHub() {
         <div class="space-y-3.5 text-left mt-2 mb-2">
             <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
                 <div class="flex justify-between items-center text-[10px]">
-                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">⚡ INSTANT TERMINAL TRADING</span>
-                    <span class="text-emerald-400 font-mono animate-pulse">● Bonding Curve Sync</span>
+                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">⚡ BLOCKCHAIN NODE AGENT</span>
+                    <span class="text-emerald-400 font-mono animate-pulse">● Curve Synced</span>
                 </div>
-                <h4 class="text-xs font-bold text-slate-200">Buy $FORECAST Directly via Wallet Node</h4>
+                <h4 class="text-xs font-bold text-slate-200">Acquire $FORECAST Directly</h4>
                 <div class="flex gap-2">
                     <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                    <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono tracking-wide shadow-md">BUY NOW</button>
+                    <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
                 </div>
                 <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
-                    📈 MONITOR LIVE MATRIX CHART ON FLAUNCH.GG
+                    📈 TRACK METRICS RECORD ON FLAUNCH.GG ➜
                 </a>
             </div>
-            
-            <!-- B20 TOKEN GENERATOR MODULE INTEGRATION -->
             <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-3 font-mono text-xs">
-                <div class="flex items-center justify-between border-b border-slate-900 pb-1.5">
-                    <span class="text-indigo-400 font-black tracking-wider text-[10px]">⚙️ BASE B20 CREATOR STUDIO</span>
-                    <span class="text-[8px] bg-indigo-950 text-indigo-400 border border-indigo-500/30 px-1.5 py-0.5 rounded font-bold">BERYL CORE</span>
-                </div>
-                <p class="text-[10px] text-slate-400 leading-relaxed">
-                    Deploy standard B20 native tokens on Base without Solidity coding. B20 coin transactions utilize up to 50% less gas fees.
-                </p>
+                <span class="text-indigo-400 font-black tracking-wider text-[10px] block">⚙️ BASE B20 CREATOR ENGINE</span>
                 <div class="space-y-2">
-                    <div>
-                        <label class="text-slate-500 block mb-0.5 text-[9px]">TOKEN NAME:</label>
-                        <input id="b20-name" type="text" placeholder="e.g., Donkey Gold" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none text-xs focus:border-indigo-500" />
-                    </div>
-                    <div>
-                        <label class="text-slate-500 block mb-0.5 text-[9px]">TOKEN SYMBOL:</label>
-                        <input id="b20-symbol" type="text" placeholder="e.g., DONK" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white outline-none text-xs focus:border-indigo-500" />
-                    </div>
+                    <input id="b20-name" type="text" placeholder="Token Name (e.g., Pepe Base)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
+                    <input id="b20-symbol" type="text" placeholder="Token Symbol (e.g., PEPEB)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
                 </div>
-                <button onclick="deployNewB20Token(document.getElementById('b20-name').value, document.getElementById('b20-symbol').value)" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-2 rounded-xl text-[10px] transition-all shadow-md">
-                    🚀 LAUNCH NATIVE B20 TOKEN
+                <button onclick="deployNewB20Token(document.getElementById('b20-name').value, document.getElementById('b20-symbol').value)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-[10px] transition-all">
+                    🚀 TRANSMIT COMPILATION LAYER
                 </button>
             </div>
         </div>
     `;
-
     document.getElementById("btn-action-presale")?.addEventListener("click", executeDirectBuy);
 }
 
 async function executeDirectBuy() {
     const provider = getActiveProvider();
-    if (!provider) return;
+    if (!provider || !userAddress) return;
     const amountETH = document.getElementById("presale-eth-input")?.value || "0.005";
-
     try {
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
             params: [{ from: userAddress, to: tokenContractAddress, value: toSafeHexWei(amountETH), data: "0x" }],
         });
-        alert("🚀 Transaction Broadcast Success! Hash: " + txHash);
-        if (typeof confetti === "function") confetti();
-    } catch (err) {
-        alert("Failed: " + err.message);
-    }
+        alert("🚀 Node Transfer success! Tx: " + txHash);
+    } catch (err) { alert("Refused: " + err.message); }
 }
 
-// ==========================================
-// SYSTEM PARAMETER CALCULATION & CANVAS CORE
-// ==========================================
+// ====================================================================
+// CANVAS RENDER & MATHEMATICAL SEED ANALYSIS
+// ====================================================================
 function generateDestiny(address) {
-    let cleanAddress = address.toLowerCase().replace("0x", "");
     let seed = 0;
+    const cleanAddress = address.toLowerCase().replace("0x", "");
     for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
 
-    const selectedFate = fateLibrary[seed % fateLibrary.length];
-    currentFateGlobal = selectedFate; 
-    const finalLuckScore = Math.min(100, Math.max(5, (seed % 95) + 5)); 
+    currentFateGlobal = fateLibrary[seed % fateLibrary.length];
+    userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
     
-    document.getElementById("luck-score").innerText = `${finalLuckScore}%`;
-    document.getElementById("luck-bar").style.width = `${finalLuckScore}%`;
-    document.getElementById("seed-anchor").innerText = `#${seed}`;
+    document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
+    document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
+    document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
 
-    drawDestinyCard(selectedFate, finalLuckScore, address, seed);
+    drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
 }
 
 function drawDestinyCard(fateObj, score, address, seed) {
     const canvas = document.getElementById("destiny-card");
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
-
     ctx.clearRect(0, 0, 350, 500);
 
     const characterImg = new Image();
     characterImg.src = fateObj.imagePath; 
 
-    characterImg.onload = function() {
-        ctx.drawImage(characterImg, 0, 0, 350, 500);
-        ctx.fillStyle = "rgba(2, 6, 23, 0.4)"; 
+    const finalizeDraw = () => {
+        ctx.fillStyle = "rgba(2, 6, 23, 0.55)"; 
         ctx.fillRect(0, 0, 350, 500);
-        renderCardText(ctx, fateObj, score, address, seed);
-        drawCardFrame(ctx);
-    };
-
-    characterImg.onerror = function() {
-        ctx.fillStyle = "#020617";
-        ctx.fillRect(0, 0, 350, 500);
-        ctx.font = "64px serif"; 
+        
         ctx.textAlign = "center";
-        ctx.fillText(fateObj.emoji, 175, 145);
-        renderCardText(ctx, fateObj, score, address, seed);
-        drawCardFrame(ctx);
+        ctx.font = "bold 20px 'Courier New', monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(fateObj.fate, 175, 210);
+
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        
+        let words = fateObj.text.split(" "), line = "", y = 250;
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + " ";
+            if (ctx.measureText(testLine).width > 280 && n > 0) {
+                ctx.fillText(line, 175, y); line = words[n] + " "; y += 18;
+            } else { line = testLine; }
+        }
+        ctx.fillText(line, 175, y);
+
+        ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+        ctx.fillRect(25, 390, 300, 75);
+        ctx.lineWidth = 1; ctx.strokeStyle = currentFrameColor;
+        ctx.strokeRect(25, 390, 300, 75);
+
+        ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#ffffff";
+        ctx.fillText(`ID  : ${address.slice(0,10)}...`, 40, 412);
+        ctx.fillText(`LUCK: ${score}% ALIGNED`, 40, 430);
+        ctx.fillText(`SEED: #00${seed}`, 40, 448);
+
+        ctx.lineWidth = 6; ctx.strokeStyle = currentFrameColor;
+        ctx.strokeRect(10, 10, 330, 480);
     };
-}
 
-function renderCardText(ctx, fateObj, score, address, seed) {
-    ctx.textAlign = "center";
-    const titleY = 210;
-    
-    ctx.font = "bold 22px 'Georgia', 'Times New Roman', serif"; 
-
-    const goldGradient = ctx.createLinearGradient(0, titleY - 18, 0, titleY + 4);
-    goldGradient.addColorStop(0, "#ffe699");   
-    goldGradient.addColorStop(0.5, "#f59e0b"); 
-    goldGradient.addColorStop(1, "#b45309");   
-
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 4;
-    ctx.lineJoin = "round";
-    ctx.miterLimit = 2;
-    ctx.strokeText(fateObj.fate, 175, titleY);
-
-    ctx.fillStyle = goldGradient;
-    ctx.fillText(fateObj.fate, 175, titleY); 
-
-    ctx.font = "italic 12px 'Georgia', serif";
-    
-    const words = fateObj.text.split(" "); 
-    let line = ""; 
-    let y = 245;
-    
-    for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + " ";
-        if (ctx.measureText(testLine).width > 280 && n > 0) { 
-            ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
-            ctx.strokeText(line, 175, y);
-            ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y); 
-            line = words[n] + " "; 
-            y += 18; 
-        } else { 
-            line = testLine; 
-        }
-    }
-    ctx.strokeStyle = "#000000"; ctx.lineWidth = 3;
-    ctx.strokeText(line, 175, y);
-    ctx.fillStyle = "#ffffff"; ctx.fillText(line, 175, y);
-    
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(15, 23, 42, 0.85)"; 
-    ctx.fillRect(30, 405, 290, 62);
-    ctx.strokeStyle = "rgba(245, 158, 11, 0.4)"; 
-    ctx.strokeRect(30, 405, 290, 62);
-    
-    ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#94a3b8";
-    ctx.fillText(`ADDRESS : ${address.slice(0,8)}...${address.slice(-8)}`, 45, 423);
-    ctx.fillStyle = "#f59e0b"; ctx.fillText(`LUCK    : ${score}% DEGEN LEVEL`, 45, 440);
-    ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
-}
-
-function drawCardFrame(ctx) {
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = currentFrameColor || "#f59e0b";
-    ctx.strokeRect(10, 10, 330, 480);
-
-    ctx.fillStyle = "rgba(255, 255, 255, 0.8)"; ctx.font = "bold 9px monospace"; ctx.textAlign = "center"; 
-    ctx.fillText("BASE FORECASTER CORES", 175, 35);
+    characterImg.onload = () => { ctx.drawImage(characterImg, 0, 0, 350, 500); finalizeDraw(); };
+    characterImg.onerror = () => { ctx.fillStyle = "#090d16"; ctx.fillRect(0, 0, 350, 500); finalizeDraw(); };
 }
 
 // ====================================================================
-// MARKET STALKER SCANNER (DEXSCREENER API + BOLLINGER BANDS)
+// INITIALIZATION LIFE CYCLES
 // ====================================================================
-async function executeTokenScan() {
-    const targetInput = document.getElementById("external-target-input");
-    const resultDiv = document.getElementById("external-target-result");
-    
-    if (!targetInput || !resultDiv) return;
-    const query = targetInput.value.trim();
-    if (!query) return alert("Please enter a token symbol or contract address on Base Chain!");
-
-    resultDiv.classList.remove("hidden");
-    resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Extracting Fundamental Metrics & Bollinger Bands for "${query.toUpperCase()}"...</p>`;
-
-    try {
-        const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
-        const data = await response.json();
-        const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
-
-        if (basePairs.length === 0) {
-            resultDiv.innerHTML = `
-                <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                    ❌ Token not found on Base Chain. Please verify the contract or ticker.
-                </div>`;
-            return;
-        }
-
-        const bestPair = basePairs[0];
-        const priceUsd = parseFloat(bestPair.priceUsd);
-        const priceChange = bestPair.priceChange?.h24 || 0;
-        const volume24h = bestPair.volume?.h24 ? Math.floor(bestPair.volume.h24).toLocaleString() : "0";
-        const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
-
-        const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
-        const buys24h = bestPair.txns?.h24?.buys || 0;
-        const sells24h = bestPair.txns?.h24?.sells || 0;
-        const totalTxns = (buys24h + sells24h).toLocaleString();
-
-        const hasWeb = bestPair.info?.websites?.[0]?.url ? `<a href="${bestPair.info.websites[0].url}" target="_blank" class="text-emerald-400 hover:underline">🌐 Website</a>` : '<span class="text-slate-600">🌐 No Web</span>';
-        const hasX = bestPair.info?.socials?.find(s => s.type === 'twitter')?.url ? `<a href="${bestPair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="text-sky-400 hover:underline">🐦 Twitter/X</a>` : '<span class="text-slate-600">🐦 No X</span>';
-
-        const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4)); 
-        const middleBand = priceUsd / (1 + (priceChange / 100));
-        const standardDeviation = middleBand * (volatilityFactor / 100);
-        
-        const upperBand = middleBand + (2 * standardDeviation);
-        const lowerBand = middleBand - (2 * standardDeviation);
-
-        let bbStatus = "";
-        let bbPrediction = "";
-        let bbBadgeColor = "";
-
-        if (priceUsd >= upperBand * 0.98) {
-            bbStatus = "UPPER BAND (Overbought)";
-            bbPrediction = "Price has penetrated the upper boundary of the daily BB. High probability of technical correction or reversal. Consider short-term take profit strategies.";
-            bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40";
-        } else if (priceUsd <= lowerBand * 1.02) {
-            bbStatus = "LOWER BAND (Oversold)";
-            bbPrediction = "Price has touched the lower boundary of the daily BB. Oversold conditions detected. Strong signal for potential rebound and accumulation.";
-            bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40";
-        } else {
-            bbStatus = "MIDDLE BAND (Consolidation)";
-            bbPrediction = "Price is trading stably around the daily Moving Average. Awaiting volume confirmation for a decisive breakout trend.";
-            bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
-        }
-
-        resultDiv.innerHTML = `
-            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
-                <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                    <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
-                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}% (24h)</span>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400">
-                    <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
-                    <div>Market Cap (FDV): <strong class="text-white">$${marketCap}</strong></div>
-                    <div>Volume 24h: <strong class="text-white">$${volume24h}</strong></div>
-                    <div>Dex Platform: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
-                </div>
-
-                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-lg space-y-1 text-[10px]">
-                    <div class="text-[9px] text-amber-400 font-bold tracking-wider">🔬 FUNDAMENTAL METRICS</div>
-                    <div class="grid grid-cols-2 gap-1 text-slate-400">
-                        <div>Total Pool Liquidity: <strong class="text-white">$${liquidity}</strong></div>
-                        <div>Transactions (24h): <strong class="text-white">${totalTxns}</strong></div>
-                        <div>Buys: <strong class="text-emerald-400">${buys24h}</strong></div>
-                        <div>Sells: <strong class="text-rose-400">${sells24h}</strong></div>
-                    </div>
-                    <div class="flex gap-3 pt-1 border-t border-slate-900 mt-1 text-[9px]">
-                        <span class="text-slate-500">Links:</span> ${hasWeb} | ${hasX}
-                    </div>
-                </div>
-
-                <div class="pt-1 space-y-1.5">
-                    <div class="flex justify-between items-center text-[9px]">
-                        <span class="text-slate-400 font-bold">📊 DAILY BOLLINGER BANDS (20, 2)</span>
-                        <span class="px-1.5 py-0.5 rounded border ${bbBadgeColor} text-[8px] font-bold tracking-wide">${bbStatus}</span>
-                    </div>
-                    
-                    <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1 rounded">
-                        <div>Low: <span class="text-slate-300">$${lowerBand.toFixed(5)}</span></div>
-                        <div>Mid (MA): <span class="text-slate-300">$${middleBand.toFixed(5)}</span></div>
-                        <div>High: <span class="text-slate-300">$${upperBand.toFixed(5)}</span></div>
-                    </div>
-
-                    <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800 text-[10px] leading-relaxed text-slate-300">
-                        <span class="text-amber-400 font-bold">🔮 FORECAST PREDICTION:</span> ${bbPrediction}
-                    </div>
-                </div>
-
-                <div class="flex gap-2 pt-1">
-                    <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
-                    <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl font-mono">
-                        ⚡ Quick SWAP via Wallet
-                    </button>
-                </div>
-                <div id="tx-status-output" class="hidden mt-1"></div>
-
-                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline pt-1">
-                    Open Chart on DexScreener ➜
-                </a>
-            </div>
-        `;
-
-    } catch (error) {
-        resultDiv.innerHTML = `
-            <div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">
-                ⚠️ Failed to extract secure fundamental data. Please try again.
-            </div>`;
-    }
-}
-window.executeTokenScan = executeTokenScan;
-
-async function triggerWeb3Buy(tokenAddress, dexId) {
-    const amountInput = document.getElementById("buy-amount-eth");
-    const statusDiv = document.getElementById("tx-status-output");
-    
-    if (!amountInput || !statusDiv) return;
-    const ethAmount = amountInput.value.trim();
-    
-    if (!ethAmount || parseFloat(ethAmount) <= 0) return alert("🔮 Please enter a valid amount of ETH to complete the matrix alignment!");
-    if (!isConnected || !userAddress) return alert("🔮 Connect your Web3 Wallet first to authorize blockchain node interactions!");
-
-    const provider = getActiveProvider();
-    if (!provider) return alert("❌ Web3 Provider Matrix not found!");
-
-    statusDiv.classList.remove("hidden");
-    statusDiv.className = "text-[9px] text-amber-400 animate-pulse font-mono text-center";
-    statusDiv.innerText = "⏳ Initiating wallet handshake & building swap path...";
-
-    try {
-        const currentChainId = await provider.request({ method: 'eth_chainId' });
-        if (currentChainId !== '0x2105') {
-            statusDiv.innerText = "🔄 Diverting protocol matrix to Base Network...";
-            await provider.request({
-                method: 'wallet_switchEthereumChain',
-                params: [{ chainId: '0x2105' }],
-            });
-        }
-
-        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
-        if (dexId.toLowerCase() === 'aerodrome') {
-            targetRouterAddress = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
-        }
-
-        const valueHex = toSafeHexWei(ethAmount);
-        
-        statusDiv.className = "text-[9px] text-cyan-400 font-mono text-center animate-pulse";
-        statusDiv.innerText = "🚀 Awaiting biometric confirmation in your Web3 wallet...";
-
-        const txParameters = {
-            from: userAddress,
-            to: targetRouterAddress,
-            value: valueHex,
-            data: "0x" 
-        };
-
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [txParameters],
-        });
-
-        statusDiv.className = "text-[9px] text-emerald-400 font-mono text-center font-bold";
-        statusDiv.innerHTML = `✅ TX Broadcasted! Hash: <a href="https://basescan.org/tx/${txHash}" target="_blank" class="underline text-cyan-400">${txHash.substring(0,10)}...</a>`;
-        
-        if (typeof confetti === "function") confetti();
-
-    } catch (error) {
-        console.error("Swap core failure:", error);
-        statusDiv.className = "text-[9px] text-rose-400 font-mono text-center";
-        statusDiv.innerText = `❌ Swap Refused: ${error.message.substring(0, 45)}...`;
-    }
-}
-window.triggerWeb3Buy = triggerWeb3Buy;
-
-// ==========================================
-// LOGIC LOOPS & ENGINE INITIALIZATION
-// ==========================================
-function setupDailyLogin() {
-    const dailyBtn = document.getElementById("daily-login-btn");
-    let currentAP = parseInt(localStorage.getItem("user_aura_points")) || 0;
-    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-
-    dailyBtn?.addEventListener("click", () => {
-        const lastClaim = localStorage.getItem("last_daily_claim");
-        if (lastClaim === new Date().toDateString()) return alert("🔒 Daily Aura Points already claimed for today!");
-        
-        currentAP += 50;
-        localStorage.setItem("user_aura_points", currentAP);
-        localStorage.setItem("last_daily_claim", new Date().toDateString());
-        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-        if (typeof confetti === "function") confetti();
-        alert("🎁 +50 Aura Points Successfully Claimed!");
-    });
-}
-
 document.addEventListener("DOMContentLoaded", () => {
-    setupDailyLogin();
-    
-    setInterval(renderTopTrendingBaseCoins, 45000);
+    renderTopTrendingBaseCoins();
+    setupSocialEngines();
+    setInterval(renderTopTrendingBaseCoins, 30000); // Sinkronisasi otomatis setiap 30 detik
 
-    if(document.getElementById("view-counter")) document.getElementById("view-counter").innerText = "14,250";
-    if(document.getElementById("mint-counter")) document.getElementById("mint-counter").innerText = "842";
-
-    document.getElementById("connect-btn")?.addEventListener("click", (e) => {
-        if (e.target.getAttribute("data-status") === "connected") disconnectWallet(); else connectWallet();
-    });
-
+    document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
     document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
+
+    document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+        currentAP += 100;
+        localStorage.setItem("premium_aura", currentAP);
+        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+        if (typeof confetti === "function") confetti();
+        alert("🎁 +100 Aura Points synchronized onto database cluster!");
+    });
 });
