@@ -565,13 +565,28 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
     document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
+    
+document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+    const today = new Date().toDateString(); // Mengambil string tanggal hari ini (e.g., "Thu Jul 02 2026")
+    const lastClaim = localStorage.getItem("last_aura_claim_date");
 
-    document.getElementById("daily-login-btn")?.addEventListener("click", () => {
-        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-        currentAP += 100;
-        localStorage.setItem("premium_aura", currentAP);
-        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-        if (typeof confetti === "function") confetti();
-        alert("🎁 +100 Aura Points synchronized onto database cluster!");
-    });
+    // Cek apakah user sudah klaim hari ini
+    if (lastClaim === today) {
+        alert("🔒 Matrix Reset Required: You have already secured today's Aura alignment. Come back tomorrow!");
+        return; // Hentikan fungsi agar tidak bisa di-spam
+    }
+
+    // Jika belum, proses klaim seperti biasa
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    currentAP += 100;
+    
+    // Simpan saldo baru dan kunci tanggal hari ini
+    localStorage.setItem("premium_aura", currentAP);
+    localStorage.setItem("last_aura_claim_date", today);
+
+    // Update UI
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+    
+    if (typeof confetti === "function") confetti();
+    alert("🎁 +100 Aura Points successfully synchronized onto database cluster!");
 });
