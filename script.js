@@ -461,7 +461,6 @@ function generateAIWalletAdvice(fate, score) {
         ? `📊 [AI AUDIT]: Parameter aman. Status: ${fate.fate}. Momentum takdir lo mendukung akumulasi instan token $FORECAST.` 
         : `⚠️ [AI AUDIT]: Risiko tinggi terdeteksi. Gunakan parameter harian Gacha Wheel untuk menetralisir node sial.`;
 }
-
 // ====================================================================
 // REAL FEATURE: TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
 // ====================================================================
@@ -482,18 +481,26 @@ async function renderTopTrendingBaseCoins() {
     }
 
     try {
-        // Ambil data dari endpoint token terpopuler/boosted DexScreener
-        const response = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
-        const boostedTokens = await response.json();
+        // Ambil data token yang sedang trending/boosted di DexScreener
+        const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
+        let boostedTokens = await response.json();
         
+        // Saring koin yang murni berada di jaringan Base Chain
         let baseTokens = Array.isArray(boostedTokens) ? boostedTokens.filter(t => t.chainId === 'base') : [];
         
-        // Fallback jika boosted kosong, ambil koin likuiditas tinggi di Base
+        // ULTIMATE FALLBACK: Jika latest-boosts sepi, ambil dari top-boosts
         if (baseTokens.length === 0) {
-            const fallbackRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=aero");
-            const fallbackData = await fallbackRes.json();
-            if (fallbackData.pairs) {
-                baseTokens = fallbackData.pairs.filter(p => p.chainId === 'base').map(p => ({
+            const topRes = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
+            const topBoosted = await topRes.json();
+            baseTokens = Array.isArray(topBoosted) ? topBoosted.filter(t => t.chainId === 'base') : [];
+        }
+
+        // AMAN ALL-OUT FALLBACK: Jika endpoint boost bener-bener kosong, cari tren global volume besar di Base
+        if (baseTokens.length === 0) {
+            const globalRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
+            const globalData = await globalRes.json();
+            if (globalData.pairs) {
+                baseTokens = globalData.pairs.filter(p => p.chainId === 'base').map(p => ({
                     tokenAddress: p.baseToken.address,
                     header: p.baseToken.name,
                     description: p.baseToken.symbol
@@ -501,35 +508,55 @@ async function renderTopTrendingBaseCoins() {
             }
         }
 
-        let top5Tokens = baseTokens.slice(0, 5);
-        if (top5Tokens.length === 0) {
-            logsContainer.innerHTML = `<div class="text-rose-400 font-mono text-[10px] p-2">⚠️ No active trending pairs found.</div>`;
-            return;
-        }
-
-        // Siapkan penampung ticker item
+        // Bersihkan duplikasi address dan siapkan tampungan item marquee
+        const seenAddresses = new Set();
         let tickerItems = [];
+        let displayCount = 0;
 
-        for (let i = 0; i < top5Tokens.length; i++) {
-            const token = top5Tokens[i];
+        for (let i = 0; i < baseTokens.length; i++) {
+            if (displayCount >= 7) break; // Batasi maksimal 7 koin unik di layar
+
+            const token = baseTokens[i];
+            let address = token.tokenAddress || token.address; 
+            
+            if (!address || seenAddresses.has(address)) continue;
+
             let priceUsd = "0.00";
             let priceChange = 0;
-            let symbol = token.description || "TOKEN";
-            let address = token.tokenAddress;
+            let symbol = token.description || token.symbol || "TOKEN";
+            let name = token.header || token.name || "Base Asset";
 
             try {
+                // Fetch detail harga live per token address secara real-time
                 const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
                 const pairDetails = await pairDetailsRes.json();
                 const primaryPair = pairDetails.pairs ? pairDetails.pairs.find(p => p.chainId === 'base') : null;
                 
                 if (primaryPair) {
-                    priceUsd = parseFloat(primaryPair.priceUsd).toFixed(primaryPair.priceUsd < 0.01 ? 5 : 2);
-                    priceChange = primaryPair.priceChange?.h24 || 0;
+                    name = primaryPair.baseToken.name;
                     symbol = primaryPair.baseToken.symbol;
+                    
+                    // --- SECURITY ENGINE: ANTI-AERO MONOPOLI FILTER ---
+                    // Jika nama atau simbol mengandung kata 'aero', lewati koin ini!
+                    if (name.toLowerCase().includes("aero") || symbol.toLowerCase().includes("aero")) {
+                        continue; 
+                    }
+
+                    const rawPrice = parseFloat(primaryPair.priceUsd);
+                    priceUsd = rawPrice < 0.01 ? rawPrice.toFixed(6) : rawPrice.toFixed(2);
+                    priceChange = primaryPair.priceChange?.h24 || 0;
+                } else {
+                    // Jika tidak ada data pair valid di base, skip koinnya
+                    continue; 
                 }
             } catch (err) {
-                console.log("Error details node sync fail.");
+                console.log("Error details node sync fail for address: " + address);
+                continue; // Skip jika error fetch detail
             }
+
+            // Tandai address agar tidak double muncul di marquee
+            seenAddresses.add(address);
+            displayCount++;
 
             const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
             const changeSign = priceChange >= 0 ? "▲" : "▼";
@@ -537,12 +564,18 @@ async function renderTopTrendingBaseCoins() {
             // Pasang fungsi onclick global untuk auto-fill alamat koin ke Secure Oracle Stalker
             tickerItems.push(`
                 <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-4 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl hover:border-cyan-400 transition-all text-left">
-                    <span class="text-slate-400 font-bold">#${i + 1}</span>
+                    <span class="text-slate-500 font-bold">#${displayCount}</span>
                     <span class="text-white font-extrabold font-mono">${symbol}</span>
                     <span class="text-slate-300">$${priceUsd}</span>
                     <span class="${changeColor} font-bold text-[10px]">${changeSign} ${priceChange}%</span>
                 </button>
             `);
+        }
+
+        // Jika setelah difilter hasilnya kosong, beri pemberitahuan aman
+        if (tickerItems.length === 0) {
+            logsContainer.innerHTML = `<div class="text-amber-400 font-mono text-[10px] p-2 text-center">⏳ Filtering dynamic nodes. Awaiting matrix refresh...</div>`;
+            return;
         }
 
         // Susun struktur Marquee HTML berjalan dari Kanan ke Kiri (direction="left")
@@ -552,7 +585,7 @@ async function renderTopTrendingBaseCoins() {
                     ${tickerItems.join('')}
                 </marquee>
                 <div class="text-center text-[9px] text-slate-500 font-mono mt-1 animate-pulse">
-                    💡 Tips: Arahkan kursor/sentuh untuk pause. Klik koin untuk muat instant transaksi di Oracle Stalker!
+                    💡 Tips: Klik koin di atas untuk langsung analisis teknikal & swap di panel Oracle Stalker!
                 </div>
             </div>
         `;
@@ -562,6 +595,7 @@ async function renderTopTrendingBaseCoins() {
         logsContainer.innerHTML = `<div class="p-2 text-center text-[10px] text-rose-400 font-mono">⚠️ Sync Matrix Error.</div>`;
     }
 }
+
 
 
 // ====================================================================
