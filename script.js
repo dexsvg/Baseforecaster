@@ -65,29 +65,33 @@ function quickSelectToken(address, symbol) {
 window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
-// TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK)
+// TICKER TOP TRENDING REAL-TIME COINS (BASE NETWORK) - 100% LIVE & DYNAMIC
 // ====================================================================
 async function renderTopTrendingBaseCoins() {
     try {
+        // 1. Tembak endpoint token paling aktif/baru di-boost secara live
         const response = await fetch("https://api.dexscreener.com/token-boosts/latest/v1");
-        let boostedTokens = await response.json();
-        let baseTokens = Array.isArray(boostedTokens) ? boostedTokens.filter(t => t.chainId === 'base') : [];
+        let baseTokens = [];
         
-        if (baseTokens.length === 0) {
-            const topRes = await fetch("https://api.dexscreener.com/token-boosts/top/v1");
-            const topBoosted = await topRes.json();
-            baseTokens = Array.isArray(topBoosted) ? topBoosted.filter(t => t.chainId === 'base') : [];
+        if (response.ok) {
+            let boostedTokens = await response.json();
+            if (Array.isArray(boostedTokens)) {
+                baseTokens = boostedTokens.filter(t => t.chainId === 'base');
+            }
         }
-
+        
+        // 2. JIKA API boosted kosong/error, cari token trending via query dinamis harian di Base
+        // Kita menggunakan pencarian volume tertinggi secara live, BUKAN list yang ditentukan manual
         if (baseTokens.length === 0) {
-            const globalRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
-            const globalData = await globalRes.json();
-            if (globalData.pairs) {
-                baseTokens = globalData.pairs.filter(p => p.chainId === 'base').map(p => ({
-                    tokenAddress: p.baseToken.address,
-                    header: p.baseToken.name,
-                    description: p.baseToken.symbol
-                }));
+            const dynamicRes = await fetch("https://api.dexscreener.com/latest/dex/search?q=usd"); // Query 'usd' untuk memancing pair likuiditas utama
+            if (dynamicRes.ok) {
+                const dynamicData = await dynamicRes.json();
+                if (dynamicData.pairs) {
+                    // Hanya ambil pair yang berjalan di jaringan Base secara live
+                    baseTokens = dynamicData.pairs
+                        .filter(p => p.chainId === 'base' && p.baseToken)
+                        .map(p => ({ tokenAddress: p.baseToken.address }));
+                }
             }
         }
 
@@ -95,61 +99,66 @@ async function renderTopTrendingBaseCoins() {
         let tickerItems = [];
         let displayCount = 0;
 
+        // 3. Looping data yang didapat dari pasar secara live
         for (let i = 0; i < baseTokens.length; i++) {
-            if (displayCount >= 7) break;
+            if (displayCount >= 8) break; // Batasi maksimal 8 token teratas yang unik
 
             const token = baseTokens[i];
             let address = token.tokenAddress || token.address; 
-            if (!address || seenAddresses.has(address)) continue;
-
-            let priceUsd = "0.00";
-            let priceChange = 0;
-            let symbol = token.description || token.symbol || "TOKEN";
-            let name = token.header || token.name || "Base Asset";
+            if (!address || seenAddresses.has(address.toLowerCase())) continue;
 
             try {
+                // Ambil data harga dan volume paling update dari pair tersebut
                 const pairDetailsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+                if (!pairDetailsRes.ok) continue;
+                
                 const pairDetails = await pairDetailsRes.json();
-                const primaryPair = pairDetails.pairs ? pairDetails.pairs.find(p => p.chainId === 'base') : null;
+                if (!pairDetails.pairs || pairDetails.pairs.length === 0) continue;
+                
+                const primaryPair = pairDetails.pairs.find(p => p.chainId === 'base');
                 
                 if (primaryPair) {
-                    name = primaryPair.baseToken.name;
-                    symbol = primaryPair.baseToken.symbol;
+                    let name = primaryPair.baseToken.name;
+                    let symbol = primaryPair.baseToken.symbol;
                     
-                    // --- ANTI-AERO FILTER ENGINE ---
-                    if (name.toLowerCase().includes("aero") || symbol.toLowerCase().includes("aero")) {
-                        continue; 
+                    // --- ANTI-DUPLIKAT AGAR TIDAK MUNCUL TULISAN 'BASE' TERUS-MENERUS ---
+                    // Jika token name hanya bertuliskan 'Base' atau 'Wrapped Native' murni, kita skip demi variasi ticker
+                    if (symbol.toLowerCase() === 'base' || symbol.toLowerCase() === 'weth') {
+                        continue;
                     }
 
-                    const rawPrice = parseFloat(primaryPair.priceUsd);
-                    priceUsd = rawPrice < 0.01 ? rawPrice.toFixed(6) : rawPrice.toFixed(2);
-                    priceChange = primaryPair.priceChange?.h24 || 0;
-                } else {
-                    continue; 
+                    let rawPrice = parseFloat(primaryPair.priceUsd);
+                    let priceUsd = rawPrice < 0.0001 ? rawPrice.toFixed(7) : (rawPrice < 0.01 ? rawPrice.toFixed(5) : rawPrice.toFixed(2));
+                    let priceChange = primaryPair.priceChange?.h24 || 0;
+
+                    seenAddresses.add(address.toLowerCase());
+                    displayCount++;
+
+                    const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
+                    const changeSign = priceChange >= 0 ? "▲" : "▼";
+
+                    tickerItems.push(`
+                        <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
+                            <span class="text-slate-500 font-bold text-[9px]">#${displayCount}</span>
+                            <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                            <span class="text-slate-300 text-[10px]">$${priceUsd}</span>
+                            <span class="${changeColor} font-bold text-[9px]">${changeSign} ${priceChange}%</span>
+                        </button>
+                    `);
                 }
             } catch (err) {
-                continue;
+                console.error("Error fetching pair live data:", err);
             }
-
-            seenAddresses.add(address);
-            displayCount++;
-
-            const changeColor = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
-            const changeSign = priceChange >= 0 ? "▲" : "▼";
-
-            tickerItems.push(`
-                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
-                    <span class="text-slate-500 font-bold text-[9px]">#${displayCount}</span>
-                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                    <span class="text-slate-300 text-[10px]">$${priceUsd}</span>
-                    <span class="${changeColor} font-bold text-[9px]">${changeSign} ${priceChange}%</span>
-                </button>
-            `);
         }
 
+        // 4. Masukkan ke komponen UI marquee
         const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
-        if (tickerWrapper && tickerItems.length > 0) {
-            tickerWrapper.innerHTML = tickerItems.join('');
+        if (tickerWrapper) {
+            if (tickerItems.length > 0) {
+                tickerWrapper.innerHTML = tickerItems.join('');
+            } else {
+                tickerWrapper.innerHTML = `<span class="text-slate-500 text-[10px] font-mono px-4">🔮 Syncing live data stream from Base Network...</span>`;
+            }
         }
     } catch (error) {
         console.error("Failed to load marquee tokens:", error);
