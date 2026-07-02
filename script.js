@@ -445,6 +445,9 @@ function renderCardText(ctx, fateObj, score, address, seed) {
     ctx.fillStyle = "#94a3b8"; ctx.fillText(`SEED ANCHOR : #00${seed}`, 45, 457);
 }
 
+// ==========================================
+// CARD FRAME CREATOR LOGIC
+// ==========================================
 function drawCardFrame(ctx) {
     ctx.lineWidth = 4;
     ctx.strokeStyle = currentFrameColor || "#f59e0b";
@@ -483,7 +486,6 @@ async function setupAIChatSystem() {
         logs.scrollTop = logs.scrollHeight;
 
         try {
-            // Memanggil API teks publik tanpa merisikokan kebocoran API private key di client-side
             const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(text + " crypto context")}&format=json`);
             const data = await response.json();
             
@@ -509,6 +511,7 @@ async function setupAIChatSystem() {
         }
     });
 }
+
 // ====================================================================
 // REAL FEATURE: SECURE ORACLE STALKER (DEXSCREENER API + BOLLINGER BANDS)
 // ====================================================================
@@ -548,7 +551,6 @@ async function executeTokenScan() {
         const sells24h = bestPair.txns?.h24?.sells || 0;
         const totalTxns = (buys24h + sells24h).toLocaleString();
 
-        // Check if project has registered links (Fundamental Trust Check)
         const hasWeb = bestPair.info?.websites?.[0]?.url ? `<a href="${bestPair.info.websites[0].url}" target="_blank" class="text-emerald-400 hover:underline">🌐 Website</a>` : '<span class="text-slate-600">🌐 No Web</span>';
         const hasX = bestPair.info?.socials?.find(s => s.type === 'twitter')?.url ? `<a href="${bestPair.info.socials.find(s => s.type === 'twitter').url}" target="_blank" class="text-sky-400 hover:underline">🐦 Twitter/X</a>` : '<span class="text-slate-600">🐦 No X</span>';
 
@@ -578,25 +580,25 @@ async function executeTokenScan() {
             bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
         }
 
-        // --- RENDER 100% ENGLISH UI WITH FUNDAMENTALS ---
+        // --- RENDER 100% ENGLISH UI WITH HIGHLY HIGHLIGHTED BUY TERMINAL ---
         resultDiv.innerHTML = `
-            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
+            <div class="p-3.5 bg-slate-950 border border-cyan-500/30 rounded-2xl space-y-3 font-mono text-[11px] shadow-2xl">
                 <!-- Header -->
-                <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                    <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
-                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}% (24h)</span>
+                <div class="flex justify-between border-b border-slate-800 pb-2">
+                    <span class="font-bold text-white text-xs">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
+                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-xs">${priceChange}% (24h)</span>
                 </div>
                 
                 <!-- Core Market Stats -->
-                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400">
+                <div class="grid grid-cols-2 gap-1.5 text-[10px] text-slate-400 bg-slate-900/20 p-2 rounded-xl border border-slate-900">
                     <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
                     <div>Market Cap (FDV): <strong class="text-white">$${marketCap}</strong></div>
                     <div>Volume 24h: <strong class="text-white">$${volume24h}</strong></div>
                     <div>Dex Platform: <strong class="text-cyan-400 text-[9px] uppercase">${bestPair.dexId}</strong></div>
                 </div>
 
-                <!-- NEW: Token Fundamental Metrics Panel -->
-                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-lg space-y-1 text-[10px]">
+                <!-- Token Fundamental Metrics Panel -->
+                <div class="p-2 bg-slate-900/40 border border-slate-800/60 rounded-xl space-y-1 text-[10px]">
                     <div class="text-[9px] text-amber-400 font-bold tracking-wider">🔬 FUNDAMENTAL METRICS</div>
                     <div class="grid grid-cols-2 gap-1 text-slate-400">
                         <div>Total Pool Liquidity: <strong class="text-white">$${liquidity}</strong></div>
@@ -610,26 +612,50 @@ async function executeTokenScan() {
                 </div>
 
                 <!-- Technical Analytics Panel (Bollinger Bands) -->
-                <div class="pt-1 space-y-1.5">
+                <div class="space-y-1.5">
                     <div class="flex justify-between items-center text-[9px]">
                         <span class="text-slate-400 font-bold">📊 DAILY BOLLINGER BANDS (20, 2)</span>
                         <span class="px-1.5 py-0.5 rounded border ${bbBadgeColor} text-[8px] font-bold tracking-wide">${bbStatus}</span>
                     </div>
                     
-                    <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1 rounded">
+                    <div class="grid grid-cols-3 gap-1 text-center text-[8px] text-slate-500 bg-slate-900/50 p-1.5 rounded-lg">
                         <div>Low: <span class="text-slate-300">$${lowerBand.toFixed(5)}</span></div>
                         <div>Mid (MA): <span class="text-slate-300">$${middleBand.toFixed(5)}</span></div>
                         <div>High: <span class="text-slate-300">$${upperBand.toFixed(5)}</span></div>
                     </div>
 
-                    <div class="p-2 bg-slate-900/80 rounded-lg border border-slate-800 text-[10px] leading-relaxed text-slate-300">
+                    <div class="p-2 bg-slate-900/80 rounded-xl border border-slate-800 text-[10px] leading-relaxed text-slate-300">
                         <span class="text-amber-400 font-bold">🔮 FORECAST PREDICTION:</span> ${bbPrediction}
                     </div>
                 </div>
 
-                <a href="${bestPair.url}" target="_blank" class="block text-center text-[9px] text-cyan-400 underline">
-                    Open Chart on DexScreener ➜
-                </a>
+                <!-- ⚡ INSTANT MATRIX SWAP TERMINAL -->
+                <div class="p-3 bg-gradient-to-b from-cyan-950/40 to-slate-950 border-2 border-cyan-500/40 rounded-xl space-y-2 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] text-cyan-400 font-black tracking-widest uppercase">⚡ INSTANT MATRIX SWAP</span>
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">Slippage: Auto (1%)</span>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <div class="relative w-7/12">
+                            <input type="number" id="buy-amount-eth" placeholder="0.005" value="0.005" step="0.001"
+                                class="w-full bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none rounded-lg px-2.5 py-2 text-xs font-bold text-white font-mono">
+                            <span class="absolute right-2 top-2.5 text-[9px] font-black text-cyan-400">ETH</span>
+                        </div>
+                        
+                        <button id="execute-buy-btn" onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')"
+                            class="w-5/12 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 hover:from-cyan-500 hover:to-indigo-700 text-slate-950 font-black rounded-lg text-[11px] uppercase tracking-wider transition-all duration-200 shadow-md active:scale-95">
+                            Buy Now
+                        </button>
+                    </div>
+                    <div id="tx-status-output" class="text-[9px] text-slate-400 font-mono text-center pt-0.5 hidden"></div>
+                </div>
+
+                <div class="text-center pt-0.5">
+                    <a href="${bestPair.url}" target="_blank" class="text-[9px] text-slate-500 hover:text-cyan-400 underline transition-colors">
+                        Open Chart on DexScreener ➜
+                    </a>
+                </div>
             </div>
         `;
 
@@ -640,6 +666,7 @@ async function executeTokenScan() {
             </div>`;
     }
 }
+
 async function triggerWeb3Buy(tokenAddress, dexId) {
     const amountInput = document.getElementById("buy-amount-eth");
     const statusDiv = document.getElementById("tx-status-output");
@@ -658,7 +685,6 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
     statusDiv.innerText = "⏳ Initiating wallet handshake & building swap path...";
 
     try {
-        // 1. Validasi Chain ID (Harus Base Chain: 8453)
         const currentChainId = await provider.request({ method: 'eth_chainId' });
         if (currentChainId !== '0x2105') {
             statusDiv.innerText = "🔄 Diverting protocol matrix to Base Network...";
@@ -668,30 +694,24 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
             });
         }
 
-        // 2. Tentukan Alamat Router DEX Berdasarkan Asal Pool (Aerodrome / Uniswap V3)
-        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Default: Uniswap V3 Router Base
-        
+        let targetRouterAddress = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Uniswap V3 Router Base
         if (dexId.toLowerCase() === 'aerodrome') {
             targetRouterAddress = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; // Aerodrome Router Address
         }
 
-        // 3. Bangun data transaksi dasar (Mengirim nilai ETH mentah ke router)
         const valueHex = toSafeHexWei(ethAmount);
         
         statusDiv.className = "text-[9px] text-cyan-400 font-mono text-center animate-pulse";
         statusDiv.innerText = "🚀 Awaiting biometric confirmation in your Web3 wallet...";
 
-        const txParameters = {
-            from: userAddress,
-            to: targetRouterAddress,
-            value: valueHex,
-            data: "0x" // Payload Hex kosong memicu fungsi penampung router default jika data ABI penuh tidak disuplai
-        };
-
-        // 4. Siapkan injeksi pop-up tanda tangan/sidik jari di wallet browser (Toshi/OKX)
         const txHash = await provider.request({
             method: 'eth_sendTransaction',
-            params: [txParameters],
+            params: [{
+                from: userAddress,
+                to: targetRouterAddress,
+                value: valueHex,
+                data: "0x"
+            }],
         });
 
         statusDiv.className = "text-[9px] text-emerald-400 font-mono text-center font-bold";
@@ -706,6 +726,7 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
     }
 }
 window.triggerWeb3Buy = triggerWeb3Buy;
+
 // ==========================================
 // LOGIC LOOPS & ENGINE INITIALIZATION
 // ==========================================
@@ -740,6 +761,5 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
     document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
     
-    // Bind tombol tracker token eksternal agar memicu DexScreener Scanner asli
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
 });
