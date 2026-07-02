@@ -65,57 +65,97 @@ function quickSelectToken(address, symbol) {
 window.quickSelectToken = quickSelectToken;
 
 // ====================================================================
-// TICKER TOP GAINERS REAL-TIME (BASE NETWORK) - SORTED BY 24H PERFORMANCE
+// TICKER TOP GAINERS REAL-TIME VIA GECKOTERMINAL (BASE NETWORK)
 // ====================================================================
 async function renderTopTrendingBaseCoins() {
     try {
-        // 1. Mengambil data pair yang sedang aktif di jaringan Base
-        // Kita menggunakan endpoint pencarian umum agar mendapatkan list yang luas
-        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
-        const data = await response.json();
+        // Mengambil 20 pools paling tren di jaringan Base langsung dari GeckoTerminal
+        const response = await fetch("https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1");
         
-        if (!data.pairs) return;
+        if (!response.ok) {
+            throw new Error("GeckoTerminal API error");
+        }
 
-        // 2. Filter & Sort: Hanya ambil jaringan 'base', buang stablecoin, lalu sort berdasarkan kenaikan % tertinggi
-        const topGainers = data.pairs
-            .filter(p => p.chainId === 'base' && p.baseToken && p.priceChange && p.priceChange.h24)
-            .filter(p => p.liquidity && p.liquidity.usd > 5000) // Filter likuiditas biar nggak kena token scam murahan
-            .sort((a, b) => b.priceChange.h24 - a.priceChange.h24); // URUTKAN DARI GAINERS TERTINGGI
+        const json = await response.json();
+        const pools = json.data;
+
+        if (!pools || pools.length === 0) return;
 
         const tickerItems = [];
-        const seen = new Set();
+        const seenAddresses = new Set();
         let displayCount = 0;
 
-        for (const pair of topGainers) {
-            if (displayCount >= 10) break; // Ambil 10 teratas
-            if (seen.has(pair.baseToken.symbol.toLowerCase())) continue;
+        // Iterasi pools yang didapat dari API
+        for (const pool of pools) {
+            if (displayCount >= 10) break; // Ambil maksimal 10 token teratas
 
-            const symbol = pair.baseToken.symbol;
-            const priceChange = pair.priceChange.h24;
-            const priceUsd = parseFloat(pair.priceUsd).toFixed(6);
+            const attributes = pool.attributes;
+            
+            // Mencari token utama (base token), bukan pasangannya (WETH/USDC)
+            // Biasanya di dex, token meme/komunitas ada di base_token_id
+            const tokenAddress = pool.relationships?.base_token?.data?.id?.split('_')[1];
+            if (!tokenAddress || seenAddresses.has(tokenAddress.toLowerCase())) continue;
 
-            seen.add(symbol.toLowerCase());
+            const name = attributes.name; // Contoh: "BRETT / WETH"
+            // Ambil simbol token utamanya saja sebelum tanda "/" atau gunakan simbol dari pool
+            let symbol = name.split(/[\/\-]/)[0].trim(); 
+            
+            // Filter pengaman ekstra agar token gas utama tidak mendominasi ticker
+            if (symbol.toLowerCase() === 'weth' || symbol.toLowerCase() === 'usdc' || symbol.toLowerCase() === 'usd') {
+                continue;
+            }
+
+            // Ambil data harga dan persentase perubahan harga (6 jam atau 24 jam)
+            const priceUsd = parseFloat(attributes.token_price_usd);
+            const priceChange = parseFloat(attributes.price_change_percentage?.h24 || attributes.price_change_percentage?.m5 || 0);
+
+            // Kita tampilkan yang performanya sedang positif (Gainers)
+            if (priceChange <= 0) continue;
+
+            const formattedPrice = priceUsd < 0.0001 ? priceUsd.toFixed(7) : (priceUsd < 0.01 ? priceUsd.toFixed(5) : priceUsd.toFixed(2));
+
+            seenAddresses.add(tokenAddress.toLowerCase());
             displayCount++;
 
-            // Visualisasi untuk top gainers (pasti hijau semua karena di-sort)
             tickerItems.push(`
-                <button onclick="quickSelectToken('${pair.baseToken.address}', '${symbol}')" 
-                    class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-emerald-900/50 px-2.5 py-1 rounded-xl hover:border-emerald-400 transition-all text-left">
+                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" 
+                    class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-emerald-900/40 px-2.5 py-1 rounded-xl hover:border-emerald-400 transition-all text-left">
                     <span class="text-emerald-500 font-bold text-[9px]">#${displayCount}</span>
                     <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                    <span class="text-slate-400 text-[10px]">$${priceUsd}</span>
-                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${priceChange}%</span>
+                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
+                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${priceChange.toFixed(1)}%</span>
                 </button>
             `);
         }
 
-        // 3. Inject ke UI
+        // Tembak hasilnya ke komponen HTML marquee app kamu
         const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
         if (tickerWrapper) {
-            tickerWrapper.innerHTML = tickerItems.length > 0 ? tickerItems.join('') : "<span>No trending data...</span>";
+            if (tickerItems.length >= 2) {
+                tickerWrapper.innerHTML = tickerItems.join('');
+            } else {
+                // Jalur cadangan ringan kalau filter gainers terlalu ketat saat market koreksi
+                let fallbackItems = pools.slice(0, 8).map((pool, idx) => {
+                    const symbol = pool.attributes.name.split('/')[0].trim();
+                    const price = parseFloat(pool.attributes.token_price_usd);
+                    const change = parseFloat(pool.attributes.price_change_percentage?.h24 || 0);
+                    const addr = pool.relationships?.base_token?.data?.id?.split('_')[1];
+                    const color = change >= 0 ? "text-emerald-400" : "text-rose-400";
+                    const sign = change >= 0 ? "▲" : "▼";
+                    return `
+                        <button onclick="quickSelectToken('${addr}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-xl text-left">
+                            <span class="text-slate-500 font-bold text-[9px]">#${idx+1}</span>
+                            <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                            <span class="${color} font-bold text-[9px]">${sign} ${change.toFixed(1)}%</span>
+                        </button>
+                    `;
+                });
+                tickerWrapper.innerHTML = fallbackItems.join('');
+            }
         }
     } catch (error) {
-        console.error("Error loading top gainers:", error);
+        console.error("GeckoTerminal integration failed, trying dynamic network load...", error);
+        // Jika GeckoTerminal rate limit, kamu bisa letakkan fungsi cadangan di sini
     }
 }
 
