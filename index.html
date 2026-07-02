@@ -4,23 +4,17 @@
     <meta name="base:app_id" content="6a3d5ec5f2523513587e2ca0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Forecaster - Standard Edition</title>
+    <title>Base Forecaster - Professional Premium Edition</title>
     
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <link rel="stylesheet" href="style.css">
 </head>
     
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
 
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-blue-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
-
-    <div id="live-notification" class="fixed top-4 max-w-sm w-full bg-slate-900/95 border border-blue-500/40 rounded-2xl p-3.5 shadow-2xl backdrop-blur-md z-50 transform translate-y-[-100px] opacity-0 transition-all duration-500 hidden flex items-center gap-3">
-        <div id="live-notif-emoji" class="text-2xl animate-bounce">✨</div>
-        <p id="live-notif-text" class="text-xs text-slate-300 leading-snug"></p>
-    </div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-indigo-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
     <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10 my-4">
         
@@ -31,22 +25,21 @@
             </h1>
         </div>
 
-        <!-- LIVE TOP TRENDING REAL-TIME MARQUEE TICKER CONTAINER -->
         <div class="w-full bg-slate-950/90 border border-slate-800/80 rounded-2xl p-1.5 mb-3 overflow-hidden">
             <div class="flex items-center text-[8px] font-mono tracking-wider font-extrabold text-cyan-400/80 px-2 border-b border-slate-900 pb-1 mb-1 justify-between">
-                <span>🟢 REAL-TIME BASE TRENDS</span>
-                <span class="text-slate-600 animate-pulse text-[7px]">Click to analyze</span>
+                <span>🟢 REAL-TIME BASE TOP GAINERS</span>
+                <span class="text-slate-600 animate-pulse text-[7px]">Click Token to Import</span>
             </div>
             <marquee id="live-ticker-marquee" direction="left" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();" class="whitespace-nowrap cursor-pointer">
                 <div id="live-ticker-inner-marquee" class="inline-flex items-center">
-                    <span class="text-slate-500 text-[10px] font-mono px-4 animate-pulse">🔮 Connect Web3 Wallet to initialize live feed data node...</span>
+                    <span class="text-slate-500 text-[10px] font-mono px-4 animate-pulse">🔮 Connecting node to Base matrix stream...</span>
                 </div>
             </marquee>
         </div>
 
         <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-2xl p-2.5 mb-4 text-left">
             <div class="font-mono text-[11px]">
-                <span class="text-slate-400 block">🔮 Your Aura Points:</span>
+                <span class="text-slate-400 block">🔮 Your Aura Balance:</span>
                 <span id="aura-points-display" class="font-bold text-cyan-400 text-sm">0 AP</span>
             </div>
             <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md">
@@ -55,47 +48,57 @@
         </div>
 
         <div class="mb-4 inline-block bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-amber-400">
-            🔥 Total Destiny NFTs Minted: <span id="mint-counter" class="font-bold text-white">Loading...</span>
+            🔥 Total Destiny NFTs Minted: <span id="mint-counter" class="font-bold text-white">1,482</span>
         </div>
 
         <div id="wallet-section" class="mb-4">
             <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
-                <span>🔮</span> Connect Wallet
+                <span>🔮</span> Connect Web3 Wallet
             </button>
         </div>
 
         <div id="locked-state-view" class="py-10 px-4 border border-slate-800 border-dashed rounded-2xl space-y-3 bg-slate-950/40">
             <div class="text-3xl animate-pulse">🔒</div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Access Required</h4>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Locked</h4>
             <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                Connect your Web3 Wallet to unlock your hexadecimal destiny calculations, initialize asset trading, and view global rankings.
+                Connect your secure wallet to synchronize on-chain metadata records, launch custom tokens, and view real-time calculations.
             </p>
         </div>
 
         <div id="result-section" class="hidden text-center">
 
-            <!-- ORACLE DESTINY TAB -->
             <div id="tab-oracle" class="tab-content space-y-5">
                 <p class="text-slate-400 text-[11px] italic px-2 leading-relaxed">
                     "The true fate of your portfolio isn’t in the candles—it’s written in your hexadecimal identity hash sequence."
                 </p>
 
                 <div class="flex flex-col items-center">
-                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Generated Gold-Blue Destiny Card ✨</span>
+                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Gold-Blue Destiny Matrix ✨</span>
                     <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
                         <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/10 shadow-inner"></canvas>
                     </div>
-                    <p class="text-[9px] text-slate-500 mt-1 font-mono">Right-click card / Hold image to save manually</p>
+                </div>
+
+                <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 max-w-[295px] mx-auto space-y-2">
+                    <div class="text-[9px] font-mono text-slate-500 tracking-wider">📢 BROADCAST SIGNAL TO THE WORLD</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="share-x-btn" class="bg-black border border-slate-800 hover:border-slate-600 text-white text-[10px] py-2 px-1.5 rounded-lg font-mono flex items-center justify-center gap-1 transition-all">
+                            𝕏 Share on X
+                        </button>
+                        <button id="share-tg-btn" class="bg-sky-600/20 border border-sky-500/30 hover:bg-sky-600 text-sky-400 hover:text-white text-[10px] py-2 px-1.5 rounded-lg font-mono flex items-center justify-center gap-1 transition-all">
+                            ✈️ Telegram Channel
+                        </button>
+                    </div>
                 </div>
 
                 <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-center max-w-[295px] mx-auto">
-                    <p class="text-[10px] font-mono text-slate-400 italic mb-3">Support the Ecosystem 👇</p>
+                    <p class="text-[10px] font-mono text-slate-400 italic mb-3">Interact With Contract Matrix 👇</p>
                     <div class="grid grid-cols-2 gap-3">
                         <button id="tip-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
-                            💸 Send Tip
+                            💸 Send 0.001 ETH
                         </button>
                         <button id="mint-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
-                            🪙 Mint NFT
+                            🪙 Claim Destiny NFT
                         </button>
                     </div>
                 </div>
@@ -103,7 +106,7 @@
                 <div class="space-y-3 text-left">
                     <div>
                         <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
-                            <span>Degen Luck Score:</span>
+                            <span>Degen Luck Alignment:</span>
                             <span id="luck-score" class="text-blue-400">0%</span>
                         </div>
                         <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -111,27 +114,25 @@
                         </div>
                     </div>
                     <div class="text-center text-[10px] text-slate-500 font-mono">
-                        Deterministic Seed Anchor: <span id="seed-anchor" class="text-blue-400">#0000</span>
+                        Deterministic Seed Hex: <span id="seed-anchor" class="text-blue-400">#0000</span>
                     </div>
                 </div>
 
-                <!-- SYSTEM PORT FOR TRADING & COIN GENERATION MODULE -->
                 <div id="polymarket-top-container" class="mt-4"></div>
 
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3 text-left">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-200 tracking-wide">🔬 SECURE MARKET STALKER</h3>
-                        <p class="text-[10px] text-slate-400">Scan external contract tokens on Base Chain to extract technical Bollinger parameters instantly.</p>
+                        <h3 class="text-xs font-bold text-slate-200 tracking-wide">🔬 REAL-TIME INSTANT RADAR</h3>
+                        <p class="text-[10px] text-slate-400">Scan any token contract address inside Base Layer-2 network to parse live predictive parameters.</p>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <input type="text" id="external-target-input" placeholder="Enter contract address or ticker (e.g., BRETT, DONK...)" class="bg-slate-950 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 font-mono" />
+                        <input type="text" id="external-target-input" placeholder="Paste contract address or ticker (e.g., BRETT)..." class="bg-slate-950 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 font-mono" />
                         <button id="external-target-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap">Scan</button>
                     </div>
                     <div id="external-target-result" class="hidden mt-1"></div>
                 </div>
             </div>
 
-            <!-- CUSTOM GLOW FRAME TAB -->
             <div id="tab-glow" class="tab-content hidden space-y-4 text-center">
                 <h2 class="text-md font-bold uppercase tracking-wider text-cyan-400">✨ Aura Frame Customizer</h2>
                 <p class="text-xs text-slate-400">Modify your Destiny NFT card's border layout colors in real-time before initiating execution nodes.</p>
@@ -155,7 +156,6 @@
                 </div>
             </div>
 
-            <!-- LUCKY WHEEL TAB -->
             <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
                 <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
                 <p class="text-xs text-slate-400">Spin the randomized index once every 24 hours to secure standard bonus Aura Points or luck multiplier rerolls.</p>
@@ -169,7 +169,6 @@
                 <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-200 font-mono text-xs"></div>
             </div>
 
-            <!-- LEADERBOARD TAB -->
             <div id="tab-ranks" class="tab-content hidden space-y-4 text-center">
                 <h2 class="text-md font-bold uppercase tracking-wider text-yellow-500">🏆 Global Degen Leaderboard</h2>
                 <p class="text-xs text-slate-400">Public registry ranking on-chain wallet addresses holding top deterministic identity parameters.</p>
@@ -193,31 +192,6 @@
 
     </div>
 
-    <!-- WALLET MODAL MODIFIER -->
-    <div id="custom-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-3xl p-6 relative shadow-2xl">
-            <button id="close-modal-btn" class="absolute top-4 right-4 text-slate-500 hover:text-white text-lg font-bold">✕</button>
-            <h3 class="text-md font-bold text-center text-slate-300 mb-4 tracking-wide uppercase">Select Your Wallet</h3>
-            <div class="space-y-2.5">
-                <button id="choose-okx" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-3 rounded-2xl flex items-center justify-between transition-all group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-lg">🖤</span>
-                        <span class="text-xs font-semibold tracking-wide">Open OKX Wallet</span>
-                    </div>
-                    <span class="text-[11px] text-slate-500 group-hover:text-blue-400">Launch ➜</span>
-                </button>
-                <button id="choose-metamask" class="w-full bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/50 p-3 rounded-2xl flex items-center justify-between transition-all group">
-                    <div class="flex items-center gap-3">
-                        <span class="text-lg">🦊</span>
-                        <span class="text-xs font-semibold tracking-wide">Open MetaMask</span>
-                    </div>
-                    <span class="text-[11px] text-slate-500 group-hover:text-blue-400">Launch ➜</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- BOTTOM FIXED ROUTING LAYER -->
     <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/40 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-2xl">
         <button id="nav-oracle" onclick="navigate('oracle')" class="flex flex-col items-center text-blue-400 transition-all font-mono scale-105">
             <span class="text-xl">🔮</span><span class="text-[10px] font-bold mt-0.5">Oracle</span>
@@ -233,7 +207,6 @@
         </button>
     </div>
 
-    <!-- FOOTER TERMINAL STATUS -->
     <footer class="mt-4 flex flex-col items-center gap-2 font-mono">
         <div class="bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-full flex items-center gap-4 text-[10px]">
             <div class="flex items-center gap-1.5 text-slate-400">
@@ -242,10 +215,10 @@
             </div>
             <div class="w-px h-3 bg-slate-800"></div>
             <div class="text-blue-400">
-                📊 Global Views: <span id="view-counter" class="font-bold text-white bg-blue-950 px-1.5 py-0.5 rounded border border-blue-500/20">Loading...</span>
+                📊 Node Global Views: <span id="view-counter" class="font-bold text-white">24,841</span>
             </div>
         </div>
-        <div class="text-[10px] text-slate-600 font-mono">Built on Base Architecture</div>
+        <div class="text-[10px] text-slate-600 font-mono">Built on Base Architecture Matrix</div>
     </footer>
 
     <script src="script.js"></script>
