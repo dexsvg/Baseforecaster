@@ -1,6 +1,6 @@
 /**
- * Base Forecaster - Production Core Logic Script
- * Optimized Architecture - Dynamic Gecko Integration Hub + Clean Web3 Vector Loops.
+ * Base Forecaster - Production Core Logic Script (Upgraded Version)
+ * Optimized Architecture - Dynamic Gecko Integration Hub + Real-Time Web3 Engines.
  */
 
 const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
@@ -15,6 +15,8 @@ let currentFateGlobal = null;
 let currentFrameColor = "#f59e0b"; 
 let frameNameGlobal = "Gold Luck Destiny";
 let userLuckScoreGlobal = 50;
+let liveScanInterval = null;
+let currentScannedAddress = "";
 
 const fateLibrary = [
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
@@ -32,7 +34,7 @@ const fateLibrary = [
 function getActiveProvider() {
     if (window.ethereum) {
         if (window.ethereum.providers && window.ethereum.providers.length) {
-            return window.ethereum.providers.find(p => p.isCoinbaseWallet || p.isOKXWallet) || window.ethereum.providers[0];
+            return window.ethereum.providers.find(p => p.isOKXWallet || p.isCoinbaseWallet) || window.ethereum.providers[0];
         }
         return window.ethereum;
     }
@@ -82,18 +84,22 @@ async function renderTopTrendingBaseCoins() {
             const priceUsd = parseFloat(attributes.token_price_usd) || 0;
             const priceChange = parseFloat(attributes.price_change_percentage?.h24 || 0);
 
-            if (priceChange <= 0 || priceUsd === 0) continue; 
+            if (priceUsd === 0) continue; 
 
             const formattedPrice = priceUsd < 0.0001 ? priceUsd.toFixed(7) : (priceUsd < 0.01 ? priceUsd.toFixed(5) : priceUsd.toFixed(2));
+            const changeSignal = priceChange >= 0 ? `▲ ${priceChange.toFixed(1)}%` : `▼ ${Math.abs(priceChange).toFixed(1)}%`;
+            const colorClass = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
+            const borderClass = priceChange >= 0 ? "border-emerald-950" : "border-rose-950";
+
             seenAddresses.add(tokenAddress.toLowerCase());
             displayCount++;
 
             tickerItems.push(`
-                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-emerald-950 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
-                    <span class="text-emerald-500 font-bold text-[9px]">#${displayCount}</span>
+                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderClass} px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
+                    <span class="text-cyan-500 font-bold text-[9px]">#${displayCount}</span>
                     <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
                     <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
-                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${priceChange.toFixed(1)}%</span>
+                    <span class="${colorClass} font-bold text-[9px]">${changeSignal}</span>
                 </button>
             `);
         }
@@ -117,7 +123,7 @@ async function executeDexScreenerFallback(wrapperElement) {
         if (!data.pairs) return;
 
         const filteredPairs = data.pairs
-            .filter(p => p.chainId === 'base' && p.baseToken && p.priceChange?.h24 > 0)
+            .filter(p => p.chainId === 'base' && p.baseToken)
             .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0));
 
         const tickerItems = [];
@@ -132,6 +138,7 @@ async function executeDexScreenerFallback(wrapperElement) {
 
             const rawPrice = parseFloat(pair.priceUsd) || 0;
             const formattedPrice = rawPrice < 0.0001 ? rawPrice.toFixed(7) : rawPrice.toFixed(2);
+            const priceChange = pair.priceChange?.h24 || 0;
             
             seen.add(address.toLowerCase());
             count++;
@@ -141,7 +148,7 @@ async function executeDexScreenerFallback(wrapperElement) {
                     <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
                     <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
                     <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
-                    <span class="text-emerald-400 font-bold text-[9px]">▲ ${pair.priceChange.h24}%</span>
+                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${priceChange >= 0 ? '▲' : '▼'} ${Math.abs(priceChange)}%</span>
                 </button>
             `);
         }
@@ -150,6 +157,95 @@ async function executeDexScreenerFallback(wrapperElement) {
         wrapperElement.innerHTML = `<span class="text-slate-500 text-xs">Matrix stream offline</span>`;
     }
 }
+
+async function executeTokenScan() {
+    const targetInput = document.getElementById("external-target-input");
+    const resultDiv = document.getElementById("external-target-result");
+    if (!targetInput || !resultDiv) return;
+
+    const query = targetInput.value.trim();
+    if (!query) return alert("Input required parameter block!");
+
+    currentScannedAddress = query;
+    resultDiv.classList.remove("hidden");
+
+    if (!liveScanInterval) {
+        resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Connecting live price socket matrix...</p>`;
+    }
+
+    async function fetchScanData() {
+        try {
+            const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${currentScannedAddress}`);
+            const data = await response.json();
+            const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
+
+            if (basePairs.length === 0) {
+                resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">❌ Identity footprint missing inside Base Layer-2 system.</div>`;
+                clearInterval(liveScanInterval);
+                liveScanInterval = null;
+                return;
+            }
+
+            const bestPair = basePairs[0];
+            const priceUsd = parseFloat(bestPair.priceUsd) || 0;
+            const priceChange = bestPair.priceChange?.h24 || 0;
+            const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
+            const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
+
+            const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
+            const middleBand = priceUsd / (1 + (priceChange / 100));
+            const standardDeviation = middleBand * (volatilityFactor / 100);
+            const upperBand = middleBand + (2 * standardDeviation);
+            const lowerBand = middleBand - (2 * standardDeviation);
+
+            let bbStatus = "STABLE AXIS", bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
+            let visualChart = "──■──"; 
+            if (priceUsd >= upperBand * 0.98) { 
+                bbStatus = "OVERBOUGHT CORE"; 
+                bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40"; 
+                visualChart = "────■";
+            } else if (priceUsd <= lowerBand * 1.02) { 
+                bbStatus = "OVERSOLD POINT"; 
+                bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40"; 
+                visualChart = "■────";
+            }
+
+            resultDiv.innerHTML = `
+                <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px] relative overflow-hidden">
+                    <div class="absolute top-1 right-2 text-[8px] text-emerald-400 animate-pulse flex items-center gap-1">● LIVE TICKING</div>
+                    <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                        <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
+                        <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange >= 0 ? '+' : ''}${priceChange}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
+                        <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
+                        <div>FDV Cap: <strong class="text-white">$${marketCap}</strong></div>
+                        <div>Liquidity: <strong class="text-white">$${liquidity}</strong></div>
+                        <div>Engine: <span class="text-cyan-400 font-bold">${bestPair.dexId.toUpperCase()}</span></div>
+                    </div>
+                    <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center text-[9px]">
+                        <span class="text-slate-500">BB SPECTRUM [${visualChart}]:</span>
+                        <span class="px-1 text-[8px] font-bold rounded border ${bbBadgeColor}">${bbStatus}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
+                        <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
+                            ⚡ Core Web3 Swap Node
+                        </button>
+                    </div>
+                    <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
+                </div>
+            `;
+        } catch (e) {
+            resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse handshake failure.</div>`;
+        }
+    }
+
+    await fetchScanData();
+    if (liveScanInterval) clearInterval(liveScanInterval);
+    liveScanInterval = setInterval(fetchScanData, 3000); // Polling real-time update per 3 detik
+}
+window.executeTokenScan = executeTokenScan;
 
 async function deployNewB20Token(tokenName, tokenSymbol) {
     if (!tokenName || !tokenSymbol) return alert("Please fill Token Name & Symbol data slots!");
@@ -182,7 +278,7 @@ function setupSocialEngines() {
     });
 
     document.getElementById("share-tg-btn")?.addEventListener("click", () => {
-        window.open("https://t.me/BaseForecaster", '_blank'); // FIXED: Typo t.专 -> t.me
+        window.open("https://t.me/BaseForecaster", '_blank');
     });
 }
 
@@ -212,74 +308,6 @@ async function mintNFT() {
     } catch (err) { alert("Execution Failed: " + err.message); }
 }
 
-async function executeTokenScan() {
-    const targetInput = document.getElementById("external-target-input");
-    const resultDiv = document.getElementById("external-target-result");
-    if (!targetInput || !resultDiv) return;
-
-    const query = targetInput.value.trim();
-    if (!query) return alert("Input required parameter block!");
-
-    resultDiv.classList.remove("hidden");
-    resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Parsing core contract data packets...</p>`;
-
-    try {
-        const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${query}`);
-        const data = await response.json();
-        const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
-
-        if (basePairs.length === 0) {
-            resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">❌ Identity footprint missing inside Base Layer-2 system.</div>`;
-            return;
-        }
-
-        const bestPair = basePairs[0];
-        const priceUsd = parseFloat(bestPair.priceUsd) || 0;
-        const priceChange = bestPair.priceChange?.h24 || 0;
-        const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
-        const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
-
-        const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
-        const middleBand = priceUsd / (1 + (priceChange / 100));
-        const standardDeviation = middleBand * (volatilityFactor / 100);
-        const upperBand = middleBand + (2 * standardDeviation);
-        const lowerBand = middleBand - (2 * standardDeviation);
-
-        let bbStatus = "STABLE AXIS", bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
-        if (priceUsd >= upperBand * 0.98) { bbStatus = "OVERBOUGHT CORE"; bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40"; }
-        else if (priceUsd <= lowerBand * 1.02) { bbStatus = "OVERSOLD POINT"; bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40"; }
-
-        resultDiv.innerHTML = `
-            <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px]">
-                <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                    <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
-                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange}%</span>
-                </div>
-                <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
-                    <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
-                    <div>FDV Cap: <strong class="text-white">$${marketCap}</strong></div>
-                    <div>Liquidity: <strong class="text-white">$${liquidity}</strong></div>
-                    <div>Engine: <span class="text-cyan-400 font-bold">${bestPair.dexId.toUpperCase()}</span></div>
-                </div>
-                <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center">
-                    <span class="text-[9px] text-slate-500">BB MATRIX ALIGNMENT:</span>
-                    <span class="px-1 text-[8px] font-bold rounded border ${bbBadgeColor}">${bbStatus}</span>
-                </div>
-                <div class="flex gap-2">
-                    <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
-                    <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
-                        ⚡ Core Web3 Swap Node
-                    </button>
-                </div>
-                <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
-            </div>
-        `;
-    } catch (e) {
-        resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse handshake failure.</div>`;
-    }
-}
-window.executeTokenScan = executeTokenScan;
-
 async function triggerWeb3Buy(tokenAddress, dexId) {
     const amountInput = document.getElementById("buy-amount-eth");
     const statusDiv = document.getElementById("tx-status-output");
@@ -293,7 +321,7 @@ async function triggerWeb3Buy(tokenAddress, dexId) {
     statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
 
     try {
-        let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Uniswap V3 Base default
+        let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
         if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
 
         const txHash = await provider.request({
@@ -326,6 +354,10 @@ function navigate(targetTab) {
     if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
 
     if (targetTab === 'ranks') renderLeaderboardData();
+    if (targetTab !== 'oracle' && liveScanInterval) {
+        clearInterval(liveScanInterval);
+        liveScanInterval = null;
+    }
 }
 window.navigate = navigate;
 
@@ -466,10 +498,14 @@ async function executeDirectBuy() {
     } catch (err) { alert("Refused: " + err.message); }
 }
 
-function generateDestiny(address) {
+function generateDestiny(address, isReroll = false) {
     let seed = 0;
     const cleanAddress = address.toLowerCase().replace("0x", "");
+    
+    // Jika reroll, tambahkan salt acak agar hasilnya berbeda dari seed address dasar
+    const salt = isReroll ? Math.floor(Math.random() * 9999) : 0;
     for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
+    seed += salt;
 
     currentFateGlobal = fateLibrary[seed % fateLibrary.length];
     userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
@@ -478,7 +514,6 @@ function generateDestiny(address) {
     document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
     document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
 
-    // Load AP dari localStorage saat login berhasil
     let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
     document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
 
@@ -533,14 +568,30 @@ function drawDestinyCard(fateObj, score, address, seed) {
     characterImg.onerror = () => { ctx.fillStyle = "#090d16"; ctx.fillRect(0, 0, 350, 500); finalizeDraw(); };
 }
 
+function executeRerollDestiny() {
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    if (currentAP < 200) {
+        alert("🔒 Insufficient Aura Points! Matrix Reroll requires 200 AP.");
+        return;
+    }
+    
+    currentAP -= 200;
+    localStorage.setItem("premium_aura", currentAP);
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+    
+    generateDestiny(userAddress, true);
+    if (typeof confetti === "function") confetti();
+    alert("🧬 Quantum sequence mutated! New destiny card mapped.");
+}
+window.executeRerollDestiny = executeRerollDestiny;
+
 document.addEventListener("DOMContentLoaded", () => {
-    // Render initial balance dari local storage jika ada
     let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
     document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
 
     renderTopTrendingBaseCoins();
     setupSocialEngines();
-    setInterval(renderTopTrendingBaseCoins, 30000);
+    setInterval(renderTopTrendingBaseCoins, 15000); // Sinkronisasi ticker berkala otomatis lebih cepat (15s)
 
     document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
