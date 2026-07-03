@@ -27,8 +27,8 @@
 
         <div class="w-full bg-slate-950/90 border border-slate-800/80 rounded-2xl p-1.5 mb-3 overflow-hidden">
             <div class="flex items-center text-[8px] font-mono tracking-wider font-extrabold text-cyan-400/80 px-2 border-b border-slate-900 pb-1 mb-1 justify-between">
-                <span>🟢 REAL-TIME BASE TOP GAINERS</span>
-                <span class="text-slate-600 animate-pulse text-[7px]">Click Token to Import</span>
+                <span>🟢 REAL-TIME BASE TRENDING TICKER</span>
+                <span class="text-slate-600 animate-pulse text-[7px]">Click Token to Scan</span>
             </div>
             <marquee id="live-ticker-marquee" direction="left" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();" class="whitespace-nowrap cursor-pointer">
                 <div id="live-ticker-inner-marquee" class="inline-flex items-center">
@@ -73,10 +73,13 @@
                 </p>
 
                 <div class="flex flex-col items-center">
-                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Gold-Blue Destiny Matrix ✨</span>
+                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Card Destiny Matrix ✨</span>
                     <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
                         <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/10 shadow-inner"></canvas>
                     </div>
+                    <button onclick="executeRerollDestiny()" class="mt-3 bg-slate-950 border border-purple-500/40 hover:border-purple-400 text-purple-400 text-[10px] px-4 py-1.5 rounded-xl font-mono transition-all">
+                        🌀 Reroll Destiny Node (Costs 200 AP)
+                    </button>
                 </div>
 
                 <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 max-w-[295px] mx-auto space-y-2">
@@ -139,19 +142,19 @@
                 <div class="space-y-2.5 pt-2">
                     <button onclick="applyGlow('neon')" class="w-full p-4 rounded-xl border border-cyan-500/20 bg-slate-950 hover:border-cyan-400 flex items-center justify-between transition-all font-mono text-xs">
                         <span class="font-bold text-cyan-400">🔹 CYAN NEON PULSE</span>
-                        <div class="w-16 h-3.5 rounded-full bg-cyan-400" />
+                        <div class="w-16 h-3.5 rounded-full bg-cyan-400"></div>
                     </button>
                     <button onclick="applyGlow('gold')" class="w-full p-4 rounded-xl border border-amber-500/20 bg-slate-950 hover:border-amber-400 flex items-center justify-between transition-all font-mono text-xs">
                         <span class="font-bold text-amber-400">🔸 GOLD LUCK DESTINY</span>
-                        <div class="w-16 h-3.5 rounded-full bg-amber-500" />
+                        <div class="w-16 h-3.5 rounded-full bg-amber-500"></div>
                     </button>
                     <button onclick="applyGlow('matrix')" class="w-full p-4 rounded-xl border border-emerald-500/20 bg-slate-950 hover:border-emerald-400 flex items-center justify-between transition-all font-mono text-xs">
                         <span class="font-bold text-emerald-400">🟢 MATRIX CYBER GREEN</span>
-                        <div class="w-16 h-3.5 rounded-full bg-emerald-500" />
+                        <div class="w-16 h-3.5 rounded-full bg-emerald-500"></div>
                     </button>
                     <button onclick="applyGlow('rose')" class="w-full p-4 rounded-xl border border-rose-500/20 bg-slate-950 hover:border-rose-400 flex items-center justify-between transition-all font-mono text-xs">
                         <span class="font-bold text-rose-400">🔴 RUBY VEIN PULSE</span>
-                        <div class="w-16 h-3.5 rounded-full bg-rose-500" />
+                        <div class="w-16 h-3.5 rounded-full bg-rose-500"></div>
                     </button>
                 </div>
             </div>
