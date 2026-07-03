@@ -1,287 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="base:app_id" content="6a3d5ec5f2523513587e2ca0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Forecaster - Quantum Cyber Edition</title>
+    <title>Base Forecaster - Professional Premium Edition</title>
+    
+    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #02040a;
-        }
-        .font-cyber {
-            font-family: 'Orbitron', sans-serif;
-        }
-        /* Custom scrollbar ala Sci-Fi Terminal */
-        ::-webkit-scrollbar {
-            width: 3px;
-            height: 3px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(2, 4, 10, 0.8);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(to bottom, #8b5cf6, #06b6d4);
-            border-radius: 999px;
-        }
-        /* Efek rotasi roda keberuntungan mekanis */
-        .wheel-spin {
-            transition: transform 4.5s cubic-bezier(0.15, 0.85, 0.15, 1);
-        }
-        /* Efek Glow Futuristik */
-        .neon-glow-purple {
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.25);
-        }
-        .neon-glow-cyan {
-            box-shadow: 0 0 15px rgba(6, 118, 214, 0.25);
-        }
-        /* Animasi Scanner Grid */
-        @keyframes scan-line {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(300%); }
-        }
-        .scanner-grid::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(to right, transparent, #06b6d4, transparent);
-            animation: scan-line 2s linear infinite;
-            top: 0;
-            left: 0;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-<body class="text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-4 relative overflow-hidden bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-950/20 via-slate-950 to-black">
+    
+<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
 
-    <div class="absolute w-[500px] h-[500px] bg-purple-600/5 rounded-full blur-[120px] top-[-10%] left-[-10%] pointer-events-none"></div>
-    <div class="absolute w-[500px] h-[500px] bg-cyan-600/5 rounded-full blur-[120px] bottom-[-10%] right-[-10%] pointer-events-none"></div>
+    <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-indigo-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
-    <div class="w-full max-w-md h-[100vh] sm:h-[870px] bg-slate-950/70 sm:rounded-3xl border-0 sm:border border-slate-800/60 shadow-2xl shadow-purple-950/20 flex flex-col justify-between overflow-hidden backdrop-blur-2xl relative">
+    <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10 my-4">
         
-        <div class="px-6 pt-4 pb-3 flex justify-between items-center border-b border-slate-900 bg-slate-950/80 backdrop-blur-md z-30 relative">
-            <div class="absolute bottom-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent w-full"></div>
-            <div class="flex items-center space-x-2">
-                <span class="relative flex h-2 w-2">
-                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                </span>
-                <span class="text-[10px] font-cyber tracking-widest text-cyan-400 font-black">QUANTUM NODE: BASE</span>
-            </div>
-            
-            <div class="flex items-center space-x-2 bg-gradient-to-r from-purple-950/40 to-slate-900 border border-purple-500/30 px-3 py-1 rounded-xl neon-glow-purple">
-                <i class="fa-solid fa-bolt-lightning text-purple-400 text-xs animate-pulse"></i>
-                <span id="global-aura-counter" class="text-xs font-black font-cyber text-purple-300 tracking-wide">0</span>
-                <span class="text-[8px] text-purple-400/70 font-black font-cyber tracking-widest">AURA</span>
-            </div>
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <div class="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
+            <h1 class="text-3xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                BASE FORECASTER
+            </h1>
         </div>
 
-        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24 z-10">
-            
-            <div id="tab-oracle" class="tab-content space-y-4">
-                
-                <div class="p-4 bg-gradient-to-br from-slate-950 via-slate-900/60 to-purple-950/20 border border-slate-800 rounded-2xl relative overflow-hidden shadow-2xl">
-                    <div class="absolute right-4 top-4 text-purple-500/5 text-7xl font-cyber font-black pointer-events-none select-none">B-4</div>
-                    <h1 class="text-xl font-cyber font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-200 to-cyan-400 flex items-center gap-2">
-                        <span>BASE FORECASTER</span>
-                    </h1>
-                    <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
-                        Sinkronisasi matriks kriptografi data on-chain. Hitung takdir portofolio siber Anda langsung di atas lapisan Base Layer-2.
-                    </p>
-                </div>
-
-                <div class="bg-slate-950 border border-slate-900 rounded-xl p-2.5 shadow-inner">
-                    <span class="text-[9px] font-cyber font-bold text-slate-500 block mb-2 tracking-widest">⚡ MATRIX STREAM FEED (TAP TO OVERCLOCK)</span>
-                    <div class="flex gap-2 overflow-x-auto pb-1 text-xs" id="trending-list">
-                        <button onclick="quickScan('0x4ed4e862860bedd9a605b0bbb26a150254bab07c')" class="bg-slate-900/50 hover:bg-purple-950/30 border border-slate-800/80 hover:border-purple-500/40 px-3 py-2 rounded-xl font-cyber shrink-0 text-slate-300 flex items-center gap-2 transition active:scale-95">
-                            <span class="text-cyan-400 text-[10px]">#01</span> $DEGEN
-                        </button>
-                        <button onclick="quickScan('0xac1d2417e6dd2be14047e09ece363c32e92a403c')" class="bg-slate-900/50 hover:bg-purple-950/30 border border-slate-800/80 hover:border-purple-500/40 px-3 py-2 rounded-xl font-cyber shrink-0 text-slate-300 flex items-center gap-2 transition active:scale-95">
-                            <span class="text-cyan-400 text-[10px]">#02</span> $BRETT
-                        </button>
-                        <button onclick="quickScan('0x40d160655a6d36ef55fa4f1a4e1cf6fca2e6b669')" class="bg-slate-900/50 hover:bg-purple-950/30 border border-slate-800/80 hover:border-purple-500/40 px-3 py-2 rounded-xl font-cyber shrink-0 text-slate-300 flex items-center gap-2 transition active:scale-95">
-                            <span class="text-cyan-400 text-[10px]">#03</span> $KEYCAT
-                        </button>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/20 border border-slate-800 rounded-2xl p-4 text-center space-y-3 relative shadow-inner">
-                    <h3 class="text-[10px] font-cyber font-bold text-slate-400 tracking-widest uppercase">🌌 DEGEN DESTINY ALIGNMENT</h3>
-                    
-                    <div id="destiny-placeholder" class="py-8 border border-dashed border-slate-800 bg-slate-950/40 rounded-xl relative overflow-hidden">
-                        <p class="text-xs text-slate-400 px-6 leading-relaxed">Tarik tanda tanda transaksi dari sistem database siber untuk klaim alokasi perdana Aura Points.</p>
-                        <button onclick="revealDestinyCard()" class="mt-4 bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white font-cyber font-black text-xs px-6 py-2.5 rounded-xl transition shadow-lg shadow-purple-950/50 tracking-wider active:scale-95">
-                            DECRYPT IDENTITY
-                        </button>
-                    </div>
-
-                    <div id="destiny-card" class="hidden p-5 rounded-xl border relative text-left transform scale-95 transition-all duration-500">
-                        <div class="absolute top-3 right-3 text-[9px] font-cyber font-black bg-white/10 px-2 py-0.5 rounded-full tracking-widest" id="card-rarity">COMMON</div>
-                        <span class="text-[9px] font-cyber text-slate-500 block mb-0.5 tracking-widest">HEX PROTOCOL IDENTITY:</span>
-                        <h4 id="card-title" class="text-base font-cyber font-black tracking-wider text-white">THE MOONWALKER</h4>
-                        <p id="card-desc" class="text-xs text-slate-300 mt-2 leading-relaxed font-medium">...</p>
-                        <div class="mt-4 pt-3 border-t border-white/10 flex justify-between items-center text-[10px] font-cyber">
-                            <span class="text-slate-500 tracking-wider">AURA HARVEST INCREMENT:</span>
-                            <strong class="text-amber-400 tracking-wide font-black text-xs" id="card-points-val">+0 AURA</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/30 border border-slate-800/80 rounded-2xl p-4 space-y-4">
-                    <h3 class="text-[10px] font-cyber font-bold text-slate-400 tracking-widest uppercase">🔬 CONTRACT DECODER & FORECASTER</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="token-address-input" placeholder="Enter target smart contract address (0x...)" class="flex-1 bg-slate-950 border border-slate-800 focus:border-cyan-500/50 rounded-xl px-3 py-3 text-xs font-cyber text-slate-200 placeholder-slate-700 focus:outline-none transition">
-                        <button onclick="executeTokenScan()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-5 rounded-xl text-xs font-cyber font-black tracking-wider transition flex items-center gap-2 shrink-0 active:scale-95 shadow-md shadow-blue-950/50">
-                            SCAN
-                        </button>
-                    </div>
-
-                    <div id="scan-loading" class="hidden py-10 text-center space-y-3 bg-slate-950 rounded-xl relative overflow-hidden border border-slate-900 scanner-grid">
-                        <i class="fa-solid fa-satellite-dish animate-bounce text-cyan-400 text-2xl"></i>
-                        <p class="text-[10px] text-cyan-400 font-cyber tracking-widest uppercase animate-pulse">Syncing smart-contract execution nodes...</p>
-                    </div>
-
-                    <div id="scan-result" class="hidden bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3 shadow-2xl relative">
-                        <div class="absolute top-0 right-12 w-12 h-[1px] bg-cyan-500"></div>
-                        <div class="flex justify-between items-start border-b border-slate-900 pb-3">
-                            <div>
-                                <h4 id="res-token-name" class="font-cyber font-black text-sm text-white tracking-wide">Token Name</h4>
-                                <span id="res-token-address" class="text-[10px] font-mono text-slate-500 break-all block mt-0.5">0x0...</span>
-                            </div>
-                            <div class="text-right">
-                                <span id="res-token-price" class="font-cyber font-black text-sm text-emerald-400 block tracking-wide">$0.00</span>
-                                <span id="res-token-change" class="text-[9px] font-cyber font-bold text-emerald-500 tracking-wider">+0.0%</span>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 text-[10px] font-cyber">
-                            <div class="p-2.5 bg-slate-900/60 border border-slate-800/60 rounded-xl"><span class="text-slate-500 block text-[8px] tracking-widest">LIQUIDITY CAP</span> <strong id="res-liq" class="text-slate-300 text-xs block mt-0.5">$0</strong></div>
-                            <div class="p-2.5 bg-slate-900/60 border border-slate-800/60 rounded-xl"><span class="text-slate-500 block text-[8px] tracking-widest">24H VOLUME</span> <strong id="res-vol" class="text-slate-300 text-xs block mt-0.5">$0</strong></div>
-                        </div>
-                    </div>
-
-                    <div id="advanced-metrics-card" class="hidden bg-gradient-to-b from-slate-950 to-slate-900 border border-purple-500/30 p-4 rounded-xl space-y-4 shadow-xl">
-                        <div class="flex justify-between items-center border-b border-slate-900 pb-2">
-                            <h3 class="text-[10px] font-cyber font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 tracking-widest">RISK ASSESSMENT MATRIX</h3>
-                            <span id="security-badge" class="text-[8px] font-cyber font-black px-2 py-0.5 rounded border tracking-widest">SCANNING</span>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 text-[10px] font-cyber">
-                            <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80">
-                                <span class="text-slate-500 block text-[8px] tracking-widest">HONEYPOT STATUS</span>
-                                <strong id="honeypot-val" class="text-white text-[11px] block mt-1">-</strong>
-                            </div>
-                            <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80">
-                                <span class="text-slate-500 block text-[8px] tracking-widest">TOP 10 CONCENTRATION</span>
-                                <strong id="whale-concentration-val" class="text-white text-[11px] block mt-1">-</strong>
-                            </div>
-                            <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80">
-                                <span class="text-slate-500 block text-[8px] tracking-widest">SIMULATED TAX RATE</span>
-                                <strong id="tax-val" class="text-white text-[11px] block mt-1">-</strong>
-                            </div>
-                            <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80">
-                                <span class="text-slate-500 block text-[8px] tracking-widest">QUANTUM AI PREDICTION</span>
-                                <strong id="ai-opinion-val" class="text-cyan-400 text-[9px] block leading-relaxed mt-1 font-medium italic">-</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="polymarket-top-container" class="hidden pt-2 border-t border-slate-900">
-                        <span class="text-[9px] font-cyber font-bold text-slate-500 block mb-2 tracking-widest">📊 POLYMARKET MACRO SIGNAL</span>
-                        <div id="polymarket-card" class="p-3 bg-slate-950 border border-slate-900 rounded-xl flex items-center justify-between text-xs relative overflow-hidden">
-                            <div class="absolute left-0 top-0 h-full w-[2px] bg-blue-500"></div>
-                            <span id="poly-title" class="font-medium text-slate-300 pr-3 leading-snug">Loading predictive consensus stream...</span>
-                            <div class="bg-blue-950/60 border border-blue-500/30 text-blue-400 px-2.5 py-1.5 rounded-xl font-cyber font-black text-center min-w-[60px] shrink-0">
-                                <span id="poly-odds" class="text-sm tracking-tighter block">50%</span>
-                                <span class="text-[7px] block font-bold text-blue-500/70 tracking-widest mt-0.5">CHANCE</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
+        <div class="w-full bg-slate-950/90 border border-slate-800/80 rounded-2xl p-1.5 mb-3 overflow-hidden">
+            <div class="flex items-center text-[8px] font-mono tracking-wider font-extrabold text-cyan-400/80 px-2 border-b border-slate-900 pb-1 mb-1 justify-between">
+                <span>🟢 REAL-TIME BASE TRENDING TICKER</span>
+                <span class="text-slate-600 animate-pulse text-[7px]">Click Token to Scan</span>
             </div>
-
-            <div id="tab-wheel" class="tab-content hidden space-y-5">
-                
-                <div class="p-4 bg-gradient-to-br from-indigo-950/40 via-slate-950 to-slate-950 border border-indigo-500/20 rounded-2xl text-center space-y-1">
-                    <h2 class="text-base font-cyber font-black text-white tracking-widest">ARCH-ENERGY WHEEL</h2>
-                    <p class="text-[11px] text-slate-400 max-w-xs mx-auto leading-relaxed">
-                        Modulasi fluktuasi probabilitas kuantum harian untuk melipatgandakan kepemilikan poin siber Anda.
-                    </p>
+            <marquee id="live-ticker-marquee" direction="left" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();" class="whitespace-nowrap cursor-pointer">
+                <div id="live-ticker-inner-marquee" class="inline-flex items-center">
+                    <span class="text-slate-500 text-[10px] font-mono px-4 animate-pulse">🔮 Connecting node to Base matrix stream...</span>
                 </div>
+            </marquee>
+        </div>
 
-                <div class="flex flex-col items-center justify-center py-4 relative">
-                    <div class="w-0 h-0 border-l-[10px] border-l-transparent border-r-[10px] border-r-transparent border-t-[18px] border-t-cyan-400 absolute top-1 z-20 drop-shadow-[0_0_8px_#06b6d4]"></div>
-                    
-                    <div id="fortune-wheel-element" class="w-64 h-64 rounded-full border-4 border-slate-800 bg-slate-950 shadow-2xl shadow-indigo-950/50 relative overflow-hidden wheel-spin flex items-center justify-center">
-                        <div class="absolute inset-0 rounded-full opacity-25 bg-[conic-gradient(from_0deg,#06b6d4_0deg_45deg,#000_45deg_90deg,#8b5cf6_90deg_135deg,#000_135deg_180deg,#f43f5e_180deg_225deg,#000_225deg_270deg,#eab308_270deg_315deg,#000_315deg_360deg)]"></div>
-                        
-                        <div class="w-14 h-14 rounded-full bg-black border-2 border-cyan-500/40 z-10 flex items-center justify-center shadow-2xl">
-                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
-                        </div>
-                        
-                        <span class="absolute font-cyber font-black text-[11px] text-cyan-400 transform -translate-y-24 tracking-wide">10</span>
-                        <span class="absolute font-cyber font-black text-[11px] text-purple-400 transform translate-x-24 rotate-90 tracking-wide">50</span>
-                        <span class="absolute font-cyber font-black text-[11px] text-pink-400 transform translate-y-24 rotate-180 tracking-wide">25</span>
-                        <span class="absolute font-cyber font-black text-[11px] text-yellow-500 transform -translate-x-24 -rotate-90 tracking-wide">100</span>
+        <div class="flex items-center justify-between bg-slate-950/80 border border-slate-800 rounded-2xl p-2.5 mb-4 text-left">
+            <div class="font-mono text-[11px]">
+                <span class="text-slate-400 block">🔮 Your Aura Balance:</span>
+                <span id="aura-points-display" class="font-bold text-cyan-400 text-sm">0 AP</span>
+            </div>
+            <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md">
+                Claim Daily AP
+            </button>
+        </div>
+
+        <div class="mb-4 inline-block bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-amber-400">
+            🔥 Total Destiny NFTs Minted: <span id="mint-counter" class="font-bold text-white">1,482</span>
+        </div>
+
+        <div id="wallet-section" class="mb-4">
+            <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
+                <span>🔮</span> Connect Web3 Wallet
+            </button>
+        </div>
+
+        <div id="locked-state-view" class="py-10 px-4 border border-slate-800 border-dashed rounded-2xl space-y-3 bg-slate-950/40">
+            <div class="text-3xl animate-pulse">🔒</div>
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Locked</h4>
+            <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                Connect your secure wallet to synchronize on-chain metadata records, launch custom tokens, and view real-time calculations.
+            </p>
+        </div>
+
+        <div id="result-section" class="hidden text-center">
+
+            <div id="tab-oracle" class="tab-content space-y-5">
+                <p class="text-slate-400 text-[11px] italic px-2 leading-relaxed">
+                    "The true fate of your portfolio isn’t in the candles—it’s written in your hexadecimal identity hash sequence."
+                </p>
+
+                <div class="flex flex-col items-center">
+                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Card Destiny Matrix ✨</span>
+                    <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
+                        <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/10 shadow-inner"></canvas>
                     </div>
-
-                    <button onclick="spinFortuneWheel()" id="spin-btn" class="mt-8 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-cyber font-black text-xs px-10 py-3.5 rounded-xl transition shadow-xl shadow-indigo-950/60 tracking-widest active:scale-95">
-                        ENGAGE PROBABILITY
+                    <button onclick="executeRerollDestiny()" class="mt-3 bg-slate-950 border border-purple-500/40 hover:border-purple-400 text-purple-400 text-[10px] px-4 py-1.5 rounded-xl font-mono transition-all">
+                        🌀 Reroll Destiny Node (Costs 200 AP)
                     </button>
-                    <p id="wheel-status-msg" class="text-[10px] font-cyber text-slate-500 mt-3 tracking-widest uppercase">System Check: Ready to Core Deploy</p>
                 </div>
 
-                <div class="bg-slate-950 border border-slate-900 rounded-xl p-3 text-[11px] font-cyber flex justify-between items-center shadow-inner">
-                    <span class="text-slate-500 tracking-wider">CHRONO STREAK NODE:</span>
-                    <strong class="text-indigo-400 bg-indigo-950/30 border border-indigo-900 px-2.5 py-1 rounded-lg tracking-widest">🟢 03 CYCLES</strong>
+                <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 max-w-[295px] mx-auto space-y-2">
+                    <div class="text-[9px] font-mono text-slate-500 tracking-wider">📢 BROADCAST SIGNAL TO THE WORLD</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="share-x-btn" class="bg-black border border-slate-800 hover:border-slate-600 text-white text-[10px] py-2 px-1.5 rounded-lg font-mono flex items-center justify-center gap-1 transition-all">
+                            𝕏 Share on X
+                        </button>
+                        <button id="share-tg-btn" class="bg-sky-600/20 border border-sky-500/30 hover:bg-sky-600 text-sky-400 hover:text-white text-[10px] py-2 px-1.5 rounded-lg font-mono flex items-center justify-center gap-1 transition-all">
+                            ✈️ Telegram Channel
+                        </button>
+                    </div>
                 </div>
 
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-center max-w-[295px] mx-auto">
+                    <p class="text-[10px] font-mono text-slate-400 italic mb-3">Interact With Contract Matrix 👇</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="tip-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
+                            💸 Send 0.001 ETH
+                        </button>
+                        <button id="mint-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
+                            🪙 Claim Destiny NFT
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3 text-left">
+                    <div>
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
+                            <span>Degen Luck Alignment:</span>
+                            <span id="luck-score" class="text-blue-400">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                            <div id="luck-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000"></div>
+                        </div>
+                    </div>
+                    <div class="text-center text-[10px] text-slate-500 font-mono">
+                        Deterministic Seed Hex: <span id="seed-anchor" class="text-blue-400">#0000</span>
+                    </div>
+                </div>
+
+                <div id="polymarket-top-container" class="mt-4"></div>
+
+                <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3 text-left">
+                    <div>
+                        <h3 class="text-xs font-bold text-slate-200 tracking-wide">🔬 REAL-TIME INSTANT RADAR</h3>
+                        <p class="text-[10px] text-slate-400">Scan any token contract address inside Base Layer-2 network to parse live predictive parameters.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="external-target-input" placeholder="Paste contract address or ticker (e.g., BRETT)..." class="bg-slate-950 border border-slate-800 text-xs rounded-xl px-3 py-2 text-slate-200 focus:outline-none focus:border-cyan-500/50 flex-1 font-mono" />
+                        <button id="external-target-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap">Scan</button>
+                    </div>
+                    <div id="external-target-result" class="hidden mt-1"></div>
+                </div>
             </div>
 
-            <div id="tab-news" class="tab-content hidden space-y-4">
-                
-                <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-satellite-dish text-rose-500 text-xs animate-pulse"></i>
-                        <h3 class="text-[10px] font-cyber font-bold text-slate-400 tracking-widest uppercase">CRYPTOPANIC INTELLIGENCE STREAM</h3>
-                    </div>
-                    <span class="text-[8px] font-cyber font-black bg-rose-950/40 text-rose-400 border border-rose-900/40 px-2 py-0.5 rounded-full tracking-widest animate-pulse">LIVE FEED</span>
+            <div id="tab-glow" class="tab-content hidden space-y-4 text-center">
+                <h2 class="text-md font-bold uppercase tracking-wider text-cyan-400">✨ Aura Frame Customizer</h2>
+                <p class="text-xs text-slate-400">Modify your Destiny NFT card's border layout colors in real-time before initiating execution nodes.</p>
+                <div class="space-y-2.5 pt-2">
+                    <button onclick="applyGlow('neon')" class="w-full p-4 rounded-xl border border-cyan-500/20 bg-slate-950 hover:border-cyan-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-cyan-400">🔹 CYAN NEON PULSE</span>
+                        <div class="w-16 h-3.5 rounded-full bg-cyan-400"></div>
+                    </button>
+                    <button onclick="applyGlow('gold')" class="w-full p-4 rounded-xl border border-amber-500/20 bg-slate-950 hover:border-amber-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-amber-400">🔸 GOLD LUCK DESTINY</span>
+                        <div class="w-16 h-3.5 rounded-full bg-amber-500"></div>
+                    </button>
+                    <button onclick="applyGlow('matrix')" class="w-full p-4 rounded-xl border border-emerald-500/20 bg-slate-950 hover:border-emerald-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-emerald-400">🟢 MATRIX CYBER GREEN</span>
+                        <div class="w-16 h-3.5 rounded-full bg-emerald-500"></div>
+                    </button>
+                    <button onclick="applyGlow('rose')" class="w-full p-4 rounded-xl border border-rose-500/20 bg-slate-950 hover:border-rose-400 flex items-center justify-between transition-all font-mono text-xs">
+                        <span class="font-bold text-rose-400">🔴 RUBY VEIN PULSE</span>
+                        <div class="w-16 h-3.5 rounded-full bg-rose-500"></div>
+                    </button>
                 </div>
+            </div>
 
-                <div id="news-stream-container" class="space-y-3">
-                    <div class="py-16 text-center text-slate-600 text-xs font-cyber space-y-2 uppercase tracking-widest">
-                        <i class="fa-solid fa-gear animate-spin text-slate-500 text-lg"></i>
-                        <p class="text-[9px] animate-pulse mt-2">Connecting centralized ticker data channels...</p>
-                    </div>
+            <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
+                <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
+                <p class="text-xs text-slate-400">Spin the randomized index once every 24 hours to secure standard bonus Aura Points or luck multiplier rerolls.</p>
+                <div class="w-36 h-36 mx-auto rounded-full border-4 border-dashed border-purple-500 flex items-center justify-center relative bg-slate-950 shadow-lg">
+                    <div id="wheel-graphic" class="text-4xl transition-transform duration-1000">🔮</div>
+                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
                 </div>
+                <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl font-mono text-xs tracking-wider transition-all active:scale-95">
+                    🌀 SPIN THE WHEEL
+                </button>
+                <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-200 font-mono text-xs"></div>
+            </div>
 
+            <div id="tab-ranks" class="tab-content hidden space-y-4 text-center">
+                <h2 class="text-md font-bold uppercase tracking-wider text-yellow-500">🏆 Global Degen Leaderboard</h2>
+                <p class="text-xs text-slate-400">Public registry ranking on-chain wallet addresses holding top deterministic identity parameters.</p>
+                <div id="ranks-list-container" class="space-y-2 pt-2"></div>
             </div>
 
         </div>
 
-        <div class="absolute bottom-0 inset-x-0 bg-slate-950/90 border-t border-slate-900 p-2.5 grid grid-cols-3 gap-2 z-30 backdrop-blur-xl relative">
-            <div class="absolute top-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-purple-500/30 to-transparent w-full"></div>
-            
-            <button onclick="switchTab('tab-oracle')" id="btn-tab-oracle" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-purple-400 bg-purple-950/30 border border-purple-500/20 transition group active:scale-95">
-                <i class="fa-solid fa-crystal-ball text-sm mb-1 group-hover:scale-110 transition"></i>
-                <span class="text-[9px] font-cyber font-black tracking-widest uppercase">Oracle</span>
-            </button>
-            <button onclick="switchTab('tab-wheel')" id="btn-tab-wheel" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-slate-500 hover:text-slate-300 transition group active:scale-95">
-                <i class="fa-solid fa-circle-nodes text-sm mb-1 group-hover:rotate-90 transition duration-500"></i>
-                <span class="text-[9px] font-cyber font-black tracking-widest uppercase">Wheel</span>
-            </button>
-            <button onclick="switchTab('tab-news')" id="btn-tab-news" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-slate-500 hover:text-slate-300 transition group active:scale-95">
-                <i class="fa-solid fa-terminal text-sm mb-1 group-hover:translate-x-0.5 transition"></i>
-                <span class="text-[9px] font-cyber font-black tracking-widest uppercase">Alpha</span>
-            </button>
+        <div class="mt-5 border-t border-slate-800/60 pt-4">
+            <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="block bg-gradient-to-r from-slate-950 via-blue-950/20 to-slate-950 border border-slate-800/60 hover:border-blue-500/40 rounded-xl p-2.5 transition-all text-left relative overflow-hidden group">
+                <span class="absolute top-0 right-0 bg-blue-600/30 text-blue-400 text-[8px] px-1.5 py-0.5 rounded-bl font-mono tracking-widest uppercase font-bold">ECOSYSTEM</span>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-blue-600/10 rounded-lg flex items-center justify-center text-md group-hover:scale-110 transition-transform">🔵</div>
+                    <div>
+                        <h4 class="text-[11px] font-bold text-slate-200 group-hover:text-blue-400 transition-colors">Explore Base Mainnet</h4>
+                        <p class="text-[9px] text-slate-500">Low fees, builder-centric safety mechanics, and high-speed execution layers.</p>
+                    </div>
+                </div>
+            </a>
         </div>
 
     </div>
+
+    <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/40 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-2xl">
+        <button id="nav-oracle" onclick="navigate('oracle')" class="flex flex-col items-center text-blue-400 transition-all font-mono scale-105">
+            <span class="text-xl">🔮</span><span class="text-[10px] font-bold mt-0.5">Oracle</span>
+        </button>
+        <button id="nav-glow" onclick="navigate('glow')" class="flex flex-col items-center text-slate-500 hover:text-cyan-400 transition-all font-mono">
+            <span class="text-xl">✨</span><span class="text-[10px] font-bold mt-0.5">Glow</span>
+        </button>
+        <button id="nav-wheel" onclick="navigate('wheel')" class="flex flex-col items-center text-slate-500 hover:text-purple-400 transition-all font-mono">
+            <span class="text-xl">🎡</span><span class="text-[10px] font-bold mt-0.5">Wheel</span>
+        </button>
+        <button id="nav-ranks" onclick="navigate('ranks')" class="flex flex-col items-center text-slate-500 hover:text-yellow-400 transition-all font-mono">
+            <span class="text-xl">🏆</span><span class="text-[10px] font-bold mt-0.5">Ranks</span>
+        </button>
+    </div>
+
+    <footer class="mt-4 flex flex-col items-center gap-2 font-mono">
+        <div class="bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-full flex items-center gap-4 text-[10px]">
+            <div class="flex items-center gap-1.5 text-slate-400">
+                <span class="inline-block w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span>Dapp Status: <strong class="text-slate-200">Live</strong></span>
+            </div>
+            <div class="w-px h-3 bg-slate-800"></div>
+            <div class="text-blue-400">
+                📊 Node Global Views: <span id="view-counter" class="font-bold text-white">24,841</span>
+            </div>
+        </div>
+        <div class="text-[10px] text-slate-600 font-mono">Built on Base Architecture Matrix</div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
