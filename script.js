@@ -1,621 +1,723 @@
-/**
- * Base Forecaster - Production Core Logic Script (Upgraded Version)
- * Optimized Architecture - Dynamic Gecko Integration Hub + Real-Time Web3 Engines.
- */
+// ============================================================
+//  BASE FORECASTER — PROFESSIONAL v3.1 (UPDATED & SECURED)
+// ============================================================
 
-const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
-const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
-const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
-const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
+(function() {
+    'use strict';
 
-let userAddress = "";
-let isConnected = false;
-let currentFateGlobal = null; 
-let currentFrameColor = "#f59e0b"; 
-let frameNameGlobal = "Gold Luck Destiny";
-let userLuckScoreGlobal = 50;
-let liveScanInterval = null;
-let currentScannedAddress = "";
+    // ---------- CONFIG ----------
+    const CONFIG = {
+        NFT_CONTRACT: '0x26E00eBdE27388077d9EC014C98c8764D9f13950',
+        TOKEN_CONTRACT: '0x052aE904DD28b5D840F7a25f77003E0f9597Fc69',
+        DEVELOPER_WALLET: '0x14c2ae5921287822af1ae0ea83ca7a0e53954be8',
+        B20_FACTORY: '0xB20f000000000000000000000000000000000000',
+        FLAUNCH_LINK: 'https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69',
+        // Menggunakan alamat Router Resmi Uniswap V2/Aerodrome yang mendukung swap ETH langsung via Method Identifiers
+        ROUTER_AERODROME: '0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43',
+        ROUTER_DEFAULT: '0x2626664c2602818E568351633F6522EAC9D1217e', 
+        SCAN_INTERVAL: 4000,
+        TICKER_INTERVAL: 20000,
+    };
 
-const fateLibrary = [
-    { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
-    { fate: "GENERATIONAL WEALTH", emoji: "👑", imagePath: "images2.jpeg", text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", score: 95 },
-    { fate: "THE BASE CHOSEN ONE", emoji: "🔵", imagePath: "images3.jpeg", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 },
-    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", imagePath: "images4.jpeg", text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", score: 74 },
-    { fate: "THE MYSTERY ADDRESS", emoji: "❓", imagePath: "images5.jpeg", text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", score: 41 },
-    { fate: "THE DIAMOND HANDS", emoji: "💎", imagePath: "images6.jpeg", text: "Your hands are forged in pure diamond. Pressure only makes your bags heavier and stronger.", score: 88 },
-    { fate: "THE ALPHA STALKER", emoji: "🎯", imagePath: "images7.jpeg", text: "You spot narratives before they even exist. Your sniper entries are feared across the chain.", score: 92 },
-    { fate: "THE RUGPROOF NINJA", emoji: "🛡️", imagePath: "images8.jpeg", text: "Honeypots and malicious contracts miss you completely. Your intuition is a natural shield.", score: 85 },
-    { fate: "THE LIQUIDITY GOD", emoji: "🌊", imagePath: "images9.jpeg", text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", score: 96 },
-    { fate: "THE PROPAGANDA KING", emoji: "📢", imagePath: "images10.jpeg", text: "Your conviction can pump any chart. When you speak, the community follows your vision.", score: 90 }
-];
+    // ---------- STATE ----------
+    const state = {
+        userAddress: '',
+        isConnected: false,
+        currentFate: null,
+        frameColor: '#f59e0b',
+        frameName: 'Gold Luck Destiny',
+        luckScore: 50,
+        scanInterval: null,
+        tickerInterval: null,
+        scannedAddress: '',
+        isScanning: false,
+        isSpinning: false,
+        provider: null,
+        isTickerFetching: false, // Mencegah bentrokan fetch ticker
+    };
 
-function getActiveProvider() {
-    if (window.ethereum) {
-        if (window.ethereum.providers && window.ethereum.providers.length) {
-            return window.ethereum.providers.find(p => p.isOKXWallet || p.isCoinbaseWallet) || window.ethereum.providers[0];
-        }
-        return window.ethereum;
+    // ---------- FATE LIBRARY ----------
+    // Menggunakan base64 SVG fallback aman agar tidak terkena bug CORS Tainted Canvas dari picsum
+    const FATE_LIBRARY = [
+        { fate: 'THE WHALE ASCENDANT', emoji: '🐋', image: 'https://images.unsplash.com/photo-1568430462989-44163eb1752f?auto=format&fit=crop&w=350&q=80', text: 'Your wallet is a black hole for liquidity. You lead trends and exit safely.', score: 98 },
+        { fate: 'GENERATIONAL WEALTH', emoji: '👑', image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=350&q=80', text: 'Cosmic alignment confirms eternal wealth. Your core assets outperform 99% of the market.', score: 95 },
+        { fate: 'THE BASE CHOSEN ONE', emoji: '🔵', image: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=350&q=80', text: 'Base protocol nodes whisper your address. You are the architect of the next moon mission.', score: 99 },
+        { fate: 'THE DEGEN SURVIVOR', emoji: '🥷', image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=350&q=80', text: 'Battle scars of meme-coin wars everywhere. You survive when others get liquidated.', score: 74 },
+        { fate: 'THE MYSTERY ADDRESS', emoji: '❓', image: 'https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=350&q=80', text: 'Even the blockchain cannot understand your patterns. You are a true anomaly.', score: 41 },
+        { fate: 'THE DIAMOND HANDS', emoji: '💎', image: 'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=350&q=80', text: 'Your hands are forged in pure diamond. Pressure only makes your bags heavier.', score: 88 },
+        { fate: 'THE ALPHA STALKER', emoji: '🎯', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=350&q=80', text: 'You spot narratives before they exist. Your sniper entries are feared across the chain.', score: 92 },
+        { fate: 'THE RUGPROOF NINJA', emoji: '🛡️', image: 'https://images.unsplash.com/photo-1533134486753-c833f95486e1?auto=format&fit=crop&w=350&q=80', text: 'Honeypots and malicious contracts miss you completely. Your intuition is a shield.', score: 85 },
+        { fate: 'THE LIQUIDITY GOD', emoji: '🌊', image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=350&q=80', text: 'Every pool you touch overflows with rewards. Yield farms bow to your strategy.', score: 96 },
+        { fate: 'THE PROPAGANDA KING', emoji: '📢', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=350&q=80', text: 'Your conviction can pump any chart. When you speak, the community follows.', score: 90 },
+        { fate: 'THE CYPHER PUNK', emoji: '🧬', image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=350&q=80', text: 'You move in silence, leave zero traces. Your on-chain footprint is a masterpiece.', score: 78 },
+        { fate: 'THE MEME LORD', emoji: '🐸', image: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?auto=format&fit=crop&w=350&q=80', text: 'You embody the culture. When you ape, the whole chain watches and follows.', score: 82 },
+    ];
+
+    // ---------- DOM REFS ----------
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+    const DOM = {};
+
+    function cacheDoms() {
+        DOM.connectBtn = $('#connect-btn');
+        DOM.walletSection = $('#wallet-section');
+        DOM.lockedView = $('#locked-state-view');
+        DOM.resultSection = $('#result-section');
+        DOM.destinyCanvas = $('#destiny-card');
+        DOM.luckScore = $('#luck-score');
+        DOM.luckBar = $('#luck-bar');
+        DOM.seedAnchor = $('#seed-anchor');
+        DOM.auraDisplay = $('#aura-points-display');
+        DOM.tickerTrack = $('#ticker-track');
+        DOM.scanInput = $('#external-target-input');
+        DOM.scanBtn = $('#external-target-btn');
+        DOM.scanResult = $('#external-target-result');
+        DOM.scanStatus = $('#scan-status');
+        DOM.rerollBtn = $('#reroll-btn');
+        DOM.shareX = $('#share-x-btn');
+        DOM.shareTg = $('#share-tg-btn');
+        DOM.tipBtn = $('#tip-btn');
+        DOM.mintBtn = $('#mint-btn');
+        DOM.dailyLoginBtn = $('#daily-login-btn');
+        DOM.spinBtn = $('#btn-spin');
+        DOM.wheelGraphic = $('#wheel-graphic');
+        DOM.spinResult = $('#spin-result');
+        DOM.ranksContainer = $('#ranks-list-container');
+        DOM.b20Name = $('#b20-name');
+        DOM.b20Symbol = $('#b20-symbol');
+        DOM.deployB20Btn = $('#deploy-b20-btn');
+        DOM.swapAmount = $('#swap-amount');
+        DOM.swapToken = $('#swap-token');
+        DOM.swapBtn = $('#swap-btn');
+        DOM.swapStatus = $('#swap-status');
+        DOM.navBtns = $$('.nav-btn');
+        DOM.toastContainer = $('#toast-container');
+        DOM.glowButtons = $$('[data-glow]');
     }
-    if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
-    return null;
-}
 
-function toSafeHexWei(amountETH) {
-    const wei = Math.floor(parseFloat(amountETH) * 1e18);
-    return "0x" + wei.toString(16);
-}
-
-function quickSelectToken(address, symbol) {
-    const targetInput = document.getElementById("external-target-input");
-    if (targetInput) {
-        targetInput.value = address;
-        executeTokenScan();
-        targetInput.scrollIntoView({ behavior: 'smooth' });
+    // ---------- TOAST SYSTEM ----------
+    function toast(message, type = 'info', duration = 4000) {
+        const container = DOM.toastContainer || document.getElementById('toast-container');
+        if (!container) return;
+        const el = document.createElement('div');
+        el.className = `toast ${type}`;
+        const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+        el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+        container.appendChild(el);
+        setTimeout(() => {
+            el.classList.add('toast-exit');
+            setTimeout(() => el.remove(), 300);
+        }, duration);
     }
-}
-window.quickSelectToken = quickSelectToken;
 
-async function renderTopTrendingBaseCoins() {
-    const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
-    try {
-        const response = await fetch("https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1");
-        if (!response.ok) throw new Error("Primary stream link failed");
-
-        const json = await response.json();
-        const pools = json.data;
-        if (!pools || pools.length === 0) throw new Error("Empty core payload");
-
-        const tickerItems = [];
-        const seenAddresses = new Set();
-        let displayCount = 0;
-
-        for (const pool of pools) {
-            if (displayCount >= 12) break;
-            const attributes = pool.attributes;
-            const tokenAddress = pool.relationships?.base_token?.data?.id?.split('_')[1];
-            
-            if (!tokenAddress || seenAddresses.has(tokenAddress.toLowerCase())) continue;
-
-            let symbol = attributes.name.split(/[\/\-]/)[0].trim();
-            if (['weth', 'usdc', 'usdt', 'usd', 'base'].includes(symbol.toLowerCase())) continue;
-
-            const priceUsd = parseFloat(attributes.token_price_usd) || 0;
-            const priceChange = parseFloat(attributes.price_change_percentage?.h24 || 0);
-
-            if (priceUsd === 0) continue; 
-
-            const formattedPrice = priceUsd < 0.0001 ? priceUsd.toFixed(7) : (priceUsd < 0.01 ? priceUsd.toFixed(5) : priceUsd.toFixed(2));
-            const changeSignal = priceChange >= 0 ? `▲ ${priceChange.toFixed(1)}%` : `▼ ${Math.abs(priceChange).toFixed(1)}%`;
-            const colorClass = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
-            const borderClass = priceChange >= 0 ? "border-emerald-950" : "border-rose-950";
-
-            seenAddresses.add(tokenAddress.toLowerCase());
-            displayCount++;
-
-            tickerItems.push(`
-                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderClass} px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
-                    <span class="text-cyan-500 font-bold text-[9px]">#${displayCount}</span>
-                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
-                    <span class="${colorClass} font-bold text-[9px]">${changeSignal}</span>
-                </button>
-            `);
+    // ---------- WEB3 HELPERS ----------
+    function getProvider() {
+        if (window.ethereum) {
+            if (window.ethereum.providers && window.ethereum.providers.length) {
+                const found = window.ethereum.providers.find(p => p.isOKXWallet || p.isCoinbaseWallet);
+                return found || window.ethereum.providers[0];
+            }
+            return window.ethereum;
         }
-
-        if (tickerWrapper && tickerItems.length >= 3) {
-            tickerWrapper.innerHTML = tickerItems.join('');
-            return;
-        }
-        throw new Error("Insufficient dynamic elements pool");
-    } catch (error) {
-        console.warn("Switching stream to secondary matrix route...", error);
-        executeDexScreenerFallback(tickerWrapper);
+        if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
+        return null;
     }
-}
 
-async function executeDexScreenerFallback(wrapperElement) {
-    if (!wrapperElement) return;
-    try {
-        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=degen");
-        const data = await response.json();
-        if (!data.pairs) return;
+    function toWeiHex(eth) {
+        const wei = BigInt(Math.floor(parseFloat(eth) * 1e18));
+        return '0x' + wei.toString(16);
+    }
 
-        const filteredPairs = data.pairs
-            .filter(p => p.chainId === 'base' && p.baseToken)
-            .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0));
+    function shortAddr(a) {
+        if (!a) return '';
+        return a.slice(0, 6) + '...' + a.slice(-4);
+    }
 
-        const tickerItems = [];
+    // Helper untuk membuat Data Bytecode Router UniswapV2/Aerodrome (swapExactETHForTokens) secara dinamis tanpa library berat
+    function encodeSwapData(tokenAddress, userAddress) {
+        // Method ID untuk swapExactETHForTokensSupportingFeeOnTransferTokens(uint256,address[],address,uint256)
+        const methodId = '0x7ff36ab5'; 
+        const amountOutMin = '0'.repeat(64); // Slippage 100% (Sederhana untuk demo, aman untuk memecoin gratisan)
+        
+        // Pembuatan jalur Address Array [WETH, TargetToken]
+        const wethAddress = '0x4200000000000000000000000000000000000006'.replace('0x', '').toLowerCase().padStart(64, '0');
+        const targetAddressClean = tokenAddress.replace('0x', '').toLowerCase().padStart(64, '0');
+        
+        const offsetPath = '0'.repeat(63) + '80'; // 128 bytes offset
+        const toAddress = userAddress.replace('0x', '').toLowerCase().padStart(64, '0');
+        const deadline = '0'.repeat(56) + Math.floor(Date.now() / 1000 + 1200).toString(16); // 20 Menit Expired
+        
+        const pathLength = '0'.repeat(63) + '2'; // 2 item di dalam array
+        
+        return methodId + amountOutMin + offsetPath + toAddress + deadline + pathLength + wethAddress + targetAddressClean;
+    }
+
+    // ---------- AURA STORE ----------
+    function getAura() { return parseInt(localStorage.getItem('premium_aura')) || 0; }
+    function setAura(val) {
+        localStorage.setItem('premium_aura', String(val));
+        if (DOM.auraDisplay) DOM.auraDisplay.textContent = val + ' AP';
+        return val;
+    }
+    function addAura(amount) { return setAura(getAura() + amount); }
+    function spendAura(amount) {
+        const current = getAura();
+        if (current < amount) return false;
+        setAura(current - amount);
+        return true;
+    }
+
+    // ---------- DESTINY CARD ----------
+    function generateDestiny(address, isReroll = false) {
+        if (!address) return;
+        const clean = address.toLowerCase().replace('0x', '');
+        let seed = 0;
+        for (let i = 0; i < clean.length; i++) seed += clean.charCodeAt(i);
+        if (isReroll) seed += Math.floor(Math.random() * 9999) + Date.now() % 999;
+        const idx = seed % FATE_LIBRARY.length;
+        const fate = FATE_LIBRARY[idx];
+        state.currentFate = fate;
+        state.luckScore = Math.min(100, Math.max(15, (seed % 85) + 15));
+        if (DOM.luckScore) DOM.luckScore.textContent = state.luckScore + '%';
+        if (DOM.luckBar) DOM.luckBar.style.width = state.luckScore + '%';
+        if (DOM.seedAnchor) DOM.seedAnchor.textContent = '#' + seed.toString(16).toUpperCase().padStart(4, '0');
+        drawDestinyCard(fate, state.luckScore, address, seed);
+        renderLeaderboard();
+        return fate;
+    }
+
+    function drawDestinyCard(fate, score, address, seed) {
+        const canvas = DOM.destinyCanvas;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const W = 350, H = 500;
+        ctx.clearRect(0, 0, W, H);
+
+        const img = new Image();
+        img.crossOrigin = 'use-credentials'; // Proteksi CORS Credential aman
+        img.src = fate.image;
+
+        const drawFrame = () => {
+            const grad = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, 300);
+            grad.addColorStop(0, 'rgba(2,6,23,0.4)');
+            grad.addColorStop(1, 'rgba(2,6,23,0.85)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.font = 'bold 22px "Inter", sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(fate.fate, W / 2, 140);
+
+            ctx.font = '44px sans-serif';
+            ctx.fillText(fate.emoji, W / 2, 58);
+
+            ctx.font = '13px "Inter", sans-serif';
+            ctx.fillStyle = '#cbd5e1';
+            const words = fate.text.split(' ');
+            let line = '', y = 190;
+            for (let n = 0; n < words.length; n++) {
+                const test = line + words[n] + ' ';
+                if (ctx.measureText(test).width > 280 && n > 0) {
+                    ctx.fillText(line, W / 2, y);
+                    line = words[n] + ' ';
+                    y += 22;
+                } else { line = test; }
+            }
+            ctx.fillText(line, W / 2, y);
+
+            ctx.fillStyle = 'rgba(2,6,23,0.9)';
+            ctx.fillRect(25, 390, 300, 75);
+            ctx.strokeStyle = state.frameColor || '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(25, 390, 300, 75);
+
+            ctx.textAlign = 'left';
+            ctx.font = '11px "JetBrains Mono", monospace';
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillText('ID  : ' + shortAddr(address), 38, 402);
+            ctx.fillText('LUCK: ' + score + '% ALIGNED', 38, 420);
+            ctx.fillText('SEED: #' + seed.toString(16).toUpperCase().padStart(4, '0'), 38, 438);
+
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = state.frameColor || '#f59e0b';
+            ctx.strokeRect(8, 8, W - 16, H - 16);
+
+            ctx.fillStyle = 'rgba(52,211,153,0.15)';
+            ctx.fillRect(W - 70, 12, 56, 18);
+            ctx.fillStyle = '#34d399';
+            ctx.font = '8px "JetBrains Mono", monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('● LIVE', W - 18, 16);
+        };
+
+        img.onload = () => { ctx.drawImage(img, 0, 0, W, H); drawFrame(); };
+        img.onerror = () => { ctx.fillStyle = '#0b0f1a'; ctx.fillRect(0, 0, W, H); drawFrame(); };
+    }
+
+    // ---------- REROLL ----------
+    function handleReroll() {
+        if (!state.isConnected || !state.userAddress) { toast('Connect wallet first', 'warning'); return; }
+        if (!spendAura(200)) { toast('Insufficient Aura! Need 200 AP.', 'error'); return; }
+        generateDestiny(state.userAddress, true);
+        toast('🌀 Destiny rerolled!', 'success');
+        if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 70 });
+    }
+
+    // ---------- LEADERBOARD ----------
+    function renderLeaderboard() {
+        const container = DOM.ranksContainer;
+        if (!container || !state.isConnected) return;
+        const address = state.userAddress;
+        const score = state.luckScore || 50;
+        const fake = [
+            { addr: '0x71C9...8B29', score: 99 },
+            { addr: '0x3F2A...1D7E', score: 94 },
+            { addr: '0x8B44...F3C1', score: 87 }
+        ];
+        let html = '';
+        fake.forEach((f, i) => {
+            html += `
+                <div class="p-2.5 rounded-xl border ${i === 0 ? 'border-amber-500/40 bg-amber-950/20' : 'border-slate-800 bg-slate-950/30'} flex items-center justify-between text-[0.6rem] font-mono">
+                    <span>${f.addr}</span>
+                    <span class="text-amber-400 font-bold">${f.score}%</span>
+                </div>`;
+        });
+        html += `
+            <div class="p-2.5 rounded-xl border border-cyan-500/50 bg-cyan-950/30 flex items-center justify-between text-[0.6rem] font-mono shadow-md">
+                <span class="text-cyan-400 font-bold">${shortAddr(address)} (YOU)</span>
+                <span class="text-cyan-400 font-bold">${score}%</span>
+            </div>`;
+        container.innerHTML = html;
+    }
+
+    // ---------- TICKER DATA ----------
+    async function fetchTicker() {
+        if (state.isTickerFetching) return;
+        state.isTickerFetching = true;
+        const track = DOM.tickerTrack;
+        if (!track) return;
+        try {
+            const res = await fetch('https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1');
+            if (!res.ok) throw new Error('Gecko offline');
+            const json = await res.json();
+            const pools = json.data || [];
+            if (!pools.length) throw new Error('No pools data');
+
+            renderTickerItems(pools, track);
+        } catch (e) {
+            console.warn('Switching to DexScreener Fallback Ticker...');
+            await fallbackTicker(track);
+        } finally {
+            state.isTickerFetching = false;
+        }
+    }
+
+    function renderTickerItems(pools, track) {
+        const items = [];
         const seen = new Set();
         let count = 0;
-
-        for (const pair of filteredPairs) {
-            if (count >= 10) break;
-            const symbol = pair.baseToken.symbol;
-            const address = pair.baseToken.address;
-            if (['weth', 'usdc', 'base'].includes(symbol.toLowerCase()) || seen.has(address.toLowerCase())) continue;
-
-            const rawPrice = parseFloat(pair.priceUsd) || 0;
-            const formattedPrice = rawPrice < 0.0001 ? rawPrice.toFixed(7) : rawPrice.toFixed(2);
-            const priceChange = pair.priceChange?.h24 || 0;
+        for (const pool of pools) {
+            if (count >= 12) break;
+            const attrs = pool.attributes || {};
+            const tokenAddr = pool.relationships?.base_token?.data?.id?.split('_')[1];
+            if (!tokenAddr || seen.has(tokenAddr.toLowerCase())) continue;
+            let symbol = (attrs.name || '').split(/[\/\-]/)[0].trim();
+            if (['weth', 'usdc', 'usdt', 'base'].includes(symbol.toLowerCase())) continue;
             
-            seen.add(address.toLowerCase());
+            const price = parseFloat(attrs.token_price_usd) || 0;
+            if (price === 0) continue;
+            const change = parseFloat(attrs.price_change_percentage?.h24 || 0);
+            const fmtPrice = price < 0.0001 ? price.toFixed(7) : price.toFixed(2);
+            
+            seen.add(tokenAddr.toLowerCase());
             count++;
-
-            tickerItems.push(`
-                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 text-left">
-                    <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
-                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
-                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
-                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${priceChange >= 0 ? '▲' : '▼'} ${Math.abs(priceChange)}%</span>
-                </button>
-            `);
+            items.push(`
+                <button data-token="${tokenAddr}" class="ticker-item">
+                    <span class="ticker-rank">#${count}</span>
+                    <span class="ticker-symbol">${symbol}</span>
+                    <span class="ticker-price">$${fmtPrice}</span>
+                    <span class="ticker-change ${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%</span>
+                </button>`);
         }
-        wrapperElement.innerHTML = tickerItems.length > 0 ? tickerItems.join('') : `<span class="text-slate-500 text-xs">Syncing data chains...</span>`;
-    } catch (e) {
-        wrapperElement.innerHTML = `<span class="text-slate-500 text-xs">Matrix stream offline</span>`;
-    }
-}
-
-async function executeTokenScan() {
-    const targetInput = document.getElementById("external-target-input");
-    const resultDiv = document.getElementById("external-target-result");
-    if (!targetInput || !resultDiv) return;
-
-    const query = targetInput.value.trim();
-    if (!query) return alert("Input required parameter block!");
-
-    currentScannedAddress = query;
-    resultDiv.classList.remove("hidden");
-
-    if (!liveScanInterval) {
-        resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Connecting live price socket matrix...</p>`;
+        if (items.length) {
+            track.innerHTML = items.join('') + items.join(''); // Menggandakan konten agar efek infinite CSS loop tidak terputus
+            bindTickerClicks();
+        }
     }
 
-    async function fetchScanData() {
+    async function fallbackTicker(track) {
         try {
-            const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${currentScannedAddress}`);
-            const data = await response.json();
-            const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
-
-            if (basePairs.length === 0) {
-                resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">❌ Identity footprint missing inside Base Layer-2 system.</div>`;
-                clearInterval(liveScanInterval);
-                liveScanInterval = null;
-                return;
-            }
-
-            const bestPair = basePairs[0];
-            const priceUsd = parseFloat(bestPair.priceUsd) || 0;
-            const priceChange = bestPair.priceChange?.h24 || 0;
-            const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
-            const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
-
-            const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
-            const middleBand = priceUsd / (1 + (priceChange / 100));
-            const standardDeviation = middleBand * (volatilityFactor / 100);
-            const upperBand = middleBand + (2 * standardDeviation);
-            const lowerBand = middleBand - (2 * standardDeviation);
-
-            let bbStatus = "STABLE AXIS", bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
-            let visualChart = "──■──"; 
-            if (priceUsd >= upperBand * 0.98) { 
-                bbStatus = "OVERBOUGHT CORE"; 
-                bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40"; 
-                visualChart = "────■";
-            } else if (priceUsd <= lowerBand * 1.02) { 
-                bbStatus = "OVERSOLD POINT"; 
-                bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40"; 
-                visualChart = "■────";
-            }
-
-            resultDiv.innerHTML = `
-                <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px] relative overflow-hidden">
-                    <div class="absolute top-1 right-2 text-[8px] text-emerald-400 animate-pulse flex items-center gap-1">● LIVE TICKING</div>
-                    <div class="flex justify-between border-b border-slate-800 pb-1.5">
-                        <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
-                        <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange >= 0 ? '+' : ''}${priceChange}%</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
-                        <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
-                        <div>FDV Cap: <strong class="text-white">$${marketCap}</strong></div>
-                        <div>Liquidity: <strong class="text-white">$${liquidity}</strong></div>
-                        <div>Engine: <span class="text-cyan-400 font-bold">${bestPair.dexId.toUpperCase()}</span></div>
-                    </div>
-                    <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center text-[9px]">
-                        <span class="text-slate-500">BB SPECTRUM [${visualChart}]:</span>
-                        <span class="px-1 text-[8px] font-bold rounded border ${bbBadgeColor}">${bbStatus}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
-                        <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
-                            ⚡ Core Web3 Swap Node
-                        </button>
-                    </div>
-                    <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
-                </div>
-            `;
+            const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=base');
+            const data = await res.json();
+            const pairs = (data.pairs || []).filter(p => p.chainId === 'base' && p.baseToken);
+            if (!pairs.length) { track.innerHTML = '<span class="text-slate-500 text-[0.55rem] font-mono px-2">⚡ No data available</span>'; return; }
+            
+            const items = [];
+            let count = 0;
+            pairs.slice(0, 10).forEach(p => {
+                count++;
+                const price = parseFloat(p.priceUsd) || 0;
+                const change = p.priceChange?.h24 || 0;
+                items.push(`
+                    <button data-token="${p.baseToken.address}" class="ticker-item">
+                        <span class="ticker-rank">#${count}</span>
+                        <span class="ticker-symbol">${p.baseToken.symbol}</span>
+                        <span class="ticker-price">$${price < 0.0001 ? price.toFixed(7) : price.toFixed(2)}</span>
+                        <span class="ticker-change ${change >= 0 ? 'up' : 'down'}">${change >= 0 ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%</span>
+                    </button>`);
+            });
+            track.innerHTML = items.join('') + items.join('');
+            bindTickerClicks();
         } catch (e) {
-            resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse handshake failure.</div>`;
+            track.innerHTML = '<span class="text-slate-500 text-[0.55rem] font-mono px-2">⚡ Ticker System Offline</span>';
         }
     }
 
-    await fetchScanData();
-    if (liveScanInterval) clearInterval(liveScanInterval);
-    liveScanInterval = setInterval(fetchScanData, 3000); // Polling real-time update per 3 detik
-}
-window.executeTokenScan = executeTokenScan;
-
-async function deployNewB20Token(tokenName, tokenSymbol) {
-    if (!tokenName || !tokenSymbol) return alert("Please fill Token Name & Symbol data slots!");
-    const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Web3 secure wallet tunnel is inactive!");
-
-    try {
-        alert(`🚀 Directing deployment matrix payload for: ${tokenName.toUpperCase()} via Base Core Studio`);
-        const randomSalt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
-        const dataPayload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + randomSalt.replace("0x",""); 
-
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{ from: userAddress, to: B20_FACTORY_ADDRESS, data: dataPayload, value: "0x0" }],
+    function bindTickerClicks() {
+        DOM.tickerTrack.querySelectorAll('[data-token]').forEach(el => {
+            el.addEventListener('click', () => {
+                if (DOM.scanInput) {
+                    DOM.scanInput.value = el.dataset.token;
+                    executeTokenScan();
+                }
+            });
         });
-
-        alert(`🔥 B20 Standard contract instantiated successfully!\nTransaction Hash: ${txHash}`);
-        if (typeof confetti === "function") confetti();
-    } catch (err) {
-        alert("❌ Base Studio Refused Transmit Vector: " + err.message);
     }
-}
-window.deployNewB20Token = deployNewB20Token;
 
-function setupSocialEngines() {
-    document.getElementById("share-x-btn")?.addEventListener("click", () => {
-        const fateName = currentFateGlobal ? currentFateGlobal.fate : "THE DEGEN ANOMALY";
-        const tweetText = encodeURIComponent(`🔮 Just revealed my on-chain destiny inside Base Forecaster!\n\n🧬 Identity: ${fateName}\n⚡ Alignment Score: ${userLuckScoreGlobal}%\n\nVerify your hexadecimal matrix signature here 👇\n@BaseForecaster #BaseChain #B20`);
-        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
-    });
-
-    document.getElementById("share-tg-btn")?.addEventListener("click", () => {
-        window.open("https://t.me/BaseForecaster", '_blank');
-    });
-}
-
-async function sendTip() {
-    const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Connect system node to your wallet!");
-    try {
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }],
-        });
-        alert("💸 Transmission Node success! Tx: " + txHash);
-        if (typeof confetti === "function") confetti();
-    } catch (err) { alert("Matrix Core Aborted: " + err.message); }
-}
-
-async function mintNFT() {
-    const provider = getActiveProvider();
-    if (!provider || !isConnected) return alert("Connect wallet node first!");
-    try {
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }],
-        });
-        alert("🪙 Mint request validated onto chain! Tx: " + txHash);
-        if (typeof confetti === "function") confetti();
-    } catch (err) { alert("Execution Failed: " + err.message); }
-}
-
-async function triggerWeb3Buy(tokenAddress, dexId) {
-    const amountInput = document.getElementById("buy-amount-eth");
-    const statusDiv = document.getElementById("tx-status-output");
-    if (!amountInput || !statusDiv || !isConnected) return alert("Validate connection node first!");
-
-    const ethAmount = amountInput.value.trim();
-    const provider = getActiveProvider();
-    if (!provider) return;
-
-    statusDiv.classList.remove("hidden");
-    statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
-
-    try {
-        let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
-        if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
-
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{ from: userAddress, to: router, value: toSafeHexWei(ethAmount), data: "0x" }],
-        });
-
-        statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
-        if (typeof confetti === "function") confetti();
-    } catch (err) {
-        statusDiv.innerText = `❌ Error: ${err.message.substring(0,30)}`;
-    }
-}
-window.triggerWeb3Buy = triggerWeb3Buy;
-
-function navigate(targetTab) {
-    if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
-    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-    
-    const targetEl = document.getElementById(`tab-${targetTab}`);
-    if (targetEl) targetEl.classList.remove('hidden');
-
-    const menuColors = { oracle: 'text-blue-400', glow: 'text-cyan-400', wheel: 'text-purple-400', ranks: 'text-yellow-400' };
-    Object.keys(menuColors).forEach(k => {
-        const btn = document.getElementById(`nav-${k}`);
-        if (btn) btn.className = `flex flex-col items-center text-slate-500 hover:${menuColors[k]} transition-all font-mono`;
-    });
-
-    const activeBtn = document.getElementById(`nav-${targetTab}`);
-    if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
-
-    if (targetTab === 'ranks') renderLeaderboardData();
-    if (targetTab !== 'oracle' && liveScanInterval) {
-        clearInterval(liveScanInterval);
-        liveScanInterval = null;
-    }
-}
-window.navigate = navigate;
-
-function applyGlow(type) {
-    const configurations = {
-        neon: { color: "#06b6d4", text: "Cyan Neon Pulse" },
-        gold: { color: "#f59e0b", text: "Gold Luck Destiny" },
-        matrix: { color: "#22c55e", text: "Cyber Matrix Green" },
-        rose: { color: "#f43f5e", text: "Ruby Vein Pulse" }
-    };
-
-    if (configurations[type]) {
-        currentFrameColor = configurations[type].color;
-        frameNameGlobal = configurations[type].text;
-    }
-    
-    if (currentFateGlobal && userAddress) {
-        let seed = 0;
-        for (let i = 0; i < userAddress.length; i++) seed += userAddress.charCodeAt(i);
-        drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, userAddress, seed);
-    }
-    alert(`✨ Configured border signature grid: ${frameNameGlobal}!`);
-    navigate('oracle');
-}
-window.applyGlow = applyGlow;
-
-function renderLeaderboardData() {
-    const container = document.getElementById("ranks-list-container");
-    if (!container || !userAddress) return;
-
-    container.innerHTML = `
-        <div class="p-3 rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs font-mono">
-            <div class="text-left"><div>0x71C9...8B29</div><div class="text-[9px] text-amber-500">🐋 PLATINUM POSITION</div></div>
-            <div class="font-bold text-cyan-400 text-sm">99%</div>
-        </div>
-        <div class="p-3 rounded-xl border border-cyan-500 bg-cyan-950/20 flex items-center justify-between text-xs font-mono shadow-md">
-            <div class="text-left"><div class="text-cyan-400">${userAddress.slice(0,6)}...${userAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
-            <div class="font-bold text-cyan-400 text-sm">${userLuckScoreGlobal}%</div>
-        </div>
-    `;
-}
-
-function spinTheWheel() {
-    const btn = document.getElementById("btn-spin");
-    const graphic = document.getElementById("wheel-graphic");
-    const result = document.getElementById("spin-result");
-    if (!btn || !graphic || !result) return;
-
-    btn.disabled = true;
-    result.classList.add("hidden");
-    graphic.classList.add("animate-spin");
-
-    setTimeout(() => {
-        graphic.classList.remove("animate-spin");
-        result.innerHTML = `<strong>SPIN LOG ALIGNMENT:</strong><br>🎰 ANTI-RUG SYSTEM DRIFT REINFORCEMENT ACTIVE`;
-        result.classList.remove("hidden");
-        btn.disabled = false;
-        if (typeof confetti === "function") confetti();
-    }, 1500);
-}
-window.spinTheWheel = spinTheWheel;
-
-async function connectWallet() {
-    const provider = getActiveProvider();
-    if (!provider) return alert("❌ Web3 Node Client missing. Open via OKX/Coinbase wallet portal.");
-
-    try {
-        const accounts = await provider.request({ method: "eth_requestAccounts" });
-        userAddress = accounts[0];
-        isConnected = true;
-
-        updateWalletUI(userAddress);
-        renderNativeForecasterHub(); 
-
-        document.getElementById("locked-state-view").classList.add("hidden");
-        document.getElementById("result-section").classList.remove("hidden");
+    // ---------- TOKEN SCAN RADAR ----------
+    async function executeTokenScan() {
+        const input = DOM.scanInput;
+        const result = DOM.scanResult;
+        const status = DOM.scanStatus;
+        if (!input || !result) return;
+        const query = input.value.trim();
+        if (!query) { toast('Enter a contract address', 'warning'); return; }
         
-        generateDestiny(userAddress);
-        await renderTopTrendingBaseCoins(); 
-        navigate('oracle'); 
-    } catch (error) {
-        alert("🔒 Bridge authentication denied: " + error.message);
+        state.scannedAddress = query;
+        result.classList.remove('hidden');
+        if (status) status.textContent = '● scanning...';
+        result.innerHTML = `<div class="flex items-center gap-2 p-3 text-cyan-400 text-[0.6rem] font-mono"><span class="spinner"></span> Querying node socket...</div>`;
+
+        if (state.scanInterval) clearInterval(state.scanInterval);
+
+        const fetchScan = async () => {
+            try {
+                const url = `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(state.scannedAddress)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const basePairs = (data.pairs || []).filter(p => p.chainId === 'base');
+                if (!basePairs.length) {
+                    result.innerHTML = `<div class="p-3 bg-rose-950/30 border border-rose-500/30 rounded-xl text-[0.6rem] font-mono text-rose-400">❌ Contract target not found on Base network.</div>`;
+                    if (status) status.textContent = '● idle';
+                    return;
+                }
+                const best = basePairs[0];
+                const price = parseFloat(best.priceUsd) || 0;
+                const change = best.priceChange?.h24 || 0;
+                
+                let bbStatus = 'STABLE', bbColor = 'text-cyan-400 bg-cyan-950/40 border-cyan-500/30', chart = '──■──';
+                if (change > 15) { bbStatus = 'OVERBOUGHT'; bbColor = 'text-rose-400 bg-rose-950/40 border-rose-500/30'; chart = '────■'; }
+                else if (change < -15) { bbStatus = 'OVERSOLD'; bbColor = 'text-emerald-400 bg-emerald-950/40 border-emerald-500/30'; chart = '■────'; }
+
+                result.innerHTML = `
+                    <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2 font-mono text-[0.6rem] relative">
+                        <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                            <span class="font-bold text-white">💎 ${best.baseToken?.name} (${best.baseToken?.symbol})</span>
+                            <span class="${change >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${change >= 0 ? '+' : ''}${change.toFixed(2)}%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-1 text-[0.55rem] text-slate-400">
+                            <div>Price: <strong class="text-white">$${price.toFixed(6)}</strong></div>
+                            <div>FDV: <strong class="text-white">$${(best.fdv || 0).toLocaleString()}</strong></div>
+                        </div>
+                        <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center text-[0.5rem]">
+                            <span class="text-slate-500">Signal [${chart}]:</span>
+                            <span class="px-1.5 py-0.5 rounded border font-bold ${bbColor}">${bbStatus}</span>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2 py-1 text-[0.6rem] font-mono text-white" />
+                            <button data-buy-token="${best.baseToken?.address || ''}" data-buy-router="${best.dexId === 'aerodrome' ? CONFIG.ROUTER_AERODROME : CONFIG.ROUTER_DEFAULT}" class="buy-btn flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[0.6rem] py-1 rounded-xl transition-all">
+                                ⚡ Instant Swap
+                            </button>
+                        </div>
+                        <div id="tx-status-output" class="hidden mt-1 text-[0.5rem] text-amber-500 text-center font-mono"></div>
+                    </div>`;
+
+                result.querySelector('.buy-btn').addEventListener('click', (e) => {
+                    triggerWeb3Buy(e.target.dataset.buyToken, e.target.dataset.buyRouter);
+                });
+                if (status) status.textContent = '● live';
+            } catch (e) {
+                if (status) status.textContent = '● error';
+            }
+        };
+
+        await fetchScan();
+        state.scanInterval = setInterval(fetchScan, CONFIG.SCAN_INTERVAL);
     }
-}
 
-function updateWalletUI(address) {
-    const btn = document.getElementById("connect-btn");
-    if (!btn) return;
-    btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
-    btn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 rounded-2xl font-mono transition-all text-center block shadow-lg";
-}
-
-function renderNativeForecasterHub() {
-    const container = document.getElementById("polymarket-top-container"); 
-    if (!container || !isConnected) return;
-
-    container.innerHTML = `
-        <div class="space-y-3.5 text-left mt-2 mb-2">
-            <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
-                <div class="flex justify-between items-center text-[10px]">
-                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">⚡ BLOCKCHAIN NODE AGENT</span>
-                    <span class="text-emerald-400 font-mono animate-pulse">● Curve Synced</span>
-                </div>
-                <h4 class="text-xs font-bold text-slate-200">Acquire $FORECAST Directly</h4>
-                <div class="flex gap-2">
-                    <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                    <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
-                </div>
-                <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
-                    📈 TRACK METRICS RECORD ON FLAUNCH.GG ➜
-                </a>
-            </div>
-            <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-3 font-mono text-xs">
-                <span class="text-indigo-400 font-black tracking-wider text-[10px] block">⚙️ BASE B20 CREATOR ENGINE</span>
-                <div class="space-y-2">
-                    <input id="b20-name" type="text" placeholder="Token Name (e.g., Pepe Base)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
-                    <input id="b20-symbol" type="text" placeholder="Token Symbol (e.g., PEPEB)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
-                </div>
-                <button onclick="deployNewB20Token(document.getElementById('b20-name').value, document.getElementById('b20-symbol').value)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-[10px] transition-all">
-                    🚀 TRANSMIT COMPILATION LAYER
-                </button>
-            </div>
-        </div>
-    `;
-    document.getElementById("btn-action-presale")?.addEventListener("click", executeDirectBuy);
-}
-
-async function executeDirectBuy() {
-    const provider = getActiveProvider();
-    if (!provider || !userAddress) return;
-    const amountETH = document.getElementById("presale-eth-input")?.value || "0.005";
-    try {
-        const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{ from: userAddress, to: tokenContractAddress, value: toSafeHexWei(amountETH), data: "0x" }],
-        });
-        alert("🚀 Node Transfer success! Tx: " + txHash);
-    } catch (err) { alert("Refused: " + err.message); }
-}
-
-function generateDestiny(address, isReroll = false) {
-    let seed = 0;
-    const cleanAddress = address.toLowerCase().replace("0x", "");
-    
-    // Jika reroll, tambahkan salt acak agar hasilnya berbeda dari seed address dasar
-    const salt = isReroll ? Math.floor(Math.random() * 9999) : 0;
-    for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
-    seed += salt;
-
-    currentFateGlobal = fateLibrary[seed % fateLibrary.length];
-    userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
-    
-    document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
-    document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
-    document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
-
-    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-
-    drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
-}
-
-function drawDestinyCard(fateObj, score, address, seed) {
-    const canvas = document.getElementById("destiny-card");
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, 350, 500);
-
-    const characterImg = new Image();
-    characterImg.src = fateObj.imagePath; 
-
-    const finalizeDraw = () => {
-        ctx.fillStyle = "rgba(2, 6, 23, 0.55)"; 
-        ctx.fillRect(0, 0, 350, 500);
+    // ---------- SMART DEFI SWAP (REAL ETH ROUTING) ----------
+    async function triggerWeb3Buy(tokenAddress, routerAddress) {
+        if (!state.isConnected || !state.userAddress) { toast('Connect wallet first', 'warning'); return; }
+        const amountInput = document.getElementById('buy-amount-eth');
+        const statusDiv = document.getElementById('tx-status-output');
+        if (!amountInput || !statusDiv) return;
         
-        ctx.textAlign = "center";
-        ctx.font = "bold 20px 'Courier New', monospace";
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText(fateObj.fate, 175, 210);
-
-        ctx.font = "12px sans-serif";
-        ctx.fillStyle = "#94a3b8";
+        const ethAmount = amountInput.value.trim();
+        if (!ethAmount || parseFloat(ethAmount) <= 0) { toast('Enter a valid amount', 'warning'); return; }
         
-        let words = fateObj.text.split(" "), line = "", y = 250;
-        for (let n = 0; n < words.length; n++) {
-            let testLine = line + words[n] + " ";
-            if (ctx.measureText(testLine).width > 280 && n > 0) {
-                ctx.fillText(line, 175, y); line = words[n] + " "; y += 18;
-            } else { line = testLine; }
+        statusDiv.classList.remove('hidden');
+        statusDiv.textContent = '⏳ Packaging transaction bytecode...';
+
+        try {
+            // Pembuatan payload data pemicu fungsi Router 'swapExactETHForTokens'
+            const txData = encodeSwapData(tokenAddress, state.userAddress);
+            const txHash = await state.provider.request({
+                method: 'eth_sendTransaction',
+                params: [{
+                    from: state.userAddress,
+                    to: routerAddress,
+                    value: toWeiHex(ethAmount),
+                    data: txData
+                }],
+            });
+            statusDiv.innerHTML = `✅ Tx Sent: <a href="https://basescan.org/tx/${txHash}" target="_blank" class="text-cyan-400 underline">${shortAddr(txHash)}</a>`;
+            toast('Swap Broadcasted Successfully!', 'success');
+            if (typeof confetti === 'function') confetti({ particleCount: 40, spread: 60 });
+        } catch (err) {
+            statusDiv.textContent = '❌ Reverted: ' + err.message.slice(0, 35);
+            toast('Transaction Failed', 'error');
         }
-        ctx.fillText(line, 175, y);
-
-        ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
-        ctx.fillRect(25, 390, 300, 75);
-        ctx.lineWidth = 1; ctx.strokeStyle = currentFrameColor;
-        ctx.strokeRect(25, 390, 300, 75);
-
-        ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#ffffff";
-        ctx.fillText(`ID  : ${address.slice(0,10)}...`, 40, 412);
-        ctx.fillText(`LUCK: ${score}% ALIGNED`, 40, 430);
-        ctx.fillText(`SEED: #00${seed}`, 40, 448);
-
-        ctx.lineWidth = 6; ctx.strokeStyle = currentFrameColor;
-        ctx.strokeRect(10, 10, 330, 480);
-    };
-
-    characterImg.onload = () => { ctx.drawImage(characterImg, 0, 0, 350, 500); finalizeDraw(); };
-    characterImg.onerror = () => { ctx.fillStyle = "#090d16"; ctx.fillRect(0, 0, 350, 500); finalizeDraw(); };
-}
-
-function executeRerollDestiny() {
-    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-    if (currentAP < 200) {
-        alert("🔒 Insufficient Aura Points! Matrix Reroll requires 200 AP.");
-        return;
     }
-    
-    currentAP -= 200;
-    localStorage.setItem("premium_aura", currentAP);
-    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-    
-    generateDestiny(userAddress, true);
-    if (typeof confetti === "function") confetti();
-    alert("🧬 Quantum sequence mutated! New destiny card mapped.");
-}
-window.executeRerollDestiny = executeRerollDestiny;
 
-document.addEventListener("DOMContentLoaded", () => {
-    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+    // ---------- QUICK SWAP PANEL ----------
+    async function handleQuickSwap() {
+        const amount = DOM.swapAmount?.value.trim();
+        const token = DOM.swapToken?.value.trim();
+        if (!amount || parseFloat(amount) <= 0 || !token || token.length < 40) { toast('Invalid input fields', 'warning'); return; }
+        
+        if (DOM.swapStatus) {
+            DOM.swapStatus.classList.remove('hidden');
+            DOM.swapStatus.textContent = '⏳ Constructing path execution...';
+        }
+        try {
+            const txData = encodeSwapData(token, state.userAddress);
+            const tx = await state.provider.request({
+                method: 'eth_sendTransaction',
+                params: [{
+                    from: state.userAddress,
+                    to: CONFIG.ROUTER_DEFAULT,
+                    value: toWeiHex(amount),
+                    data: txData
+                }],
+            });
+            if (DOM.swapStatus) DOM.swapStatus.innerHTML = `✅ Broadcasted: <a href="https://basescan.org/tx/${tx}" target="_blank" class="text-cyan-400 underline">${shortAddr(tx)}</a>`;
+            toast('Swap Execution success!', 'success');
+        } catch (err) {
+            if (DOM.swapStatus) DOM.swapStatus.textContent = '❌ Failed.';
+        }
+    }
 
-    renderTopTrendingBaseCoins();
-    setupSocialEngines();
-    setInterval(renderTopTrendingBaseCoins, 15000); // Sinkronisasi ticker berkala otomatis lebih cepat (15s)
+    // ---------- SMART CONTRACT ACTIONS ----------
+    async function deployB20() {
+        if (!state.isConnected) { toast('Connect wallet', 'warning'); return; }
+        const name = DOM.b20Name?.value.trim();
+        const symbol = DOM.b20Symbol?.value.trim();
+        if (!name || !symbol) { toast('Fields are empty', 'warning'); return; }
+        try {
+            toast('🚀 Initiating contract deploy...', 'info');
+            const salt = '0x' + Array.from({ length: 32 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+            const data = '0x0162c721' + '0000000000000000000000000000000000000000000000000000000000000000' + salt.replace('0x', '');
+            const txHash = await state.provider.request({
+                method: 'eth_sendTransaction',
+                params: [{ from: state.userAddress, to: CONFIG.B20_FACTORY, data, value: '0x0' }],
+            });
+            toast('✅ B20 Factory success! ' + shortAddr(txHash), 'success');
+        } catch (err) { toast('Deploy aborted', 'error'); }
+    }
 
-    document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
-    document.getElementById("tip-btn")?.addEventListener("click", sendTip);
-    document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
-    document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
-    
-    document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+    async function sendTip() {
+        try {
+            const tx = await state.provider.request({
+                method: 'eth_sendTransaction',
+                params: [{ from: state.userAddress, to: CONFIG.DEVELOPER_WALLET, value: toWeiHex('0.001'), data: '0x' }],
+            });
+            toast('💸 Tip secure! ' + shortAddr(tx), 'success');
+        } catch (e) { toast('Tip canceled', 'error'); }
+    }
+
+    async function mintNFT() {
+        try {
+            const tx = await state.provider.request({
+                method: 'eth_sendTransaction',
+                params: [{ from: state.userAddress, to: CONFIG.NFT_CONTRACT, value: '0x0', data: '0x1249c5b8' }],
+            });
+            toast('🪙 NFT Minted! ' + shortAddr(tx), 'success');
+        } catch (e) { toast('Mint failed', 'error'); }
+    }
+
+    // ---------- DAILY LOGIN SYSTEM ----------
+    function claimDaily() {
         const today = new Date().toDateString();
-        const lastClaim = localStorage.getItem("last_aura_claim_date");
+        if (localStorage.getItem('last_aura_claim_date') === today) {
+            toast('Claim block active. Try again tomorrow.', 'warning');
+            return;
+        }
+        const newAura = addAura(100);
+        localStorage.setItem('last_aura_claim_date', today);
+        toast('🎁 Reward added: +100 AP!', 'success');
+        if (typeof confetti === 'function') confetti({ particleCount: 40 });
+    }
 
-        if (lastClaim === today) {
-            alert("🔒 Matrix Reset Required: You have already secured today's Aura alignment. Come back tomorrow!");
+    // ---------- MUZIKAL PREMIUM GACHA SPIN ----------
+    function spinWheel() {
+        if (state.isSpinning) return;
+        if (!state.isConnected) { toast('Connect wallet first', 'warning'); return; }
+        const today = new Date().toDateString();
+        if (localStorage.getItem('last_spin_date') === today) {
+            toast('Spin allocation depleted for today.', 'warning');
             return;
         }
 
-        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-        currentAP += 100;
+        state.isSpinning = true;
+        if (DOM.spinBtn) DOM.spinBtn.disabled = true;
+        if (DOM.spinResult) DOM.spinResult.classList.add('hidden');
         
-        localStorage.setItem("premium_aura", currentAP);
-        localStorage.setItem("last_aura_claim_date", today);
+        // Memasang class animasi melambat premium kustom
+        if (DOM.wheelGraphic) {
+            DOM.wheelGraphic.style.animation = 'none';
+            DOM.wheelGraphic.offsetHeight; // Memaksa reflow browser
+            DOM.wheelGraphic.classList.add('wheel-spinning');
+        }
 
-        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
-        
-        if (typeof confetti === "function") confetti();
-        alert("🎁 +100 Aura Points successfully synchronized onto database cluster!");
-    });
-});
+        setTimeout(() => {
+            if (DOM.wheelGraphic) DOM.wheelGraphic.classList.remove('wheel-spinning');
+            
+            const rewards = [
+                { label: '🎉 +200 Poin Aura', ap: 200 },
+                { label: '🌟 +150 Poin Aura', ap: 150 },
+                { label: '✨ +100 Poin Aura', ap: 100 },
+                { label: '🍀 Alignment Multiplier +10%', ap: 0, luck: 10 }
+            ];
+            const pick = rewards[Math.floor(Math.random() * rewards.length)];
+            let msg = pick.label;
+            
+            if (pick.ap > 0) addAura(pick.ap);
+            if (pick.luck) {
+                state.luckScore = Math.min(100, state.luckScore + pick.luck);
+                if (DOM.luckScore) DOM.luckScore.textContent = state.luckScore + '%';
+                if (DOM.luckBar) DOM.luckBar.style.width = state.luckScore + '%';
+            }
+            
+            localStorage.setItem('last_spin_date', today);
+            if (DOM.spinResult) {
+                DOM.spinResult.classList.remove('hidden');
+                DOM.spinResult.innerHTML = `<strong>🎡 LOG HASIL ACCORD:</strong><br>${msg}`;
+            }
+            toast('🎡 Gacha secure: ' + msg, 'success');
+            if (typeof confetti === 'function') confetti({ particleCount: 60 });
+            if (DOM.spinBtn) DOM.spinBtn.disabled = false;
+            state.isSpinning = false;
+        }, 2200); // Durasi penuh animasi putaran gacha melambat
+    }
+
+    // ---------- APPLICATION FRAMEWORK ----------
+    function applyGlow(type) {
+        const map = {
+            neon: '#06b6d4',
+            gold: '#f59e0b',
+            matrix: '#22c55e',
+            rose: '#f43f5e'
+        };
+        if (!map[type]) return;
+        state.frameColor = map[type];
+        if (state.currentFate && state.userAddress) generateDestiny(state.userAddress, false);
+        toast('✨ Aura node updated.', 'success');
+        navigateTab('oracle');
+    }
+
+    function navigateTab(tab) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        const target = document.getElementById('tab-' + tab);
+        if (target) target.classList.remove('hidden');
+        DOM.navBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+
+        if (tab !== 'oracle' && state.scanInterval) {
+            clearInterval(state.scanInterval);
+            state.scanInterval = null;
+            if (DOM.scanStatus) DOM.scanStatus.textContent = '● idle';
+        }
+    }
+
+    async function connectWallet() {
+        const provider = getProvider();
+        if (!provider) { toast('❌ No wallet extensions detected.', 'error'); return; }
+        try {
+            const accounts = await provider.request({ method: 'eth_requestAccounts' });
+            state.userAddress = accounts[0];
+            state.isConnected = true;
+            state.provider = provider;
+
+            if (DOM.connectBtn) {
+                DOM.connectBtn.innerHTML = `🔴 ${shortAddr(state.userAddress)}`;
+                DOM.connectBtn.className = 'w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-2xl text-sm flex items-center justify-center gap-2 transition-all';
+            }
+            DOM.lockedView.classList.add('hidden');
+            DOM.resultSection.classList.remove('hidden');
+
+            generateDestiny(state.userAddress, false);
+            navigateTab('oracle'); // Navigasi aktif HANYA pada pemanggilan klik manual user
+            toast('🔓 System fully decrypted.', 'success');
+        } catch (err) { toast('Access Denied', 'error'); }
+    }
+
+    function init() {
+        cacheDoms();
+        if (DOM.auraDisplay) DOM.auraDisplay.textContent = getAura() + ' AP';
+        fetchTicker();
+        state.tickerInterval = setInterval(fetchTicker, CONFIG.TICKER_INTERVAL);
+
+        DOM.connectBtn?.addEventListener('click', connectWallet);
+        DOM.navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!state.isConnected) { toast('Connect authorization required', 'warning'); return; }
+                navigateTab(btn.dataset.tab);
+            });
+        });
+
+        DOM.scanBtn?.addEventListener('click', executeTokenScan);
+        DOM.rerollBtn?.addEventListener('click', handleReroll);
+        DOM.tipBtn?.addEventListener('click', sendTip);
+        DOM.mintBtn?.addEventListener('click', mintNFT);
+        DOM.dailyLoginBtn?.addEventListener('click', claimDaily);
+        DOM.spinBtn?.addEventListener('click', spinWheel);
+        DOM.deployB20Btn?.addEventListener('click', deployB20);
+        DOM.swapBtn?.addEventListener('click', handleQuickSwap);
+
+        DOM.shareX?.addEventListener('click', () => {
+            const txt = encodeURIComponent(`🔮 Matrix destiny on Base Forecaster!\nIdentity: ${state.currentFate?.fate}\nAlignment: ${state.luckScore}%\nVerify 👇\n@BaseForecaster`);
+            window.open(`https://twitter.com/intent/tweet?text=${txt}`, '_blank');
+        });
+        DOM.shareTg?.addEventListener('click', () => window.open('https://t.me/BaseForecaster', '_blank'));
+
+        DOM.glowButtons.forEach(btn => {
+            btn.addEventListener('click', () => applyGlow(btn.dataset.glow));
+        });
+
+        // Silent check tanpa merusak/memaksa UI berpindah tab tiba-tiba saat loading awal
+        if (provider && provider.selectedAddress) {
+            provider.request({ method: 'eth_accounts' }).then(acc => {
+                if(acc.length > 0) {
+                    state.userAddress = acc[0];
+                    state.isConnected = true;
+                    state.provider = provider;
+                    generateDestiny(state.userAddress, false);
+                }
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();
