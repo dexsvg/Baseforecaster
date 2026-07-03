@@ -1,328 +1,621 @@
-// =========================================================================
-// BASE FORECASTER - MASTER CORE AGENT SCRIPT (PROD VERSION 2026)
-// =========================================================================
+/**
+ * Base Forecaster - Production Core Logic Script (Upgraded Version)
+ * Optimized Architecture - Dynamic Gecko Integration Hub + Real-Time Web3 Engines.
+ */
 
-// GLOBAL REALTIME VARIABLE ARCHITECTURE
-let auraPointsTotal = parseInt(localStorage.getItem("AURA_POINTS_STORE") || "0");
-let isWheelSpinning = false;
-let currentFateGlobal = null;
+const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
+const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
+const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
+const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
+const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
 
-// QUANTUM CARDS METADATA INTERFACE MATRIX
-const DESTINY_CARDS_POOL = [
-    { fate: "THE WHALE RIDER", desc: "Dompet Anda memancarkan sinyal akumulasi tingkat makro. Aliran dana modal dari tier-1 VC terdeteksi bergeser masuk ke arah koordinat transaksi Anda.", rarity: "MYTHIC", bonus: 250, border: "border-amber-500/60 bg-gradient-to-br from-amber-950/40 via-slate-950 to-slate-950 text-amber-300 neon-glow-cyan shadow-[0_0_20px_rgba(245,158,11,0.2)]" },
-    { fate: "SATELLITE INSIDER", desc: "Aura analitis frekuensi tinggi aktif. Alur intelijen Anda melompati rantai blok dasar, memicu kepekaan kalkulasi sebelum tren viral meluas.", rarity: "RARE", bonus: 100, border: "border-cyan-500/60 bg-gradient-to-br from-cyan-950/40 via-slate-950 to-slate-950 text-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.2)]" },
-    { fate: "GAS RECLAIMER", desc: "Sinkronisasi node berjalan optimal. Penghematan kompilasi biaya eksekusi (gas fee) transaksi di jaringan Base Anda bekerja sangat efisien.", rarity: "COMMON", bonus: 40, border: "border-slate-800 bg-slate-950/80 text-slate-300" },
-    { fate: "LIQUIDITY LP DILEMMA", desc: "Penataan kosmik menunjukkan indeks volatilitas yang ekstrem. Hindari penumpukan slippage pada token ber-pajak tinggi hari ini.", rarity: "COMMON", bonus: 25, border: "border-slate-800 bg-slate-950/80 text-slate-300" },
-    { fate: "THE RUG SURVIVOR", desc: "Anda berhasil mendeteksi pergerakan anomali berbahaya dari developer pihak ketiga. Intuisi trading bawaan bertindak sebagai perisai alami.", rarity: "RARE", bonus: 120, border: "border-purple-500/60 bg-gradient-to-br from-purple-950/40 via-slate-950 to-slate-950 text-purple-300 shadow-[0_0_20px_rgba(139,92,246,0.2)]" }
+let userAddress = "";
+let isConnected = false;
+let currentFateGlobal = null; 
+let currentFrameColor = "#f59e0b"; 
+let frameNameGlobal = "Gold Luck Destiny";
+let userLuckScoreGlobal = 50;
+let liveScanInterval = null;
+let currentScannedAddress = "";
+
+const fateLibrary = [
+    { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
+    { fate: "GENERATIONAL WEALTH", emoji: "👑", imagePath: "images2.jpeg", text: "Cosmic alignment confirms eternal wealth. Your core assets will outperform 99% of the market.", score: 95 },
+    { fate: "THE BASE CHOSEN ONE", emoji: "🔵", imagePath: "images3.jpeg", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 },
+    { fate: "THE DEGEN SURVIVOR", emoji: "🥷", imagePath: "images4.jpeg", text: "Battle scars of meme-coin wars everywhere. You survive when others get liquidated.", score: 74 },
+    { fate: "THE MYSTERY ADDRESS", emoji: "❓", imagePath: "images5.jpeg", text: "Even the blockchain cannot understand your patterns. You are a true anomaly.", score: 41 },
+    { fate: "THE DIAMOND HANDS", emoji: "💎", imagePath: "images6.jpeg", text: "Your hands are forged in pure diamond. Pressure only makes your bags heavier and stronger.", score: 88 },
+    { fate: "THE ALPHA STALKER", emoji: "🎯", imagePath: "images7.jpeg", text: "You spot narratives before they even exist. Your sniper entries are feared across the chain.", score: 92 },
+    { fate: "THE RUGPROOF NINJA", emoji: "🛡️", imagePath: "images8.jpeg", text: "Honeypots and malicious contracts miss you completely. Your intuition is a natural shield.", score: 85 },
+    { fate: "THE LIQUIDITY GOD", emoji: "🌊", imagePath: "images9.jpeg", text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", score: 96 },
+    { fate: "THE PROPAGANDA KING", emoji: "📢", imagePath: "images10.jpeg", text: "Your conviction can pump any chart. When you speak, the community follows your vision.", score: 90 }
 ];
 
-// INITIALIZATION PIPELINE FOR DAPP CORE
-window.addEventListener("DOMContentLoaded", () => {
-    updateAuraDisplay(0);
-    fetchCryptoPanicAlphaFeeds();
-    fetchMacroPolymarketCondition();
-});
-
-// SYSTEM HUB 1: HUD NAVIGATION INTERFACE CONTROLS
-function switchTab(targetTabId) {
-    // Matikan visibilitas seluruh panel tab kontainer
-    document.querySelectorAll(".tab-content").forEach(tab => tab.classList.add("hidden"));
-    // Aktifkan tab target terpilih
-    document.getElementById(targetTabId).classList.remove("hidden");
-
-    // Kembalikan styling kosmetik seluruh navigasi bawah ke parameter default
-    document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.className = "nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-slate-500 hover:text-slate-300 transition group active:scale-95";
-    });
-
-    // Sematkan efek kilauan siber ungu aktif pada tombol navigasi target
-    const activeBtn = document.getElementById(`btn-${targetTabId}`);
-    if (activeBtn) {
-        activeBtn.className = "nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-purple-400 bg-purple-950/30 border border-purple-500/20 transition group active:scale-95 shadow-md shadow-purple-950/40";
+function getActiveProvider() {
+    if (window.ethereum) {
+        if (window.ethereum.providers && window.ethereum.providers.length) {
+            return window.ethereum.providers.find(p => p.isOKXWallet || p.isCoinbaseWallet) || window.ethereum.providers[0];
+        }
+        return window.ethereum;
     }
+    if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
+    return null;
 }
 
-function updateAuraDisplay(gainedPoints) {
-    auraPointsTotal += gainedPoints;
-    localStorage.setItem("AURA_POINTS_STORE", auraPointsTotal.toString());
-    
-    const counterElement = document.getElementById("global-aura-counter");
-    if (counterElement) {
-        counterElement.innerText = auraPointsTotal.toLocaleString();
-    }
+function toSafeHexWei(amountETH) {
+    const wei = Math.floor(parseFloat(amountETH) * 1e18);
+    return "0x" + wei.toString(16);
 }
 
-// SYSTEM HUB 2: CORE CRYPTO IDENTITY GENERATOR
-function revealDestinyCard() {
-    const placeholder = document.getElementById("destiny-placeholder");
-    const cardContainer = document.getElementById("destiny-card");
-
-    const randomIndex = Math.floor(Math.random() * DESTINY_CARDS_POOL.length);
-    const selected = DESTINY_CARDS_POOL[randomIndex];
-    currentFateGlobal = selected; 
-
-    // Muat parameter data teks ke dalam kluster antarmuka kartu
-    document.getElementById("card-title").innerText = selected.fate;
-    document.getElementById("card-desc").innerText = selected.desc;
-    document.getElementById("card-rarity").innerText = selected.rarity;
-    document.getElementById("card-points-val").innerText = `+${selected.bonus} AURA`;
-    
-    // Ganti class pembungkus mengikuti tingkat kelangkaan (rarity) kartu secara responsif
-    cardContainer.className = `p-5 rounded-xl border relative text-left transform scale-100 transition-all duration-500 ${selected.border}`;
-    
-    placeholder.classList.add("hidden");
-    cardContainer.classList.remove("hidden");
-
-    // Simpan penambahan kredit poin baru ke database lokal browser
-    updateAuraDisplay(selected.bonus);
-}
-
-// SYSTEM HUB 3: PUBLIC DEX DATA CORE PARSER
-async function executeTokenScan() {
-    const inputAddress = document.getElementById("token-address-input").value.trim();
-    if (!inputAddress.startsWith("0x") || inputAddress.length < 40) {
-        alert("Matriks address tidak valid. Pastikan format penulisan alamat jaringan Base (0x...) tepat.");
-        return;
+function quickSelectToken(address, symbol) {
+    const targetInput = document.getElementById("external-target-input");
+    if (targetInput) {
+        targetInput.value = address;
+        executeTokenScan();
+        targetInput.scrollIntoView({ behavior: 'smooth' });
     }
-    
-    const loadingBlock = document.getElementById("scan-loading");
-    const resultBlock = document.getElementById("scan-result");
-    const advancedCard = document.getElementById("advanced-metrics-card");
+}
+window.quickSelectToken = quickSelectToken;
 
-    loadingBlock.classList.remove("hidden");
-    resultBlock.classList.add("hidden");
-    if(advancedCard) advancedCard.classList.add("hidden");
-
+async function renderTopTrendingBaseCoins() {
+    const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
     try {
-        const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${inputAddress}`);
-        const payload = await response.json();
+        const response = await fetch("https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1");
+        if (!response.ok) throw new Error("Primary stream link failed");
 
-        loadingBlock.classList.add("hidden");
+        const json = await response.json();
+        const pools = json.data;
+        if (!pools || pools.length === 0) throw new Error("Empty core payload");
 
-        if (payload && payload.pairs && payload.pairs.length > 0) {
-            const basePairs = payload.pairs.filter(p => p.chainId === "base");
+        const tickerItems = [];
+        const seenAddresses = new Set();
+        let displayCount = 0;
+
+        for (const pool of pools) {
+            if (displayCount >= 12) break;
+            const attributes = pool.attributes;
+            const tokenAddress = pool.relationships?.base_token?.data?.id?.split('_')[1];
+            
+            if (!tokenAddress || seenAddresses.has(tokenAddress.toLowerCase())) continue;
+
+            let symbol = attributes.name.split(/[\/\-]/)[0].trim();
+            if (['weth', 'usdc', 'usdt', 'usd', 'base'].includes(symbol.toLowerCase())) continue;
+
+            const priceUsd = parseFloat(attributes.token_price_usd) || 0;
+            const priceChange = parseFloat(attributes.price_change_percentage?.h24 || 0);
+
+            if (priceUsd === 0) continue; 
+
+            const formattedPrice = priceUsd < 0.0001 ? priceUsd.toFixed(7) : (priceUsd < 0.01 ? priceUsd.toFixed(5) : priceUsd.toFixed(2));
+            const changeSignal = priceChange >= 0 ? `▲ ${priceChange.toFixed(1)}%` : `▼ ${Math.abs(priceChange).toFixed(1)}%`;
+            const colorClass = priceChange >= 0 ? "text-emerald-400" : "text-rose-400";
+            const borderClass = priceChange >= 0 ? "border-emerald-950" : "border-rose-950";
+
+            seenAddresses.add(tokenAddress.toLowerCase());
+            displayCount++;
+
+            tickerItems.push(`
+                <button onclick="quickSelectToken('${tokenAddress}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderClass} px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
+                    <span class="text-cyan-500 font-bold text-[9px]">#${displayCount}</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
+                    <span class="${colorClass} font-bold text-[9px]">${changeSignal}</span>
+                </button>
+            `);
+        }
+
+        if (tickerWrapper && tickerItems.length >= 3) {
+            tickerWrapper.innerHTML = tickerItems.join('');
+            return;
+        }
+        throw new Error("Insufficient dynamic elements pool");
+    } catch (error) {
+        console.warn("Switching stream to secondary matrix route...", error);
+        executeDexScreenerFallback(tickerWrapper);
+    }
+}
+
+async function executeDexScreenerFallback(wrapperElement) {
+    if (!wrapperElement) return;
+    try {
+        const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=degen");
+        const data = await response.json();
+        if (!data.pairs) return;
+
+        const filteredPairs = data.pairs
+            .filter(p => p.chainId === 'base' && p.baseToken)
+            .sort((a, b) => (b.priceChange?.h24 || 0) - (a.priceChange?.h24 || 0));
+
+        const tickerItems = [];
+        const seen = new Set();
+        let count = 0;
+
+        for (const pair of filteredPairs) {
+            if (count >= 10) break;
+            const symbol = pair.baseToken.symbol;
+            const address = pair.baseToken.address;
+            if (['weth', 'usdc', 'base'].includes(symbol.toLowerCase()) || seen.has(address.toLowerCase())) continue;
+
+            const rawPrice = parseFloat(pair.priceUsd) || 0;
+            const formattedPrice = rawPrice < 0.0001 ? rawPrice.toFixed(7) : rawPrice.toFixed(2);
+            const priceChange = pair.priceChange?.h24 || 0;
+            
+            seen.add(address.toLowerCase());
+            count++;
+
+            tickerItems.push(`
+                <button onclick="quickSelectToken('${address}', '${symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 text-left">
+                    <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${symbol}</span>
+                    <span class="text-slate-400 text-[10px]">$${formattedPrice}</span>
+                    <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${priceChange >= 0 ? '▲' : '▼'} ${Math.abs(priceChange)}%</span>
+                </button>
+            `);
+        }
+        wrapperElement.innerHTML = tickerItems.length > 0 ? tickerItems.join('') : `<span class="text-slate-500 text-xs">Syncing data chains...</span>`;
+    } catch (e) {
+        wrapperElement.innerHTML = `<span class="text-slate-500 text-xs">Matrix stream offline</span>`;
+    }
+}
+
+async function executeTokenScan() {
+    const targetInput = document.getElementById("external-target-input");
+    const resultDiv = document.getElementById("external-target-result");
+    if (!targetInput || !resultDiv) return;
+
+    const query = targetInput.value.trim();
+    if (!query) return alert("Input required parameter block!");
+
+    currentScannedAddress = query;
+    resultDiv.classList.remove("hidden");
+
+    if (!liveScanInterval) {
+        resultDiv.innerHTML = `<p class="text-[11px] text-cyan-400 animate-pulse font-mono">📡 Connecting live price socket matrix...</p>`;
+    }
+
+    async function fetchScanData() {
+        try {
+            const response = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${currentScannedAddress}`);
+            const data = await response.json();
+            const basePairs = data.pairs ? data.pairs.filter(p => p.chainId === 'base') : [];
+
             if (basePairs.length === 0) {
-                alert("Footprint terdeteksi, namun alokasi pasar DEX tidak berjalan pada jaringan kedaulatan Base.");
+                resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">❌ Identity footprint missing inside Base Layer-2 system.</div>`;
+                clearInterval(liveScanInterval);
+                liveScanInterval = null;
                 return;
             }
 
             const bestPair = basePairs[0];
-            
-            document.getElementById("res-token-name").innerText = `${bestPair.baseToken.name} (${bestPair.baseToken.symbol})`;
-            document.getElementById("res-token-address").innerText = bestPair.baseToken.address;
-            
-            const priceUsd = parseFloat(bestPair.priceUsd);
-            document.getElementById("res-token-price").innerText = priceUsd < 0.01 ? `$${priceUsd.toFixed(6)}` : `$${priceUsd.toFixed(2)}`;
-            
+            const priceUsd = parseFloat(bestPair.priceUsd) || 0;
             const priceChange = bestPair.priceChange?.h24 || 0;
-            const changeElement = document.getElementById("res-token-change");
-            changeElement.innerText = `${priceChange >= 0 ? '+' : ''}${priceChange}%`;
-            changeElement.className = `text-[9px] font-cyber font-bold ${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+            const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
+            const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
 
-            document.getElementById("res-liq").innerText = bestPair.liquidity?.usd ? `$${bestPair.liquidity.usd.toLocaleString()}` : "$0";
-            document.getElementById("res-vol").innerText = bestPair.volume?.h24 ? `$${bestPair.volume.h24.toLocaleString()}` : "$0";
+            const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
+            const middleBand = priceUsd / (1 + (priceChange / 100));
+            const standardDeviation = middleBand * (volatilityFactor / 100);
+            const upperBand = middleBand + (2 * standardDeviation);
+            const lowerBand = middleBand - (2 * standardDeviation);
 
-            resultBlock.classList.remove("hidden");
+            let bbStatus = "STABLE AXIS", bbBadgeColor = "text-cyan-400 bg-cyan-950/50 border-cyan-500/40";
+            let visualChart = "──■──"; 
+            if (priceUsd >= upperBand * 0.98) { 
+                bbStatus = "OVERBOUGHT CORE"; 
+                bbBadgeColor = "text-rose-400 bg-rose-950/50 border-rose-500/40"; 
+                visualChart = "────■";
+            } else if (priceUsd <= lowerBand * 1.02) { 
+                bbStatus = "OVERSOLD POINT"; 
+                bbBadgeColor = "text-emerald-400 bg-emerald-950/50 border-emerald-500/40"; 
+                visualChart = "■────";
+            }
 
-            // 🔥 TRIGGER ADVANCED METRICS ENGINE
-            fetchAdvancedSecurityMetrics(bestPair.baseToken.address, bestPair.baseToken.symbol);
-
-        } else {
-            alert("Gagal mengurai metadata blockchain. Alamat koin mungkin belum terdaftar di Automated Market Maker (AMM).");
+            resultDiv.innerHTML = `
+                <div class="p-3 bg-slate-950 border border-cyan-500/30 rounded-xl space-y-2.5 font-mono text-[11px] relative overflow-hidden">
+                    <div class="absolute top-1 right-2 text-[8px] text-emerald-400 animate-pulse flex items-center gap-1">● LIVE TICKING</div>
+                    <div class="flex justify-between border-b border-slate-800 pb-1.5">
+                        <span class="font-bold text-white">💎 ${bestPair.baseToken.name} (${bestPair.baseToken.symbol})</span>
+                        <span class="${priceChange >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${priceChange >= 0 ? '+' : ''}${priceChange}%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1 text-[10px] text-slate-400">
+                        <div>Price: <strong class="text-white">$${priceUsd.toFixed(6)}</strong></div>
+                        <div>FDV Cap: <strong class="text-white">$${marketCap}</strong></div>
+                        <div>Liquidity: <strong class="text-white">$${liquidity}</strong></div>
+                        <div>Engine: <span class="text-cyan-400 font-bold">${bestPair.dexId.toUpperCase()}</span></div>
+                    </div>
+                    <div class="p-1.5 bg-slate-900 rounded border border-slate-800 flex justify-between items-center text-[9px]">
+                        <span class="text-slate-500">BB SPECTRUM [${visualChart}]:</span>
+                        <span class="px-1 text-[8px] font-bold rounded border ${bbBadgeColor}">${bbStatus}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
+                        <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
+                            ⚡ Core Web3 Swap Node
+                        </button>
+                    </div>
+                    <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
+                </div>
+            `;
+        } catch (e) {
+            resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse handshake failure.</div>`;
         }
-    } catch (err) {
-        console.error("Scanner stream interface interrupted:", err);
-        loadingBlock.classList.add("hidden");
-        alert("Handshake server Dexscreener gagal. Periksa status koneksi internet Anda.");
     }
+
+    await fetchScanData();
+    if (liveScanInterval) clearInterval(liveScanInterval);
+    liveScanInterval = setInterval(fetchScanData, 3000); // Polling real-time update per 3 detik
 }
+window.executeTokenScan = executeTokenScan;
 
-function quickScan(targetAddr) {
-    document.getElementById("token-address-input").value = targetAddr;
-    executeTokenScan();
-}
-
-// =========================================================================
-// 🔥 QUANTUM ADVANCED SECURITY LAYER & SPECULATIVE HONEYPOT SIMULATOR
-// =========================================================================
-async function fetchAdvancedSecurityMetrics(tokenAddress, symbol) {
-    const metricsCard = document.getElementById("advanced-metrics-card");
-    const securityBadge = document.getElementById("security-badge");
-    const honeypotVal = document.getElementById("honeypot-val");
-    const whaleVal = document.getElementById("whale-concentration-val");
-    const taxVal = document.getElementById("tax-val");
-    const aiOpinionVal = document.getElementById("ai-opinion-val");
-
-    if (!metricsCard) return;
-    metricsCard.classList.remove("hidden");
+async function deployNewB20Token(tokenName, tokenSymbol) {
+    if (!tokenName || !tokenSymbol) return alert("Please fill Token Name & Symbol data slots!");
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Web3 secure wallet tunnel is inactive!");
 
     try {
-        const res = await fetch(`https://api.honeypot.is/v2/IsHoneypot?address=${tokenAddress}`);
-        const data = await res.json();
+        alert(`🚀 Directing deployment matrix payload for: ${tokenName.toUpperCase()} via Base Core Studio`);
+        const randomSalt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
+        const dataPayload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + randomSalt.replace("0x",""); 
 
-        if (data && data.honeypotResult) {
-            const isHp = data.honeypotResult.isHoneypot;
-            const buyTax = data.simulationResult.buyTax.toFixed(1);
-            const sellTax = data.simulationResult.sellTax.toFixed(1);
-            
-            if (isHp) {
-                securityBadge.className = "text-[8px] font-cyber font-black px-2 py-0.5 rounded border text-rose-400 bg-rose-950/40 border-rose-500/50 animate-pulse tracking-widest";
-                securityBadge.innerText = "CRITICAL RISK";
-                honeypotVal.innerHTML = "<span class='text-rose-500 font-extrabold animate-pulse'>⚠️ HONEYPOT DETECTED</span>";
-            } else {
-                securityBadge.className = "text-[8px] font-cyber font-black px-2 py-0.5 rounded border text-emerald-400 bg-emerald-950/40 border-emerald-500/50 tracking-widest";
-                securityBadge.innerText = "PASSED SECURE";
-                honeypotVal.innerHTML = "<span class='text-emerald-400 font-bold'>🟢 VERIFIED TRADABLE</span>";
-            }
-            taxVal.innerText = `📥 ${buyTax}% BUY / 📤 ${sellTax}% SELL`;
-        } else {
-            honeypotVal.innerHTML = "<span class='text-amber-400'>UNVERIFIED NODE</span>";
-            taxVal.innerText = "0.0% / 0.0%";
-            securityBadge.className = "text-[8px] font-cyber font-black px-2 py-0.5 rounded border text-slate-400 border-slate-800 tracking-widest";
-            securityBadge.innerText = "UNKNOWN SYNC";
-        }
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: B20_FACTORY_ADDRESS, data: dataPayload, value: "0x0" }],
+        });
 
-        // Kalkulasi Hash Seed untuk konsentrasi Top Holders secara presisi
-        let addrSeed = 0;
-        for (let i = 0; i < tokenAddress.length; i++) addrSeed += tokenAddress.charCodeAt(i);
-        const mockedWhaleShare = (20 + (addrSeed % 45)); 
-        
-        if (mockedWhaleShare > 50) {
-            whaleVal.innerHTML = `<span class='text-rose-400 font-bold'>🐋 ${mockedWhaleShare}% (CENTRALIZED)</span>`;
-        } else {
-            whaleVal.innerHTML = `<span class='text-emerald-400 font-bold'>👥 ${mockedWhaleShare}% (HEALTHY)</span>`;
-        }
-
-        // Sinkronisasi Opini Mistis AI Oracle dengan Kartu Destiny yang Dimiliki User
-        const currentDestinyName = currentFateGlobal ? currentFateGlobal.fate : "THE DEGEN SURVIVOR";
-        if (mockedWhaleShare > 50) {
-            aiOpinionVal.innerText = `🔮 "Whales are ready to dump this. As a ${currentDestinyName}, watch out for volatile liquidity drains!"`;
-        } else {
-            aiOpinionVal.innerText = `🔮 "Chart distribution looks stable. Alignment fits your current portfolio aura node."`;
-        }
-
-    } catch (e) {
-        console.warn("Handshake simulation vector failure:", e);
-        honeypotVal.innerText = "TIMEOUT";
-        whaleVal.innerText = "UNKNOWN";
-        taxVal.innerText = "N/A";
-        aiOpinionVal.innerText = `"The contract matrix is encrypted. Proceed with extreme caution."`;
+        alert(`🔥 B20 Standard contract instantiated successfully!\nTransaction Hash: ${txHash}`);
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        alert("❌ Base Studio Refused Transmit Vector: " + err.message);
     }
 }
+window.deployNewB20Token = deployNewB20Token;
 
-// SYSTEM HUB 4: STOCHASTIC PROBABILITY SPIN ENGINE
-function spinFortuneWheel() {
-    if (isWheelSpinning) return;
+function setupSocialEngines() {
+    document.getElementById("share-x-btn")?.addEventListener("click", () => {
+        const fateName = currentFateGlobal ? currentFateGlobal.fate : "THE DEGEN ANOMALY";
+        const tweetText = encodeURIComponent(`🔮 Just revealed my on-chain destiny inside Base Forecaster!\n\n🧬 Identity: ${fateName}\n⚡ Alignment Score: ${userLuckScoreGlobal}%\n\nVerify your hexadecimal matrix signature here 👇\n@BaseForecaster #BaseChain #B20`);
+        window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+    });
 
-    isWheelSpinning = true;
-    const wheel = document.getElementById("fortune-wheel-element");
-    const spinButton = document.getElementById("spin-btn");
-    const statusMsg = document.getElementById("wheel-status-msg");
+    document.getElementById("share-tg-btn")?.addEventListener("click", () => {
+        window.open("https://t.me/BaseForecaster", '_blank');
+    });
+}
 
-    spinButton.disabled = true;
-    spinButton.innerText = "SHIFTING...";
-    statusMsg.innerText = "Recalculating computational velocity...";
+async function sendTip() {
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Connect system node to your wallet!");
+    try {
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }],
+        });
+        alert("💸 Transmission Node success! Tx: " + txHash);
+        if (typeof confetti === "function") confetti();
+    } catch (err) { alert("Matrix Core Aborted: " + err.message); }
+}
 
-    const extraDegrees = Math.floor(Math.random() * 360);
-    const totalRotation = 2160 + extraDegrees; // Minimal 6 putaran dramatis
+async function mintNFT() {
+    const provider = getActiveProvider();
+    if (!provider || !isConnected) return alert("Connect wallet node first!");
+    try {
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }],
+        });
+        alert("🪙 Mint request validated onto chain! Tx: " + txHash);
+        if (typeof confetti === "function") confetti();
+    } catch (err) { alert("Execution Failed: " + err.message); }
+}
 
-    wheel.style.transform = `rotate(${totalRotation}deg)`;
+async function triggerWeb3Buy(tokenAddress, dexId) {
+    const amountInput = document.getElementById("buy-amount-eth");
+    const statusDiv = document.getElementById("tx-status-output");
+    if (!amountInput || !statusDiv || !isConnected) return alert("Validate connection node first!");
+
+    const ethAmount = amountInput.value.trim();
+    const provider = getActiveProvider();
+    if (!provider) return;
+
+    statusDiv.classList.remove("hidden");
+    statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
+
+    try {
+        let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
+        if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
+
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: router, value: toSafeHexWei(ethAmount), data: "0x" }],
+        });
+
+        statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
+        if (typeof confetti === "function") confetti();
+    } catch (err) {
+        statusDiv.innerText = `❌ Error: ${err.message.substring(0,30)}`;
+    }
+}
+window.triggerWeb3Buy = triggerWeb3Buy;
+
+function navigate(targetTab) {
+    if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    
+    const targetEl = document.getElementById(`tab-${targetTab}`);
+    if (targetEl) targetEl.classList.remove('hidden');
+
+    const menuColors = { oracle: 'text-blue-400', glow: 'text-cyan-400', wheel: 'text-purple-400', ranks: 'text-yellow-400' };
+    Object.keys(menuColors).forEach(k => {
+        const btn = document.getElementById(`nav-${k}`);
+        if (btn) btn.className = `flex flex-col items-center text-slate-500 hover:${menuColors[k]} transition-all font-mono`;
+    });
+
+    const activeBtn = document.getElementById(`nav-${targetTab}`);
+    if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
+
+    if (targetTab === 'ranks') renderLeaderboardData();
+    if (targetTab !== 'oracle' && liveScanInterval) {
+        clearInterval(liveScanInterval);
+        liveScanInterval = null;
+    }
+}
+window.navigate = navigate;
+
+function applyGlow(type) {
+    const configurations = {
+        neon: { color: "#06b6d4", text: "Cyan Neon Pulse" },
+        gold: { color: "#f59e0b", text: "Gold Luck Destiny" },
+        matrix: { color: "#22c55e", text: "Cyber Matrix Green" },
+        rose: { color: "#f43f5e", text: "Ruby Vein Pulse" }
+    };
+
+    if (configurations[type]) {
+        currentFrameColor = configurations[type].color;
+        frameNameGlobal = configurations[type].text;
+    }
+    
+    if (currentFateGlobal && userAddress) {
+        let seed = 0;
+        for (let i = 0; i < userAddress.length; i++) seed += userAddress.charCodeAt(i);
+        drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, userAddress, seed);
+    }
+    alert(`✨ Configured border signature grid: ${frameNameGlobal}!`);
+    navigate('oracle');
+}
+window.applyGlow = applyGlow;
+
+function renderLeaderboardData() {
+    const container = document.getElementById("ranks-list-container");
+    if (!container || !userAddress) return;
+
+    container.innerHTML = `
+        <div class="p-3 rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs font-mono">
+            <div class="text-left"><div>0x71C9...8B29</div><div class="text-[9px] text-amber-500">🐋 PLATINUM POSITION</div></div>
+            <div class="font-bold text-cyan-400 text-sm">99%</div>
+        </div>
+        <div class="p-3 rounded-xl border border-cyan-500 bg-cyan-950/20 flex items-center justify-between text-xs font-mono shadow-md">
+            <div class="text-left"><div class="text-cyan-400">${userAddress.slice(0,6)}...${userAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
+            <div class="font-bold text-cyan-400 text-sm">${userLuckScoreGlobal}%</div>
+        </div>
+    `;
+}
+
+function spinTheWheel() {
+    const btn = document.getElementById("btn-spin");
+    const graphic = document.getElementById("wheel-graphic");
+    const result = document.getElementById("spin-result");
+    if (!btn || !graphic || !result) return;
+
+    btn.disabled = true;
+    result.classList.add("hidden");
+    graphic.classList.add("animate-spin");
 
     setTimeout(() => {
-        isWheelSpinning = false;
-        spinButton.disabled = false;
-        spinButton.innerText = "ENGAGE PROBABILITY";
-
-        const finalNormalizedAngle = (totalRotation % 360);
-        let rewardPoints = 10;
-        
-        if (finalNormalizedAngle >= 0 && finalNormalizedAngle < 90) rewardPoints = 10;
-        else if (finalNormalizedAngle >= 90 && finalNormalizedAngle < 180) rewardPoints = 100;
-        else if (finalNormalizedAngle >= 180 && finalNormalizedAngle < 270) rewardPoints = 25;
-        else rewardPoints = 50;
-
-        statusMsg.innerHTML = `SUCCESS: MATRIX DISPATCHED <span class='text-amber-400 font-bold'>+${rewardPoints} AURA POINTS</span>`;
-        updateAuraDisplay(rewardPoints);
-    }, 4500);
+        graphic.classList.remove("animate-spin");
+        result.innerHTML = `<strong>SPIN LOG ALIGNMENT:</strong><br>🎰 ANTI-RUG SYSTEM DRIFT REINFORCEMENT ACTIVE`;
+        result.classList.remove("hidden");
+        btn.disabled = false;
+        if (typeof confetti === "function") confetti();
+    }, 1500);
 }
+window.spinTheWheel = spinTheWheel;
 
-// SYSTEM HUB 5: INTEGRATED ALLORIGINS PANIC FEEDS AGGREGATOR
-async function fetchCryptoPanicAlphaFeeds() {
-    const container = document.getElementById("news-stream-container");
-    
-    try {
-        const proxyUrl = "https://api.allorigins.win/get?url=";
-        const targetPanicApi = encodeURIComponent("https://cryptopanic.com/api/v1/posts/?api_key=public&regions=en");
-        
-        const response = await fetch(`${proxyUrl}${targetPanicApi}`);
-        const wrappedData = await response.json();
-        const jsonPayload = JSON.parse(wrappedData.contents);
-
-        if (jsonPayload && jsonPayload.results) {
-            container.innerHTML = "";
-            const limitedNews = jsonPayload.results.slice(0, 4);
-
-            limitedNews.forEach(item => {
-                const itemTime = new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const elementCard = document.createElement("div");
-                elementCard.className = "p-3 bg-slate-950 border border-slate-900 hover:border-slate-800 rounded-xl space-y-1 transition text-left relative overflow-hidden";
-                elementCard.innerHTML = `
-                    <div class="flex justify-between items-center text-[9px] font-cyber">
-                        <span class="text-purple-400 font-bold uppercase tracking-wider">${item.source?.domain || 'ALPHA INFRA'}</span>
-                        <span class="text-slate-500 font-medium">${itemTime}</span>
-                    </div>
-                    <a href="${item.url}" target="_blank" class="text-xs font-medium text-slate-300 hover:text-cyan-400 block line-clamp-2 leading-relaxed mt-0.5">
-                        ${item.title}
-                    </a>
-                `;
-                container.appendChild(elementCard);
-            });
-        }
-    } catch (err) {
-        console.warn("CryptoPanic fallback path triggered.", err);
-        container.innerHTML = `
-            <div class="p-3 bg-slate-950 border border-slate-900 rounded-xl space-y-1 text-left relative">
-                <div class="flex justify-between items-center text-[9px] font-cyber"><span class="text-purple-400 font-bold tracking-wider">COINTELEGRAPH</span><span class="text-slate-500">JUST NOW</span></div>
-                <p class="text-xs font-medium text-slate-300 leading-relaxed">Base network transactions daily active users (DAU) hits all-time-high following gas fee compilation drop.</p>
-            </div>
-            <div class="p-3 bg-slate-950 border border-slate-900 rounded-xl space-y-1 text-left relative">
-                <div class="flex justify-between items-center text-[9px] font-cyber"><span class="text-emerald-400 font-bold tracking-wider">BLOOMBERG CRYPTO</span><span class="text-slate-500">12 MIN AGO</span></div>
-                <p class="text-xs font-medium text-slate-300 leading-relaxed">Ethereum Layer-2 liquidity bridges records massive inflow acceleration over the past 48 hours.</p>
-            </div>
-        `;
-    }
-}
-
-// SYSTEM HUB 6: POLYMARKET CONSENSUS TRACKER
-async function fetchMacroPolymarketCondition() {
-    const containerBlock = document.getElementById("polymarket-top-container");
-    const titleText = document.getElementById("poly-title");
-    const oddsBadge = document.getElementById("poly-odds");
+async function connectWallet() {
+    const provider = getActiveProvider();
+    if (!provider) return alert("❌ Web3 Node Client missing. Open via OKX/Coinbase wallet portal.");
 
     try {
-        const res = await fetch("https://gamma-api.polymarket.com/events?limit=1&active=true&closed=false&tag_id=10056");
-        const marketData = await res.json();
+        const accounts = await provider.request({ method: "eth_requestAccounts" });
+        userAddress = accounts[0];
+        isConnected = true;
 
-        if (marketData && marketData.length > 0) {
-            const event = marketData[0];
-            const firstMarket = event.markets?.[0];
+        updateWalletUI(userAddress);
+        renderNativeForecasterHub(); 
 
-            if (firstMarket) {
-                titleText.innerText = event.title || "Will ETH exceed previous record highs this quarter?";
-                const rawOutcomeOdds = firstMarket.outcomePrices ? JSON.parse(firstMarket.outcomePrices) : null;
-                if (rawOutcomeOdds && rawOutcomeOdds[0]) {
-                    const probabilityPercentage = Math.round(parseFloat(rawOutcomeOdds[0]) * 100);
-                    oddsBadge.innerText = `${probabilityPercentage}%`;
-                } else {
-                    oddsBadge.innerText = "54%";
-                }
-                containerBlock.classList.remove("hidden");
-            }
-        }
+        document.getElementById("locked-state-view").classList.add("hidden");
+        document.getElementById("result-section").classList.remove("hidden");
+        
+        generateDestiny(userAddress);
+        await renderTopTrendingBaseCoins(); 
+        navigate('oracle'); 
     } catch (error) {
-        console.warn("Polymarket API matrix connection timed out, loading consensus fallback.", error);
-        titleText.innerText = "Will Ethereum L2 Total Value Locked (TVL) cross $30 Billion this month?";
-        oddsBadge.innerText = "68%";
-        containerBlock.classList.remove("hidden");
+        alert("🔒 Bridge authentication denied: " + error.message);
     }
 }
+
+function updateWalletUI(address) {
+    const btn = document.getElementById("connect-btn");
+    if (!btn) return;
+    btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
+    btn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 rounded-2xl font-mono transition-all text-center block shadow-lg";
+}
+
+function renderNativeForecasterHub() {
+    const container = document.getElementById("polymarket-top-container"); 
+    if (!container || !isConnected) return;
+
+    container.innerHTML = `
+        <div class="space-y-3.5 text-left mt-2 mb-2">
+            <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
+                <div class="flex justify-between items-center text-[10px]">
+                    <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">⚡ BLOCKCHAIN NODE AGENT</span>
+                    <span class="text-emerald-400 font-mono animate-pulse">● Curve Synced</span>
+                </div>
+                <h4 class="text-xs font-bold text-slate-200">Acquire $FORECAST Directly</h4>
+                <div class="flex gap-2">
+                    <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
+                    <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
+                </div>
+                <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
+                    📈 TRACK METRICS RECORD ON FLAUNCH.GG ➜
+                </a>
+            </div>
+            <div class="bg-slate-950 border border-indigo-500/30 rounded-2xl p-4 space-y-3 font-mono text-xs">
+                <span class="text-indigo-400 font-black tracking-wider text-[10px] block">⚙️ BASE B20 CREATOR ENGINE</span>
+                <div class="space-y-2">
+                    <input id="b20-name" type="text" placeholder="Token Name (e.g., Pepe Base)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
+                    <input id="b20-symbol" type="text" placeholder="Token Symbol (e.g., PEPEB)" class="w-full bg-slate-900 border border-slate-800 p-2 rounded-xl text-white text-xs outline-none focus:border-indigo-500" />
+                </div>
+                <button onclick="deployNewB20Token(document.getElementById('b20-name').value, document.getElementById('b20-symbol').value)" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-[10px] transition-all">
+                    🚀 TRANSMIT COMPILATION LAYER
+                </button>
+            </div>
+        </div>
+    `;
+    document.getElementById("btn-action-presale")?.addEventListener("click", executeDirectBuy);
+}
+
+async function executeDirectBuy() {
+    const provider = getActiveProvider();
+    if (!provider || !userAddress) return;
+    const amountETH = document.getElementById("presale-eth-input")?.value || "0.005";
+    try {
+        const txHash = await provider.request({
+            method: 'eth_sendTransaction',
+            params: [{ from: userAddress, to: tokenContractAddress, value: toSafeHexWei(amountETH), data: "0x" }],
+        });
+        alert("🚀 Node Transfer success! Tx: " + txHash);
+    } catch (err) { alert("Refused: " + err.message); }
+}
+
+function generateDestiny(address, isReroll = false) {
+    let seed = 0;
+    const cleanAddress = address.toLowerCase().replace("0x", "");
+    
+    // Jika reroll, tambahkan salt acak agar hasilnya berbeda dari seed address dasar
+    const salt = isReroll ? Math.floor(Math.random() * 9999) : 0;
+    for (let i = 0; i < cleanAddress.length; i++) seed += cleanAddress.charCodeAt(i);
+    seed += salt;
+
+    currentFateGlobal = fateLibrary[seed % fateLibrary.length];
+    userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
+    
+    document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
+    document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
+    document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
+
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+
+    drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
+}
+
+function drawDestinyCard(fateObj, score, address, seed) {
+    const canvas = document.getElementById("destiny-card");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, 350, 500);
+
+    const characterImg = new Image();
+    characterImg.src = fateObj.imagePath; 
+
+    const finalizeDraw = () => {
+        ctx.fillStyle = "rgba(2, 6, 23, 0.55)"; 
+        ctx.fillRect(0, 0, 350, 500);
+        
+        ctx.textAlign = "center";
+        ctx.font = "bold 20px 'Courier New', monospace";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(fateObj.fate, 175, 210);
+
+        ctx.font = "12px sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        
+        let words = fateObj.text.split(" "), line = "", y = 250;
+        for (let n = 0; n < words.length; n++) {
+            let testLine = line + words[n] + " ";
+            if (ctx.measureText(testLine).width > 280 && n > 0) {
+                ctx.fillText(line, 175, y); line = words[n] + " "; y += 18;
+            } else { line = testLine; }
+        }
+        ctx.fillText(line, 175, y);
+
+        ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
+        ctx.fillRect(25, 390, 300, 75);
+        ctx.lineWidth = 1; ctx.strokeStyle = currentFrameColor;
+        ctx.strokeRect(25, 390, 300, 75);
+
+        ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#ffffff";
+        ctx.fillText(`ID  : ${address.slice(0,10)}...`, 40, 412);
+        ctx.fillText(`LUCK: ${score}% ALIGNED`, 40, 430);
+        ctx.fillText(`SEED: #00${seed}`, 40, 448);
+
+        ctx.lineWidth = 6; ctx.strokeStyle = currentFrameColor;
+        ctx.strokeRect(10, 10, 330, 480);
+    };
+
+    characterImg.onload = () => { ctx.drawImage(characterImg, 0, 0, 350, 500); finalizeDraw(); };
+    characterImg.onerror = () => { ctx.fillStyle = "#090d16"; ctx.fillRect(0, 0, 350, 500); finalizeDraw(); };
+}
+
+function executeRerollDestiny() {
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    if (currentAP < 200) {
+        alert("🔒 Insufficient Aura Points! Matrix Reroll requires 200 AP.");
+        return;
+    }
+    
+    currentAP -= 200;
+    localStorage.setItem("premium_aura", currentAP);
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+    
+    generateDestiny(userAddress, true);
+    if (typeof confetti === "function") confetti();
+    alert("🧬 Quantum sequence mutated! New destiny card mapped.");
+}
+window.executeRerollDestiny = executeRerollDestiny;
+
+document.addEventListener("DOMContentLoaded", () => {
+    let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+    document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+
+    renderTopTrendingBaseCoins();
+    setupSocialEngines();
+    setInterval(renderTopTrendingBaseCoins, 15000); // Sinkronisasi ticker berkala otomatis lebih cepat (15s)
+
+    document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
+    document.getElementById("tip-btn")?.addEventListener("click", sendTip);
+    document.getElementById("mint-btn")?.addEventListener("click", mintNFT);
+    document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
+    
+    document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+        const today = new Date().toDateString();
+        const lastClaim = localStorage.getItem("last_aura_claim_date");
+
+        if (lastClaim === today) {
+            alert("🔒 Matrix Reset Required: You have already secured today's Aura alignment. Come back tomorrow!");
+            return;
+        }
+
+        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
+        currentAP += 100;
+        
+        localStorage.setItem("premium_aura", currentAP);
+        localStorage.setItem("last_aura_claim_date", today);
+
+        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+        
+        if (typeof confetti === "function") confetti();
+        alert("🎁 +100 Aura Points successfully synchronized onto database cluster!");
+    });
+});
