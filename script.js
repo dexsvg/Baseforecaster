@@ -191,7 +191,8 @@ function setupSocialEngines() {
     });
 
     document.getElementById("share-tg-btn")?.addEventListener("click", () => {
-        window.open("https://t.专/BaseForecaster", '_blank'); // Redirection endpoint for username @BaseForecaster
+        // FIXED: Karakter mandarin t.专 diganti ke t.me resmi
+        window.open("https://t.me/BaseForecaster", '_blank'); 
     });
 }
 
@@ -515,7 +516,8 @@ function drawDestinyCard(fateObj, score, address, seed) {
     characterImg.src = fateObj.imagePath; 
 
     const finalizeDraw = () => {
-        ctx.fillStyle = "rgba(2, 6, 23, 0.55)"; 
+        // FIXED: Ditambahkan overlay gelap 70% agar teks putih selalu terbaca meskipun gambarnya terang
+        ctx.fillStyle = "rgba(2, 6, 23, 0.7)"; 
         ctx.fillRect(0, 0, 350, 500);
         
         ctx.textAlign = "center";
@@ -559,7 +561,7 @@ function drawDestinyCard(fateObj, score, address, seed) {
 document.addEventListener("DOMContentLoaded", () => {
     renderTopTrendingBaseCoins();
     setupSocialEngines();
-    setInterval(renderTopTrendingBaseCoins, 30000); // Sinkronisasi otomatis setiap 30 detik
+    setInterval(renderTopTrendingBaseCoins, 30000); 
 
     document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
     document.getElementById("tip-btn")?.addEventListener("click", sendTip);
