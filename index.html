@@ -156,13 +156,41 @@
                 </div>
             </div>
 
+            <!-- ==================================================================== -->
+            <!-- UPGRADED TAB WHEEL VIEW WITH VISIBLE PRIZE LABELS -->
+            <!-- ==================================================================== -->
             <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
                 <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
                 <p class="text-xs text-slate-400">Spin the randomized index once every 24 hours to secure standard bonus Aura Points or luck multiplier rerolls.</p>
-                <div class="w-36 h-36 mx-auto rounded-full border-4 border-dashed border-purple-500 flex items-center justify-center relative bg-slate-950 shadow-lg">
-                    <div id="wheel-graphic" class="text-4xl transition-transform duration-1000">🔮</div>
-                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
+                
+                <!-- Roda Indikator Penunjuk Atas -->
+                <div class="relative w-52 h-52 mx-auto flex items-center justify-center">
+                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl text-amber-400 animate-bounce z-30">▼</div>
+                    
+                    <!-- Container Roda Utama Berputar -->
+                    <div id="wheel-graphic" class="w-full h-full rounded-full border-4 border-purple-500 bg-slate-950 shadow-2xl relative overflow-hidden transition-transform duration-[1500ms] ease-out flex items-center justify-center">
+                        
+                        <!-- Garis Pembagi & Label Nominal Hadiah Terpampang -->
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <!-- Sektor 1: 10 AP -->
+                            <div class="absolute text-[10px] font-black font-mono text-cyan-400" style="transform: rotate(0deg) translateY(-70px);">10 AP</div>
+                            <!-- Sektor 2: 20 AP -->
+                            <div class="absolute text-[10px] font-black font-mono text-purple-400" style="transform: rotate(72deg) translateY(-70px);">20 AP</div>
+                            <!-- Sektor 3: 50 AP -->
+                            <div class="absolute text-[10px] font-black font-mono text-pink-400" style="transform: rotate(144deg) translateY(-70px);">50 AP</div>
+                            <!-- Sektor 4: 100 AP -->
+                            <div class="absolute text-[10px] font-black font-mono text-amber-400" style="transform: rotate(216deg) translateY(-70px);">100 AP</div>
+                            <!-- Sektor 5: 0.001$ USDC -->
+                            <div class="absolute text-[9px] font-black font-mono text-emerald-400" style="transform: rotate(288deg) translateY(-70px);">0.001$</div>
+                        </div>
+
+                        <!-- Ornamen Inti Inti Siber Tengah Roda -->
+                        <div class="w-14 h-14 bg-gradient-to-br from-purple-900 to-slate-900 rounded-full border border-purple-400/40 z-20 flex items-center justify-center text-lg shadow-inner">
+                            🔮
+                        </div>
+                    </div>
                 </div>
+
                 <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl font-mono text-xs tracking-wider transition-all active:scale-95">
                     🌀 SPIN THE WHEEL
                 </button>
