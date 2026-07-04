@@ -1,468 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Base Forecaster — Professional Premium v3.0</title>
-
-    <!-- Tailwind + Fonts -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base Forecaster - Aura Hub</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800;14..32,900&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+    <!-- Font Awesome untuk Icon Modern -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            font-family: 'Inter', 'JetBrains Mono', monospace;
-            box-sizing: border-box;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         body {
-            background: #0b0f1a;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem 0.75rem 6rem;
-            position: relative;
-            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
         }
-        .glow-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            pointer-events: none;
-            opacity: 0.25;
-            z-index: 0;
+        /* Custom scrollbar untuk tampilan mobile ala dapps */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-        .glow-orb-1 { width: 320px; height: 320px; top: -10%; left: -10%; background: #2563eb; }
-        .glow-orb-2 { width: 280px; height: 280px; bottom: -10%; right: -10%; background: #7c3aed; }
-        .glow-orb-3 { width: 200px; height: 200px; top: 40%; left: 50%; transform: translateX(-50%); background: #0891b2; opacity: 0.15; }
-        
-        .main-card {
-            position: relative;
-            z-index: 1;
-            max-width: 420px;
-            width: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(37, 99, 235, 0.25);
-            border-radius: 2rem;
-            padding: 1.5rem 1rem;
-            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(37, 99, 235, 0.1) inset;
-        }
-        .glass-btn {
-            background: rgba(30, 58, 138, 0.2);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(56, 189, 248, 0.15);
-            transition: all 0.2s ease;
-        }
-        .glass-btn:hover {
-            background: rgba(30, 58, 138, 0.4);
-            border-color: rgba(56, 189, 248, 0.4);
-            transform: translateY(-1px);
-        }
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 0.04em;
-            color: #475569;
-            transition: all 0.2s ease;
-            padding: 0.4rem 0.6rem;
-            border-radius: 0.75rem;
-            border: 1px solid transparent;
-            background: transparent;
-            cursor: pointer;
-        }
-        .nav-btn.active {
-            color: #38bdf8;
-            border-color: rgba(56, 189, 248, 0.3);
-            background: rgba(56, 189, 248, 0.08);
-            transform: scale(1.05);
-        }
-        .nav-btn:hover:not(.active) { color: #94a3b8; border-color: rgba(148, 163, 184, 0.15); }
-        .nav-icon { font-size: 1.4rem; line-height: 1; }
-        
-        .ticker-wrap {
-            background: rgba(2, 6, 23, 0.7);
-            border: 1px solid rgba(30, 58, 138, 0.3);
-            border-radius: 1rem;
-            padding: 0.4rem 0.6rem;
-            overflow: hidden;
-            position: relative;
-        }
-        .ticker-track {
-            display: flex;
-            gap: 0.75rem;
-            animation: ticker-scroll 35s linear infinite;
-            width: max-content;
-        }
-        .ticker-track:hover { animation-play-state: paused; }
-        @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        .ticker-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
+        ::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(30, 58, 138, 0.2);
-            padding: 0.2rem 0.75rem 0.2rem 0.5rem;
-            border-radius: 2rem;
-            font-size: 0.6rem;
-            font-family: 'JetBrains Mono', monospace;
-            white-space: nowrap;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            color: #e2e8f0;
         }
-        .ticker-item:hover {
-            border-color: #38bdf8;
-            background: rgba(56, 189, 248, 0.1);
-            transform: scale(1.02);
+        ::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 999px;
         }
-        .ticker-rank { color: #38bdf8; font-weight: 800; font-size: 0.55rem; }
-        .ticker-symbol { font-weight: 800; color: #f8fafc; }
-        .ticker-price { color: #94a3b8; }
-        .ticker-change { font-weight: 700; font-size: 0.55rem; }
-        .ticker-change.up { color: #34d399; }
-        .ticker-change.down { color: #fb7185; }
-
-        #destiny-card {
-            width: 100%;
-            max-width: 300px;
-            aspect-ratio: 350/500;
-            border-radius: 1rem;
-            box-shadow: 0 20px 50px -8px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(56, 189, 248, 0.15) inset;
-            background: #0b0f1a;
-            display: block;
-            margin: 0 auto;
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.6);
         }
-
-        /* PREMIUM SMOOTH GACHA SPIN EFFECT (Berputar cepat lalu melambat presisi) */
-        @keyframes premium-spin {
-            0% { transform: rotate(0deg); }
-            40% { transform: rotate(1080deg); } /* Putaran akselerasi tinggi */
-            100% { transform: rotate(2160deg); } /* Deselerasi mulus */
+        /* Efek rotasi roda keberuntungan */
+        .wheel-spin {
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
         }
-        .wheel-spinning {
-            animation: premium-spin 2.2s cubic-bezier(0.1, 0.85, 0.25, 1) forwards !important;
-        }
-
-        .toast-container {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            max-width: 340px;
-            width: 100%;
-            pointer-events: none;
-        }
-        .toast {
-            pointer-events: auto;
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            font-size: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            color: #e2e8f0;
-            box-shadow: 0 12px 40px -8px rgba(0, 0, 0, 0.6);
-            animation: slideIn 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-        }
-        .toast.success { border-color: rgba(52, 211, 153, 0.4); }
-        .toast.error { border-color: rgba(251, 113, 133, 0.4); }
-        .toast.warning { border-color: rgba(251, 191, 36, 0.4); }
-        .toast.info { border-color: rgba(56, 189, 248, 0.3); }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(20px) scale(0.96); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        .toast-exit { animation: slideOut 0.25s ease forwards; }
-        @keyframes slideOut { to { opacity: 0; transform: translateX(20px) scale(0.96); } }
-
-        .spinner {
-            display: inline-block;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(56, 189, 248, 0.15);
-            border-top-color: #38bdf8;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .pulse-dot {
-            display: inline-block;
-            width: 0.5rem;
-            height: 0.5rem;
-            border-radius: 50%;
-            background: #34d399;
-            animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
-        }
-        .tab-content { animation: fadeUp 0.35s ease; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        input, select, textarea {
-            background: rgba(2, 6, 23, 0.7);
-            border: 1px solid rgba(30, 58, 138, 0.3);
-            color: #e2e8f0;
-            border-radius: 0.75rem;
-            padding: 0.6rem 0.8rem;
-            font-size: 0.75rem;
-            font-family: 'JetBrains Mono', monospace;
-            outline: none;
-            transition: border 0.2s;
-            width: 100%;
-        }
-        input:focus { border-color: rgba(56, 189, 248, 0.5); }
     </style>
 </head>
-<body>
+<body class="text-slate-100 min-h-screen flex justify-center items-center p-0 sm:p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-950/40 via-slate-950 to-slate-950">
 
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
-    <div class="glow-orb glow-orb-3"></div>
-
-    <div id="toast-container" class="toast-container"></div>
-
-    <div class="main-card">
-        <!-- Header -->
-        <div class="flex items-center justify-between gap-2 mb-3">
-            <div class="flex items-center gap-2">
-                <div class="pulse-dot"></div>
-                <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                    BASE FORECASTER
-                </h1>
+    <!-- CONTAINER UTAMA (MOCKUP HANDPHONE) -->
+    <div class="w-full max-w-md h-[100vh] sm:h-[850px] bg-slate-950/80 sm:rounded-3xl border-0 sm:border border-slate-800/80 shadow-2xl flex flex-col justify-between overflow-hidden backdrop-blur-xl relative">
+        
+        <!-- TOP STATUS BAR MOCKUP -->
+        <div class="px-6 pt-3 pb-2 flex justify-between items-center border-b border-slate-900 bg-slate-950/50 backdrop-blur-md z-30">
+            <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span class="text-[10px] font-mono tracking-wider text-emerald-400 font-bold uppercase">BASE MAINNET</span>
             </div>
-            <div class="flex items-center gap-2 text-[0.55rem] font-mono text-slate-500 bg-slate-950/50 px-2.5 py-1 rounded-full border border-slate-800">
-                <span class="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
-                <span>v3.1</span>
+            <!-- Total Aura Points Global Counter -->
+            <div class="flex items-center space-x-1.5 bg-purple-950/50 border border-purple-500/30 px-2.5 py-1 rounded-full">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-400 text-xs"></i>
+                <span id="global-aura-counter" class="text-xs font-black font-mono text-purple-300">0</span>
+                <span class="text-[9px] text-purple-400/70 font-bold font-mono">AURA</span>
             </div>
         </div>
 
-        <!-- Ticker -->
-        <div class="ticker-wrap mb-3">
-            <div id="ticker-track" class="ticker-track">
-                <span class="text-slate-500 text-[0.55rem] font-mono px-2 animate-pulse">🔮 Syncing blockchain logs...</span>
-            </div>
-        </div>
-
-        <!-- Aura Bar -->
-        <div class="flex items-center justify-between bg-slate-950/60 border border-slate-800 rounded-2xl p-2.5 mb-3">
-            <div class="flex items-center gap-2">
-                <span class="text-lg">⚡</span>
-                <div>
-                    <div class="text-[0.55rem] font-mono text-slate-400">Aura Balance</div>
-                    <div id="aura-points-display" class="font-extrabold text-cyan-400 text-sm">0 AP</div>
-                </div>
-            </div>
-            <button id="daily-login-btn" class="glass-btn text-[0.6rem] font-bold px-3 py-1.5 rounded-xl text-cyan-400">
-                + Claim Daily
-            </button>
-        </div>
-
-        <!-- Wallet Connect -->
-        <div id="wallet-section" class="mb-3">
-            <button id="connect-btn" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3 rounded-2xl text-sm shadow-lg flex items-center justify-center gap-2">
-                <span>🔮</span> Connect Web3 Wallet
-            </button>
-        </div>
-
-        <!-- Locked State -->
-        <div id="locked-state-view" class="py-8 px-4 border border-slate-800 border-dashed rounded-2xl text-center bg-slate-950/30">
-            <div class="text-4xl mb-2 animate-pulse">🔒</div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Terminal Locked</h4>
-            <p class="text-[0.6rem] text-slate-500 max-w-xs mx-auto mt-1 leading-relaxed">
-                Connect your wallet to sync on-chain data, view your destiny, and interact with Base protocols.
-            </p>
-        </div>
-
-        <!-- ===== RESULT SECTION ===== -->
-        <div id="result-section" class="hidden mt-3 space-y-4">
-
-            <!-- Tab: Oracle -->
+        <!-- SCROLLABLE CONTENT LAYER -->
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-24 z-10">
+            
+            <!-- ====== TAB 1: ORACLE & SCANNER HUB ====== -->
             <div id="tab-oracle" class="tab-content space-y-4">
-                <p class="text-[0.65rem] text-slate-400 italic text-center leading-relaxed">
-                    "Your hexadecimal identity reveals the path — on-chain fate is immutable."
-                </p>
-
-                <div class="flex flex-col items-center">
-                    <canvas id="destiny-card" width="350" height="500"></canvas>
-                    <button id="reroll-btn" class="mt-3 glass-btn text-[0.6rem] font-mono text-purple-400 px-4 py-1.5 rounded-xl border border-purple-500/30 flex items-center gap-1.5">
-                        🌀 Reroll Destiny <span class="text-[0.5rem] text-slate-500">(200 AP)</span>
-                    </button>
+                
+                <!-- HEADER BANNER -->
+                <div class="p-4 bg-gradient-to-br from-purple-900/40 to-slate-900/40 border border-purple-500/20 rounded-2xl relative overflow-hidden shadow-inner">
+                    <div class="absolute -right-8 -bottom-8 text-purple-500/10 text-8xl transform rotate-12 pointer-events-none">
+                        <i class="fa-solid fa-crystal-ball"></i>
+                    </div>
+                    <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-2">
+                        <span>🔮 BASE FORECASTER</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                        Gali ramalan portofolio on-chain kamu, kumpulkan hoki harian, dan pantau alpha market terbaru langsung dari jaringan Base.
+                    </p>
                 </div>
 
-                <!-- Luck Bar -->
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[0.6rem] font-mono text-slate-400">
-                        <span>Degen Luck Alignment</span>
-                        <span id="luck-score" class="text-cyan-400 font-bold">0%</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div id="luck-bar" class="h-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all duration-1000" style="width:0%"></div>
-                    </div>
-                    <div class="text-center text-[0.5rem] text-slate-600 font-mono">
-                        Seed: <span id="seed-anchor" class="text-blue-400">#0000</span>
-                    </div>
-                </div>
-
-                <!-- Share -->
-                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-3 space-y-2">
-                    <div class="text-[0.55rem] font-mono text-slate-500 text-center tracking-wider">📢 BROADCAST SIGNAL</div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="share-x-btn" class="glass-btn text-[0.6rem] py-2 rounded-lg text-white/80">𝕏 X</button>
-                        <button id="share-tg-btn" class="glass-btn text-[0.6rem] py-2 rounded-lg text-sky-400">✈️ Telegram</button>
+                <!-- TRENDING SYMBOLS TICKER -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-2.5">
+                    <span class="text-[10px] font-bold text-slate-500 block mb-1.5 tracking-wider uppercase">🔥 HOT BASE MEMES (TAP TO SCAN)</span>
+                    <div class="flex gap-2 overflow-x-auto pb-1 text-xs" id="trending-list">
+                        <button onclick="quickScan('0x4ed4e862860bedd9a605b0bbb26a150254bab07c')" class="bg-slate-950 hover:bg-purple-950/30 border border-slate-800 hover:border-purple-500/40 px-3 py-1.5 rounded-xl font-mono shrink-0 text-slate-300 flex items-center gap-1.5 transition">
+                            <span class="text-purple-400">#1</span> $DEGEN
+                        </button>
+                        <button onclick="quickScan('0xac1d2417e6dd2be14047e09ece363c32e92a403c')" class="bg-slate-950 hover:bg-purple-950/30 border border-slate-800 hover:border-purple-500/40 px-3 py-1.5 rounded-xl font-mono shrink-0 text-slate-300 flex items-center gap-1.5 transition">
+                            <span class="text-purple-400">#2</span> $BRETT
+                        </button>
+                        <button onclick="quickScan('0x40d160655a6d36ef55fa4f1a4e1cf6fca2e6b669')" class="bg-slate-950 hover:bg-purple-950/30 border border-slate-800 hover:border-purple-500/40 px-3 py-1.5 rounded-xl font-mono shrink-0 text-slate-300 flex items-center gap-1.5 transition">
+                            <span class="text-purple-400">#3</span> $KEYCAT
+                        </button>
                     </div>
                 </div>
 
-                <!-- Contract Actions -->
-                <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3 space-y-2">
-                    <div class="text-[0.55rem] font-mono text-slate-500 text-center">⚡ Contract Interactions</div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="tip-btn" class="glass-btn text-[0.6rem] font-bold py-2.5 rounded-xl text-emerald-400 border-emerald-500/20">💸 Tip 0.001 ETH</button>
-                        <button id="mint-btn" class="glass-btn text-[0.6rem] font-bold py-2.5 rounded-xl text-amber-400 border-amber-500/20">🪙 Mint NFT</button>
+                <!-- CARDS DESTINY (HARI INI) -->
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 text-center space-y-3 relative">
+                    <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase">🎴 YOUR DAILY CRYPTO DESTINY</h3>
+                    
+                    <div id="destiny-placeholder" class="py-6 border border-dashed border-slate-800 rounded-xl bg-slate-950/30">
+                        <p class="text-xs text-slate-500 px-4">Buka kartu takdirmu hari ini untuk tahu status hoki trading-mu sekaligus klaim booster Aura Points!</p>
+                        <button onclick="revealDestinyCard()" class="mt-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition shadow-lg shadow-purple-900/30">
+                            Draw Destiny Card
+                        </button>
+                    </div>
+
+                    <div id="destiny-card" class="hidden p-4 rounded-xl border relative overflow-hidden text-left transform scale-95 transition-all duration-300">
+                        <div class="absolute top-2 right-2 text-[10px] font-mono font-bold bg-white/10 px-1.5 py-0.5 rounded" id="card-rarity">COMMON</div>
+                        <h4 id="card-title" class="text-base font-black tracking-wide">THE MOONWALKER</h4>
+                        <p id="card-desc" class="text-xs text-slate-300 mt-1 leading-relaxed">...</p>
+                        <div class="mt-3 pt-2 border-t border-white/10 flex justify-between items-center text-[11px]">
+                            <span class="text-slate-400" id="card-bonus-text">Aura Earned:</span>
+                            <strong class="font-mono text-amber-400" id="card-points-val">+0 AURA</strong>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Token Scanner -->
-                <div class="bg-slate-950/60 border border-slate-800 rounded-2xl p-3 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[0.6rem] font-bold text-slate-300">🔬 REAL-TIME RADAR</span>
-                        <span id="scan-status" class="text-[0.5rem] text-slate-500 font-mono">● idle</span>
+                <!-- THE ORACLE SCANNER -->
+                <div class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 space-y-3">
+                    <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase">🔍 CONTRACT SCANNER & FORECASTER</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="token-address-input" placeholder="Paste Base contract address (0x...)" class="flex-1 bg-slate-950 border border-slate-800 focus:border-purple-500/50 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none transition">
+                        <button onclick="executeTokenScan()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0">
+                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i> Scan
+                        </button>
                     </div>
-                    <div class="flex gap-1.5">
-                        <input type="text" id="external-target-input" placeholder="Contract address or ticker..." class="flex-1 text-[0.65rem] py-2 px-3 rounded-xl text-white" />
-                        <button id="external-target-btn" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[0.6rem] px-4 rounded-xl">Scan</button>
+
+                    <!-- Scan Loading -->
+                    <div id="scan-loading" class="hidden py-8 text-center space-y-2">
+                        <i class="fa-solid fa-circle-notch animate-spin text-purple-500 text-2xl"></i>
+                        <p class="text-xs text-slate-400 font-mono">Peeking into the future matrix block...</p>
                     </div>
-                    <div id="external-target-result" class="hidden mt-1"></div>
+
+                    <!-- Scan Result Card -->
+                    <div id="scan-result" class="hidden bg-slate-950/80 border border-slate-800 p-3.5 rounded-xl space-y-3">
+                        <div class="flex justify-between items-start border-b border-slate-900 pb-2">
+                            <div>
+                                <h4 id="res-token-name" class="font-black text-sm text-white">Token Name</h4>
+                                <span id="res-token-address" class="text-[10px] font-mono text-slate-500 break-all block">0x0...</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="res-token-price" class="font-mono font-black text-sm text-emerald-400 block">$0.00</span>
+                                <span id="res-token-change" class="text-[10px] font-mono font-bold text-emerald-500">+0.0%</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div class="p-2 bg-slate-900/40 rounded-lg"><span class="text-slate-500 block text-[9px]">LIQUIDITY</span> <strong id="res-liq" class="text-slate-300">$0</strong></div>
+                            <div class="p-2 bg-slate-900/40 rounded-lg"><span class="text-slate-500 block text-[9px]">24H VOLUME</span> <strong id="res-vol" class="text-slate-300">$0</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- === FITUR BARU: ADVANCED TOKEN SECURITY & METRICS === -->
+                    <div id="advanced-metrics-card" class="hidden bg-slate-900/80 border border-purple-500/30 p-4 rounded-2xl space-y-3 text-left">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 tracking-wide">🛡️ DEGEN RISK ASSESSMENT MATRIX</h3>
+                            <span id="security-badge" class="text-[9px] px-1.5 py-0.5 rounded border font-mono">SCANNING...</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-[10px] font-mono">
+                            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                                <span class="text-slate-500 block">🍯 Honeypot Status:</span>
+                                <strong id="honeypot-val" class="text-white">-</strong>
+                            </div>
+                            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                                <span class="text-slate-500 block">🐳 Top 10 Holders:</span>
+                                <strong id="whale-concentration-val" class="text-white">-</strong>
+                            </div>
+                            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                                <span class="text-slate-500 block">📈 Buy/Sell Tax:</span>
+                                <strong id="tax-val" class="text-white">-</strong>
+                            </div>
+                            <div class="p-2 bg-slate-950 rounded-xl border border-slate-800">
+                                <span class="text-slate-500 block">💬 AI Oracle Opinion:</span>
+                                <strong id="ai-opinion-val" class="text-cyan-400 text-[9px] block leading-tight mt-0.5">-</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- POLYMARKET INSIGHT BLOCK -->
+                    <div id="polymarket-top-container" class="hidden pt-2 border-t border-slate-900">
+                        <span class="text-[10px] font-bold text-slate-500 block mb-2 tracking-wider uppercase">📊 CONNECTED POLYMARKET MACRO PROBABILITY</span>
+                        <div id="polymarket-card" class="p-3 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                            <span id="poly-title" class="font-medium text-slate-300 pr-2">Loading market prediction event...</span>
+                            <div class="bg-blue-950 border border-blue-500/30 text-blue-400 px-2 py-1 rounded-lg font-mono font-black text-center min-w-[55px] shrink-0">
+                                <span id="poly-odds" class="text-sm">50%</span>
+                                <span class="text-[8px] block font-normal text-blue-500/80">CHANCE</span>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- B20 Creator -->
-                <div class="bg-slate-950/60 border border-indigo-500/20 rounded-2xl p-3 space-y-2">
-                    <div class="flex items-center gap-1.5">
-                        <span class="text-[0.6rem] font-bold text-indigo-400">⚙️ B20 CREATOR ENGINE</span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <input id="b20-name" type="text" placeholder="Token Name" />
-                        <input id="b20-symbol" type="text" placeholder="Symbol" />
-                    </div>
-                    <button id="deploy-b20-btn" class="w-full bg-indigo-600 text-white font-bold text-[0.6rem] py-2 rounded-xl">🚀 Deploy B20 Token</button>
-                </div>
-
-                <!-- Quick Swap -->
-                <div class="bg-slate-950/60 border border-emerald-500/20 rounded-2xl p-3 space-y-2">
-                    <div class="text-[0.55rem] font-mono text-slate-500">💱 Quick Swap (Base V2)</div>
-                    <div class="flex gap-1.5">
-                        <input id="swap-amount" type="number" step="0.001" value="0.01" class="w-1/3" />
-                        <input id="swap-token" type="text" placeholder="Token address" class="flex-1" />
-                        <button id="swap-btn" class="bg-emerald-600 text-white font-bold text-[0.6rem] px-3 rounded-xl">Swap</button>
-                    </div>
-                    <div id="swap-status" class="text-[0.5rem] text-slate-500 font-mono text-center hidden"></div>
-                </div>
-
-                <a href="https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69" target="_blank" class="block bg-slate-950/60 border border-cyan-500/20 rounded-xl p-2.5 text-[0.6rem] text-center text-cyan-400 font-mono">
-                    📈 Track $FORECAST on Flaunch.gg →
-                </a>
             </div>
 
-            <!-- Tab: Glow -->
-            <div id="tab-glow" class="tab-content hidden space-y-3">
-                <h2 class="text-sm font-extrabold tracking-wider text-center text-cyan-400">✨ Aura Frame Studio</h2>
-                <div class="space-y-1.5">
-                    <button data-glow="neon" class="w-full p-3 rounded-xl border border-cyan-500/20 bg-slate-950 flex items-center justify-between text-[0.6rem] font-mono">
-                        <span class="font-bold text-cyan-400">🔹 CYAN NEON</span>
-                        <span class="w-12 h-2 rounded-full bg-cyan-400"></span>
-                    </button>
-                    <button data-glow="gold" class="w-full p-3 rounded-xl border border-amber-500/20 bg-slate-950 flex items-center justify-between text-[0.6rem] font-mono">
-                        <span class="font-bold text-amber-400">🔸 GOLD LUCK</span>
-                        <span class="w-12 h-2 rounded-full bg-amber-500"></span>
-                    </button>
-                    <button data-glow="matrix" class="w-full p-3 rounded-xl border border-emerald-500/20 bg-slate-950 flex items-center justify-between text-[0.6rem] font-mono">
-                        <span class="font-bold text-emerald-400">🟢 MATRIX GREEN</span>
-                        <span class="w-12 h-2 rounded-full bg-emerald-500"></span>
-                    </button>
-                    <button data-glow="rose" class="w-full p-3 rounded-xl border border-rose-500/20 bg-slate-950 flex items-center justify-between text-[0.6rem] font-mono">
-                        <span class="font-bold text-rose-400">🔴 RUBY PULSE</span>
-                        <span class="w-12 h-2 rounded-full bg-rose-500"></span>
-                    </button>
+            <!-- ====== TAB 2: LUCK WHEEL HUB ====== -->
+            <div id="tab-wheel" class="tab-content hidden space-y-4">
+                
+                <div class="p-4 bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border border-indigo-500/20 rounded-2xl text-center space-y-2">
+                    <h2 class="text-base font-black text-white">🎡 ARCH-ENERGY WHEEL</h2>
+                    <p class="text-xs text-slate-400 max-w-xs mx-auto">
+                        Putar roda berputar kosmologis sekali setiap hari secara gratis untuk melipatgandakan pasokan Aura Points kamu!
+                    </p>
                 </div>
+
+                <!-- WHEEL GRAPHIC WORKSPACE -->
+                <div class="flex flex-col items-center justify-center py-6 relative">
+                    <!-- Penunjuk Roda -->
+                    <div class="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-amber-400 absolute top-3 z-20 drop-shadow-md"></div>
+                    
+                    <!-- Roda Kontainer Lingkaran -->
+                    <div id="fortune-wheel-element" class="w-64 h-64 rounded-full border-4 border-slate-800 bg-slate-900 shadow-xl shadow-indigo-950/40 relative overflow-hidden wheel-spin flex items-center justify-center">
+                        <!-- Pola Grid Sektor Sederhana via SVG Background Dinamis / CSS -->
+                        <div class="absolute inset-0 rounded-full opacity-20 bg-[conic-gradient(from_0deg,#3b82f6_0deg_45deg,#000_45deg_90deg,#8b5cf6_90deg_135deg,#000_135deg_180deg,#ec4899_180deg_225deg,#000_225deg_270deg,#f59e0b_270deg_315deg,#000_315deg_360deg)]"></div>
+                        <!-- Pusat Roda Core -->
+                        <div class="w-12 h-12 rounded-full bg-slate-950 border-2 border-indigo-500/50 z-10 flex items-center justify-center shadow-lg">
+                            <div class="w-3 h-3 rounded-full bg-indigo-400 animate-ping"></div>
+                        </div>
+                        <!-- Label Ringkas di Dalam Sektor Sederhana -->
+                        <span class="absolute font-mono font-black text-[10px] text-blue-400 transform -translate-y-24">10</span>
+                        <span class="absolute font-mono font-black text-[10px] text-purple-400 transform translate-x-24 rotate-90">50</span>
+                        <span class="absolute font-mono font-black text-[10px] text-pink-400 transform translate-y-24 rotate-180">25</span>
+                        <span class="absolute font-mono font-black text-[10px] text-amber-400 transform -translate-x-24 -rotate-90">100</span>
+                    </div>
+
+                    <button onclick="spinFortuneWheel()" id="spin-btn" class="mt-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-sm px-8 py-3 rounded-xl transition shadow-lg shadow-indigo-900/40 tracking-wide">
+                        SPIN WHEEL
+                    </button>
+                    <p id="wheel-status-msg" class="text-[11px] font-mono text-slate-500 mt-2">Cost: 1 Spin Card Daily Allocation</p>
+                </div>
+
+                <!-- REWARD ARCHIVES MOCK -->
+                <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-3 text-xs flex justify-between items-center">
+                    <span class="text-slate-400">Streak Keberuntungan Beruntun:</span>
+                    <strong class="font-mono text-indigo-400 bg-indigo-950/50 border border-indigo-900 px-2 py-0.5 rounded">3 HARI</strong>
+                </div>
+
             </div>
 
-            <!-- Tab: Wheel -->
-            <div id="tab-wheel" class="tab-content hidden space-y-4 text-center">
-                <h2 class="text-sm font-extrabold tracking-wider text-purple-400">🎡 LUCKY WHEEL</h2>
-                <div class="relative w-36 h-36 mx-auto rounded-full border-4 border-dashed border-purple-500/40 flex items-center justify-center bg-slate-950 shadow-xl">
-                    <div id="wheel-graphic" class="text-5xl transition-all">🔮</div>
-                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 text-xl text-amber-400 animate-bounce">▼</div>
+            <!-- ====== TAB 3: TERMINAL ALPHA NEWS ====== -->
+            <div id="tab-news" class="tab-content hidden space-y-4">
+                
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-satellite-dish text-rose-500 text-xs animate-pulse"></i>
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider uppercase">LIVE CRYPTOPANIC FEED MATRIX</h3>
+                    </div>
+                    <span class="text-[9px] font-mono bg-rose-950/50 text-rose-400 border border-rose-900/50 px-1.5 py-0.5 rounded">REALTIME</span>
                 </div>
-                <button id="btn-spin" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl text-[0.6rem] tracking-wider">
-                    🌀 SPIN THE WHEEL
-                </button>
-                <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-300 font-mono text-[0.6rem]"></div>
-            </div>
 
-            <!-- Tab: Ranks -->
-            <div id="tab-ranks" class="tab-content hidden space-y-3">
-                <h2 class="text-sm font-extrabold tracking-wider text-center text-yellow-500">🏆 LEADERBOARD</h2>
-                <div id="ranks-list-container" class="space-y-1.5"></div>
+                <!-- News Stream Target -->
+                <div id="news-stream-container" class="space-y-3">
+                    <!-- Loading State Placeholder -->
+                    <div class="py-12 text-center text-slate-600 text-xs font-mono space-y-2">
+                        <i class="fa-solid fa-spinner animate-spin text-slate-500"></i>
+                        <p>Interstellar news payload synchronization...</p>
+                    </div>
+                </div>
+
             </div>
 
         </div>
 
-        <!-- Footer -->
-        <div class="mt-4 pt-3 border-t border-slate-800/60">
-            <a href="https://base.org" target="_blank" class="block bg-slate-950/50 border border-slate-800/60 rounded-xl p-2.5">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-600/10 rounded-lg flex items-center justify-center text-lg">🔵</div>
-                    <div>
-                        <div class="text-[0.6rem] font-bold text-slate-200">Explore Base Mainnet</div>
-                        <div class="text-[0.5rem] text-slate-500">Low fees · Builder-centric</div>
-                    </div>
-                </div>
-            </a>
+        <!-- APP BOTTOM NAVIGATION TABS MENU BAR -->
+        <div class="absolute bottom-0 inset-x-0 bg-slate-950/90 border-t border-slate-900 p-2 grid grid-cols-3 gap-1 z-30 backdrop-blur-md">
+            <button onclick="switchTab('tab-oracle')" id="btn-tab-oracle" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-purple-400 bg-purple-950/30 border border-purple-500/20 transition group">
+                <i class="fa-solid fa-wand-magic-sparkles text-sm mb-1 group-hover:scale-110 transition"></i>
+                <span class="text-[10px] font-bold tracking-wide">Oracle</span>
+            </button>
+            <button onclick="switchTab('tab-wheel')" id="btn-tab-wheel" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition group">
+                <i class="fa-solid fa-circle-radiation text-sm mb-1 group-hover:rotate-45 transition"></i>
+                <span class="text-[10px] font-medium tracking-wide">Luck Wheel</span>
+            </button>
+            <button onclick="switchTab('tab-news')" id="btn-tab-news" class="nav-btn py-2 px-1 rounded-xl flex flex-col items-center justify-center text-slate-400 hover:text-slate-200 transition group">
+                <i class="fa-solid fa-bolt text-sm mb-1 group-hover:translate-y-[-1px] transition"></i>
+                <span class="text-[10px] font-medium tracking-wide">Alpha Feed</span>
+            </button>
         </div>
+
     </div>
 
-    <!-- ===== BOTTOM NAV ===== -->
-    <div class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-full px-2">
-        <div class="bg-slate-950/90 backdrop-blur-xl border border-blue-900/30 rounded-2xl shadow-2xl flex justify-around items-center p-1.5">
-            <button data-tab="oracle" class="nav-btn active">
-                <span class="nav-icon">🔮</span><span>Oracle</span>
-            </button>
-            <button data-tab="glow" class="nav-btn">
-                <span class="nav-icon">✨</span><span>Glow</span>
-            </button>
-            <button data-tab="wheel" class="nav-btn">
-                <span class="nav-icon">🎡</span><span>Wheel</span>
-            </button>
-            <button data-tab="ranks" class="nav-btn">
-                <span class="nav-icon">🏆</span><span>Ranks</span>
-            </button>
-        </div>
-    </div>
-
+    <!-- MAIN APP SCRIPT ATTACHMENT -->
     <script src="script.js"></script>
 </body>
 </html>
