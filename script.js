@@ -9,12 +9,44 @@ const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a2
 const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
 const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
 
+// ====================================================================
+// CORE STATE MANAGEMENT (Aura Points & USDC Hub)
+// ====================================================================
 let userAddress = "";
 let isConnected = false;
 let currentFateGlobal = null; 
 let currentFrameColor = "#f59e0b"; 
 let frameNameGlobal = "Gold Luck Destiny";
 let userLuckScoreGlobal = 50;
+
+// State Saldo Akumulatif Dompet
+let appState = {
+    auraPoints: 0,
+    usdcBalance: 0.00
+};
+
+// DOM Target Penampung Informasi Saldo
+const auraDisplay = document.getElementById("aura-points-display");
+
+// Membuat dan menyisipkan container saldo USDC tepat di bawah tampilan Aura Points
+const usdcDisplayContainer = document.createElement("div");
+usdcDisplayContainer.className = "text-[11px] font-mono mt-1 border-t border-slate-950 pt-1 flex justify-between items-center";
+usdcDisplayContainer.innerHTML = `
+    <span class="text-slate-400">💵 Your USDC Balance:</span>
+    <span id="usdc-balance-display" class="font-bold text-emerald-400 text-sm">$0.00</span>
+`;
+if (auraDisplay && auraDisplay.parentElement) {
+    auraDisplay.parentElement.appendChild(usdcDisplayContainer);
+}
+
+// Inisialisasi Sinkronisasi Tampilan UI Saldo Bersanding
+function updateBalanceUI() {
+    const auraDisplayEl = document.getElementById("aura-points-display");
+    const usdcDisplayEl = document.getElementById("usdc-balance-display");
+    
+    if (auraDisplayEl) auraDisplayEl.textContent = `${appState.auraPoints} AP`;
+    if (usdcDisplayEl) usdcDisplayEl.textContent = `$${appState.usdcBalance.toFixed(3)}`;
+}
 
 const fateLibrary = [
     { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
@@ -28,6 +60,35 @@ const fateLibrary = [
     { fate: "THE LIQUIDITY GOD", emoji: "🌊", imagePath: "images9.jpeg", text: "Every pool you touch overflows with rewards. Yield farms bow down to your harvesting strategy.", score: 96 },
     { fate: "THE PROPAGANDA KING", emoji: "📢", imagePath: "images10.jpeg", text: "Your conviction can pump any chart. When you speak, the community follows your vision.", score: 90 }
 ];
+
+// ====================================================================
+// CONFIGURASI & ALGORITMA GACHA LUCKY WHEEL (ANTI JACKPOT SETTING)
+// ====================================================================
+const WHEEL_ITEMS = [
+    { name: "10 AP", type: "AP", value: 10, weight: 40 },
+    { name: "20 AP", type: "AP", value: 20, weight: 30 },
+    { name: "50 AP", type: "AP", value: 50, weight: 15 },
+    { name: "100 AP", type: "AP", value: 100, weight: 10 },
+    { name: "0.001$ USDC", type: "USDC", value: 0.001, weight: 5 },
+    // Hadiah settingan: Bobot diset 0 agar tidak akan pernah terpilih oleh fungsi matematika acak
+    { name: "500 AP", type: "AP", value: 500, weight: 0 },
+    { name: "1000 AP", type: "AP", value: 1000, weight: 0 },
+    { name: "$10 USDC", type: "USDC", value: 10.0, weight: 0 }
+];
+
+function pickRandomReward() {
+    const activePool = WHEEL_ITEMS.filter(item => item.weight > 0);
+    const totalWeight = activePool.reduce((sum, item) => sum + item.weight, 0);
+    
+    let randomNum = Math.random() * totalWeight;
+    for (const item of activePool) {
+        if (randomNum < item.weight) {
+            return item;
+        }
+        randomNum -= item.weight;
+    }
+    return activePool[0];
+}
 
 function getActiveProvider() {
     if (window.ethereum) {
@@ -191,7 +252,6 @@ function setupSocialEngines() {
     });
 
     document.getElementById("share-tg-btn")?.addEventListener("click", () => {
-        // FIXED: Karakter mandarin t.专 diganti ke t.me resmi
         window.open("https://t.me/BaseForecaster", '_blank'); 
     });
 }
@@ -387,19 +447,39 @@ function renderLeaderboardData() {
     `;
 }
 
+// ====================================================================
+// UPGRADED LUCKY WHEEL MECHANISM (REAL-TIME ADAPTIVE ACCUMULATION)
+// ====================================================================
 function spinTheWheel() {
     const btn = document.getElementById("btn-spin");
     const graphic = document.getElementById("wheel-graphic");
     const result = document.getElementById("spin-result");
+    
     if (!btn || !graphic || !result) return;
+    if (!isConnected) return alert("🚨 Hubungkan Web3 Wallet terlebih dahulu untuk memutar roda takdir!");
 
     btn.disabled = true;
     result.classList.add("hidden");
     graphic.classList.add("animate-spin");
 
+    // Mengambil item valid dari pool terproteksi (Aura Points & USDC Bersanding)
+    const reward = pickRandomReward();
+
     setTimeout(() => {
         graphic.classList.remove("animate-spin");
-        result.innerHTML = `<strong>SPIN LOG ALIGNMENT:</strong><br>🎰 ANTI-RUG SYSTEM DRIFT REINFORCEMENT ACTIVE`;
+        
+        // Akumulasi penambahan ke saldo state secara real-time
+        if (reward.type === "AP") {
+            appState.auraPoints += reward.value;
+            result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>🎉 Selamat! Kamu mendapatkan <span class="text-cyan-400 font-bold">${reward.name}</span>!`;
+        } else if (reward.type === "USDC") {
+            appState.usdcBalance += reward.value;
+            result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>💰 Boom! Saldo didepositkan sebesar <span class="text-emerald-400 font-bold">${reward.name}</span>!`;
+        }
+
+        // Jalankan pembaruan interface visual dompet
+        updateBalanceUI();
+        
         result.classList.remove("hidden");
         btn.disabled = false;
         if (typeof confetti === "function") confetti();
@@ -419,6 +499,10 @@ async function connectWallet() {
         userAddress = accounts[0];
         isConnected = true;
 
+        // Berikan saldo awal kosmetik (bisa disesuaikan atau di-fetch dari node asli)
+        appState.auraPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+        appState.usdcBalance = 0.005;
+
         updateWalletUI(userAddress);
         renderNativeForecasterHub(); 
 
@@ -427,6 +511,7 @@ async function connectWallet() {
         
         generateDestiny(userAddress);
         await renderTopTrendingBaseCoins(); 
+        updateBalanceUI();
         navigate('oracle'); 
     } catch (error) {
         alert("🔒 Bridge authentication denied: " + error.message);
@@ -499,9 +584,13 @@ function generateDestiny(address) {
     currentFateGlobal = fateLibrary[seed % fateLibrary.length];
     userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
     
-    document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
-    document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
-    document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
+    const luckScoreEl = document.getElementById("luck-score");
+    const luckBarEl = document.getElementById("luck-bar");
+    const seedAnchorEl = document.getElementById("seed-anchor");
+
+    if (luckScoreEl) luckScoreEl.innerText = `${userLuckScoreGlobal}%`;
+    if (luckBarEl) luckBarEl.style.width = `${userLuckScoreGlobal}%`;
+    if (seedAnchorEl) seedAnchorEl.innerText = `0x${seed.toString(16).toUpperCase()}`;
 
     drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
 }
@@ -516,7 +605,6 @@ function drawDestinyCard(fateObj, score, address, seed) {
     characterImg.src = fateObj.imagePath; 
 
     const finalizeDraw = () => {
-        // FIXED: Ditambahkan overlay gelap 70% agar teks putih selalu terbaca meskipun gambarnya terang
         ctx.fillStyle = "rgba(2, 6, 23, 0.7)"; 
         ctx.fillRect(0, 0, 350, 500);
         
@@ -569,10 +657,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
 
     document.getElementById("daily-login-btn")?.addEventListener("click", () => {
-        let currentAP = parseInt(localStorage.getItem("premium_aura")) || 0;
-        currentAP += 100;
-        localStorage.setItem("premium_aura", currentAP);
-        document.getElementById("aura-points-display").innerText = `${currentAP} AP`;
+        appState.auraPoints += 100;
+        localStorage.setItem("premium_aura", appState.auraPoints);
+        updateBalanceUI();
         if (typeof confetti === "function") confetti();
         alert("🎁 +100 Aura Points synchronized onto database cluster!");
     });
