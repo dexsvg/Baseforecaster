@@ -751,52 +751,65 @@
                     </div>
                 </div>
             `;
-            document.getElementById("daily-login-btn")?.addEventListener("click", () => {
-    const today = new Date().toDateString(); // Mengambil string tanggal hari ini (ex: "Sun Jul 05 2026")
-    const lastClaim = localStorage.getItem("last_claim_date");
+        }
 
-    if (lastClaim === today) {
-        alert("🔒 You have already claimed your daily rewards today! Come back tomorrow.");
-        return;
-    }
+        // ====================================================================
+        // FUNGSI UTAMA CLAIM DAILY AP (VERSI AMAN SEKALI SEHARI)
+        // ====================================================================
+        function checkDailyClaimStatus() {
+            const today = new Date().toDateString();
+            const lastClaim = localStorage.getItem("last_claim_date");
+            const btn = document.getElementById("daily-login-btn");
 
-    // Eksekusi penambahan poin jika belum klaim hari ini
-    appState.auraPoints += 100;
-    localStorage.setItem("premium_aura", appState.auraPoints);
-    localStorage.setItem("last_claim_date", today); // Kunci tanggal hari ini
-    
-    updateBalanceUI();
-    checkDailyClaimStatus(); // Perbarui tampilan tombol jadi terkunci
+            if (btn && lastClaim === today) {
+                btn.textContent = "Claimed ✓";
+                btn.disabled = true;
+                btn.className = "bg-slate-800 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded-xl cursor-not-allowed shadow-none";
+            }
+        }
 
-    if (typeof confetti === "function") confetti();
-    alert("🎁 +100 Aura Points synchronized successfully!");
-});
+        function handleDailyClaim() {
+            const today = new Date().toDateString();
+            const lastClaim = localStorage.getItem("last_claim_date");
 
-// Fungsi tambahan untuk mengecek status tombol saat dompet terhubung atau halaman dimuat
-function checkDailyClaimStatus() {
-    const today = new Date().toDateString();
-    const lastClaim = localStorage.getItem("last_claim_date");
-    const btn = document.getElementById("daily-login-btn");
+            if (lastClaim === today) {
+                alert("🔒 You have already claimed your daily rewards today! Come back tomorrow.");
+                return;
+            }
 
-    if (btn && lastClaim === today) {
-        btn.textContent = "Claimed ✓";
-        btn.disabled = true;
-        btn.className = "bg-slate-800 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded-xl cursor-not-allowed shadow-none";
-    }
-}
+            appState.auraPoints += 100;
+            localStorage.setItem("premium_aura", appState.auraPoints);
+            localStorage.setItem("last_claim_date", today);
+            
+            updateBalanceUI();
+            checkDailyClaimStatus();
+
+            if (typeof confetti === "function") confetti();
+            alert("🎁 +100 Aura Points synchronized successfully!");
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
+            // Cek status tombol langsung saat halaman pertama kali dibuka
+            checkDailyClaimStatus();
+
             renderTopTrendingBaseCoins();
             setInterval(renderTopTrendingBaseCoins, 30000); 
 
             document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
+            
+            // Pasang event listener ke tombol daily claim
+            document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
+
             document.getElementById("tip-btn")?.addEventListener("click", async () => {
                 const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
                 try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }] }); alert("💸 Sent! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Aborted"); }
             });
+            
             document.getElementById("mint-btn")?.addEventListener("click", async () => {
                 const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
                 try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }] }); alert("🪙 Mint request success! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Failed"); }
             });
+            
             document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
             
             document.getElementById("share-x-btn")?.addEventListener("click", () => {
@@ -804,15 +817,5 @@ function checkDailyClaimStatus() {
                 window.open(`https://twitter.com/intent/tweet?text=${tweet}`, '_blank');
             });
             document.getElementById("share-tg-btn")?.addEventListener("click", () => { window.open("https://t.me/BaseForecaster", '_blank'); });
-
-            document.getElementById("daily-login-btn")?.addEventListener("click", () => {
-                appState.auraPoints += 100;
-                localStorage.setItem("premium_aura", appState.auraPoints);
-                updateBalanceUI();
-                if (typeof confetti === "function") confetti();
-                alert("🎁 +100 Aura Points synchronized!");
-            });
         });
     </script>
-</body>
-</html>
