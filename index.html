@@ -4,52 +4,88 @@
     <meta name="base:app_id" content="6a3d5ec5f2523513587e2ca0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Forecaster - Professional Premium Edition</title>
+    <title>Base Forecaster - Thirdweb Premium Edition</title>
     
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     
+    <!-- Scripts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
+    <!-- Thirdweb SDK v5 ESM Loader -->
     <script type="module">
-        import { createAppKit } from 'https://esm.run/@reown/appkit@1.1.0'
-        import { mainnet, base } from 'https://esm.run/@reown/appkit/networks'
-        import { EthersAdapter } from 'https://esm.run/@reown/appkit-adapter-ethers'
+        import { createThirdwebClient, getContract } from "https://esm.sh/thirdweb@5.24.0";
+        import { createWallet, walletConnect } from "https://esm.sh/thirdweb@5.24.0/wallets";
+        import { base, mainnet } from "https://esm.sh/thirdweb@5.24.0/chains";
 
-        // Silakan ganti Project ID ini dengan milik Anda dari cloud.walletconnect.com jika diperlukan
-        const projectId = '84a5697aa6088f3479b441f71df88775';
+        // Inisialisasi Thirdweb Client (Menggunakan ClientID Publik Default)
+        const client = createThirdwebClient({ 
+            clientId: "b790757db120c8152bc6642d216fcb37" 
+        });
 
-        const metadata = {
-            name: 'Base Forecaster',
-            description: 'Professional Premium Terminal Edition',
-            url: window.location.origin,
-            icons: ['https://avatars.githubusercontent.com/u/37784886']
-        }
+        // Daftar dompet yang didukung secara modular
+        const wallets = [
+            createWallet("io.metamask"),
+            createWallet("com.coinbase.wallet"),
+            createWallet("com.okex.wallet"),
+            walletConnect()
+        ];
 
-        const modal = createAppKit({
-            adapters: [new EthersAdapter()],
-            networks: [base, mainnet],
-            metadata,
-            projectId,
-            features: {
-                analytics: true,
-                email: false,
-                socials: false
-            },
-            themeMode: 'dark'
-        })
+        let activeWallet = null;
+        let activeAccount = null;
 
-        window.walletKitModal = modal;
+        // Ekspos ke global window agar bisa diakses oleh fungsi vanila HTML di bawah
+        window.twClient = client;
+        window.twBaseChain = base;
+        window.twWallets = wallets;
+        
+        window.connectThirdwebWallet = async function() {
+            const btn = document.getElementById("connect-btn");
+            try {
+                if (window.twIsConnected) {
+                    // Logika Disconnect
+                    if (activeWallet) {
+                        await activeWallet.disconnect();
+                    }
+                    window.twIsConnected = false;
+                    window.twUserAddress = "";
+                    handleDisconnectUI();
+                    return;
+                }
+
+                btn.innerText = "⏳ Connecting...";
+                
+                // Gunakan wallet pertama (MetaMask/Injected) sebagai default trigger otomatis 
+                // Anda juga bisa memasang UI modal kustom jika diinginkan
+                activeWallet = wallets[0]; 
+                activeAccount = await activeWallet.connect({ 
+                    client,
+                    chain: base
+                });
+
+                window.twUserAddress = activeAccount.address;
+                window.twIsConnected = true;
+                window.twAccountInstance = activeAccount;
+
+                handleConnectSuccess(window.twUserAddress);
+            } catch (error) {
+                console.error("Connection error:", error);
+                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+                alert("Koneksi gagal atau dibatalkan oleh pengguna.");
+            }
+        };
     </script>
 </head>
     
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
 
+    <!-- Ambient Glow Backgrounds -->
     <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-indigo-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
 
     <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10 my-4">
         
+        <!-- Header & Network Badge -->
         <div class="flex flex-col items-center justify-center gap-1 mb-2">
             <div class="flex items-center gap-2">
                 <div class="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
@@ -62,6 +98,7 @@
             </div>
         </div>
 
+        <!-- Live Streaming Ticker -->
         <div class="w-full bg-slate-950/90 border border-slate-800/80 rounded-2xl p-1.5 mb-3 overflow-hidden">
             <div class="flex items-center text-[8px] font-mono tracking-wider font-extrabold text-cyan-400/80 px-2 border-b border-slate-900 pb-1 mb-1 justify-between">
                 <span>🟢 REAL-TIME BASE TOP TRENDING</span>
@@ -74,6 +111,7 @@
             </marquee>
         </div>
 
+        <!-- Dashboard Points Panel -->
         <div class="flex flex-col bg-slate-950/80 border border-slate-800 rounded-2xl p-3 mb-4 text-left space-y-2">
             <div class="flex items-center justify-between">
                 <div class="font-mono text-[11px]">
@@ -94,12 +132,14 @@
             🔥 Total Destiny NFTs Minted: <span id="mint-counter" class="font-bold text-white">1,482</span>
         </div>
 
+        <!-- Universal Web3 Connect Section -->
         <div id="wallet-section" class="mb-4">
-            <button id="connect-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
-                <span>🔮</span> Connect Multi-Wallet (WalletConnect)
+            <button id="connect-btn" onclick="connectThirdwebWallet()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
+                <span>🔮</span> Connect Web3 Wallet
             </button>
         </div>
 
+        <!-- Locked View Screen -->
         <div id="locked-state-view" class="py-10 px-4 border border-slate-800 border-dashed rounded-2xl space-y-3 bg-slate-950/40">
             <div class="text-3xl animate-pulse">🔒</div>
             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Locked</h4>
@@ -108,13 +148,16 @@
             </p>
         </div>
 
+        <!-- Main Dynamic Dashboard View Area -->
         <div id="result-section" class="hidden text-center">
 
+            <!-- TAB 1: ORACLE ENGINE -->
             <div id="tab-oracle" class="tab-content space-y-5">
                 <p class="text-slate-400 text-[11px] italic px-2 leading-relaxed">
                     "The true fate of your portfolio isn’t in the candles—it’s written in your hexadecimal identity hash sequence."
                 </p>
 
+                <!-- Canvas Card Renderer -->
                 <div class="flex flex-col items-center">
                     <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Gold-Blue Destiny Matrix ✨</span>
                     <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
@@ -122,6 +165,7 @@
                     </div>
                 </div>
 
+                <!-- Viral Amplifiers -->
                 <div class="bg-slate-950/90 border border-slate-800 rounded-xl p-3 max-w-[295px] mx-auto space-y-2">
                     <div class="text-[9px] font-mono text-slate-500 tracking-wider">📢 BROADCAST SIGNAL TO THE WORLD</div>
                     <div class="grid grid-cols-2 gap-2">
@@ -134,6 +178,7 @@
                     </div>
                 </div>
 
+                <!-- Value Capture Gateways -->
                 <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-center max-w-[295px] mx-auto">
                     <p class="text-[10px] font-mono text-slate-400 italic mb-3">Interact With Contract Matrix 👇</p>
                     <div class="grid grid-cols-2 gap-3">
@@ -146,6 +191,7 @@
                     </div>
                 </div>
 
+                <!-- On-chain Seed Metrics -->
                 <div class="space-y-3 text-left">
                     <div>
                         <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
@@ -161,8 +207,10 @@
                     </div>
                 </div>
 
+                <!-- Dynamic Agent Engine Wrapper Injection Point -->
                 <div id="polymarket-top-container" class="mt-4"></div>
 
+                <!-- Instant Contract Radar Scan Protocol -->
                 <div class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3 text-left">
                     <div>
                         <h3 class="text-xs font-bold text-slate-200 tracking-wide">🔬 REAL-TIME INSTANT RADAR</h3>
@@ -176,6 +224,7 @@
                 </div>
             </div>
 
+            <!-- TAB 2: GLOW CONFIGURATOR -->
             <div id="tab-glow" class="tab-content hidden space-y-4 text-center">
                 <h2 class="text-md font-bold uppercase tracking-wider text-cyan-400">✨ Aura Frame Customizer</h2>
                 <p class="text-xs text-slate-400">Modify your Destiny NFT card's border layout colors in real-time before initiating execution nodes.</p>
@@ -199,6 +248,7 @@
                 </div>
             </div>
 
+            <!-- TAB 3: DEGEN SPIN WHEEL -->
             <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
                 <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
                 <p class="text-xs text-slate-400">Spin the randomized index once every 24 hours to secure standard bonus Aura Points or luck multiplier rerolls.</p>
@@ -226,6 +276,7 @@
                 <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-200 font-mono text-xs"></div>
             </div>
 
+            <!-- TAB 4: GLOBAL LEADERBOARD -->
             <div id="tab-ranks" class="tab-content hidden space-y-4 text-center">
                 <h2 class="text-md font-bold uppercase tracking-wider text-yellow-500">🏆 Global Degen Leaderboard</h2>
                 <p class="text-xs text-slate-400">Public registry ranking on-chain wallet addresses holding top deterministic identity parameters.</p>
@@ -234,6 +285,7 @@
 
         </div>
 
+        <!-- Ecosystem Outpost Banner -->
         <div class="mt-5 border-t border-slate-800/60 pt-4">
             <a href="https://base.app/invite/baseberry/0XLYVZQB" target="_blank" class="block bg-gradient-to-r from-slate-950 via-blue-950/20 to-slate-950 border border-slate-800/60 hover:border-blue-500/40 rounded-xl p-2.5 transition-all text-left relative overflow-hidden group">
                 <span class="absolute top-0 right-0 bg-blue-600/30 text-blue-400 text-[8px] px-1.5 py-0.5 rounded-bl font-mono tracking-widest uppercase font-bold">ECOSYSTEM</span>
@@ -249,6 +301,7 @@
 
     </div>
 
+    <!-- Fixed Floating Navigation System -->
     <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/40 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-2xl">
         <button id="nav-oracle" onclick="navigate('oracle')" class="flex flex-col items-center text-blue-400 transition-all font-mono scale-105">
             <span class="text-xl">🔮</span><span class="text-[10px] font-bold mt-0.5">Oracle</span>
@@ -264,6 +317,7 @@
         </button>
     </div>
 
+    <!-- Universal Node Footers -->
     <footer class="mt-4 flex flex-col items-center gap-2 font-mono">
         <div class="bg-slate-900/60 border border-slate-800 px-3 py-1.5 rounded-full flex items-center gap-4 text-[10px]">
             <div class="flex items-center gap-1.5 text-slate-400">
@@ -278,16 +332,18 @@
         <div class="text-[10px] text-slate-600 font-mono">Built on Base Architecture Matrix</div>
     </footer>
 
+    <!-- Logic Handlers Script Block -->
     <script>
         const nftContractAddress = "0x26E00eBdE27388077d9EC014C98c8764D9f13950"; 
         const tokenContractAddress = "0x052aE904DD28b5D840F7a25f77003E0f9597Fc69"; 
         const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
         const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
         const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
-        const BASE_CHAIN_ID = 8453; // Numeric for WalletConnect Modal
 
-        let userAddress = "";
-        let isConnected = false;
+        window.twIsConnected = false;
+        window.twUserAddress = "";
+        window.twAccountInstance = null;
+
         let currentFateGlobal = null; 
         let currentFrameColor = "#f59e0b"; 
         let frameNameGlobal = "Gold Luck Destiny";
@@ -319,7 +375,6 @@
             { name: "0.001$ USDC", type: "USDC", value: 0.001, weight: 5 }
         ];
 
-        // Safe Hex Parser Utilities
         function toSafeHexWei(amountETH) {
             return "0x" + Math.floor(parseFloat(amountETH) * 1e18).toString(16);
         }
@@ -333,92 +388,33 @@
         }
 
         // ====================================================================
-        // WALLETCONNECT APPKIT STATE SYNC CORES
+        // INTERFACE MODIFIERS FOR STATE LIFECYCLE
         // ====================================================================
-        function initWalletConnectTracking() {
-            if (!window.walletKitModal) {
-                setTimeout(initWalletConnectTracking, 300);
-                return;
-            }
-
-            // Sync account connection status changes instantly
-            window.walletKitModal.subscribeAccount(state => {
-                if (state.isConnected && state.address) {
-                    userAddress = state.address;
-                    isConnected = true;
-                    
-                    if (!localStorage.getItem("premium_aura")) {
-                        localStorage.setItem("premium_aura", 75);
-                    }
-                    appState.usdcBalance = 0.005;
-
-                    updateWalletUI(userAddress);
-                    renderNativeForecasterHub();
-
-                    document.getElementById("locked-state-view").classList.add("hidden");
-                    document.getElementById("result-section").classList.remove("hidden");
-                    
-                    generateDestiny(userAddress);
-                    updateBalanceUI();
-                    checkWheelStatus();
-                    
-                    // Verify if network is correct (Chain ID: 8453 for Base Mainnet)
-                    const currentChainId = window.walletKitModal.getChainId();
-                    const badge = document.getElementById("network-warning-badge");
-                    if (currentChainId !== BASE_CHAIN_ID && badge) {
-                        badge.classList.remove("hidden");
-                        badge.onclick = async () => {
-                            await window.walletKitModal.switchNetwork({ id: BASE_CHAIN_ID });
-                        };
-                    } else if (badge) {
-                        badge.classList.add("hidden");
-                    }
-
-                } else {
-                    // Reset matrix node state on explicit disconnection
-                    userAddress = "";
-                    isConnected = false;
-                    const btn = document.getElementById("connect-btn");
-                    if (btn) btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
-                    document.getElementById("locked-state-view").classList.remove("hidden");
-                    document.getElementById("result-section").classList.add("hidden");
-                }
-            });
-
-            // Tracking adjustments for network shifts
-            window.walletKitModal.subscribeNetwork(networkState => {
-                const badge = document.getElementById("network-warning-badge");
-                if (networkState.activeChain && networkState.activeChain.id !== BASE_CHAIN_ID) {
-                    if (badge) {
-                        badge.classList.remove("hidden");
-                        badge.onclick = async () => {
-                            await window.walletKitModal.switchNetwork({ id: BASE_CHAIN_ID });
-                        };
-                    }
-                } else if (badge) {
-                    badge.classList.add("hidden");
-                }
-            });
-        }
-
-        async function toggleWalletConnection() {
-            if (!window.walletKitModal) return alert("Initializing connection bridge layers... click again in 1s");
-            if (isConnected) {
-                await window.walletKitModal.disconnect();
-            } else {
-                await window.walletKitModal.open();
-            }
-        }
-
-        function updateWalletUI(address) {
+        function handleConnectSuccess(address) {
             const btn = document.getElementById("connect-btn");
-            if (!btn) return;
-            btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
+            if (btn) btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
+            
+            if (!localStorage.getItem("premium_aura")) {
+                localStorage.setItem("premium_aura", 75);
+            }
+            appState.usdcBalance = 0.005;
+
+            renderNativeForecasterHub();
+            document.getElementById("locked-state-view").classList.add("hidden");
+            document.getElementById("result-section").classList.remove("hidden");
+            
+            generateDestiny(address);
+            updateBalanceUI();
+            checkWheelStatus();
         }
 
-        // ====================================================================
-        // ANTI MULTI-SPAM COOLDOWN LOGIC
-        // ====================================================================
+        function handleDisconnectUI() {
+            const btn = document.getElementById("connect-btn");
+            if (btn) btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+            document.getElementById("locked-state-view").classList.remove("hidden");
+            document.getElementById("result-section").classList.add("hidden");
+        }
+
         function checkWheelStatus() {
             const today = new Date().toDateString();
             const lastSpin = localStorage.getItem("last_spin_date");
@@ -446,7 +442,7 @@
             const graphic = document.getElementById("wheel-graphic");
             const result = document.getElementById("spin-result");
             if (!btn || !graphic || !result) return;
-            if (!isConnected) return alert("🚨 Connect Web3 Wallet first!");
+            if (!window.twIsConnected) return alert("🚨 Connect Web3 Wallet first!");
 
             const today = new Date().toDateString();
             if (localStorage.getItem("last_spin_date") === today) {
@@ -580,7 +576,6 @@
                 const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
                 const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
 
-                // Calculations Indicators
                 const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
                 const middleBand = priceUsd / (1 + (priceChange / 100));
                 const standardDeviation = middleBand * (volatilityFactor / 100);
@@ -620,8 +615,8 @@
                         </div>
                         <div class="flex gap-2">
                             <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
-                            <button onclick="triggerWeb3Buy('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
-                                ⚡ Core Web3 Swap Node
+                            <button onclick="triggerThirdwebSwap('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
+                                ⚡ Thirdweb Swap Node
                             </button>
                         </div>
                         <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
@@ -632,61 +627,58 @@
         window.executeTokenScan = executeTokenScan;
 
         // ====================================================================
-        // EVM WEB3 TRANSACTION CORE VIA UNIVERSAL INJECTED PROVIDERS
+        // THIRDWEB TRANSACTION EXECUTION LAYER
         // ====================================================================
-        async function getEthersSigner() {
-            if (!isConnected) throw new Error("Wallet not connected");
-            // Ambil provider dari modal WalletConnect AppKit yang aktif
-            const connector = window.walletKitModal.getWalletProvider();
-            if (!connector) throw new Error("No active node tunnel found");
-            return new ethers.providers.Web3Provider(connector).getSigner();
-        }
-
-        async function triggerWeb3Buy(tokenAddress, dexId) {
+        async function triggerThirdwebSwap(tokenAddress, dexId) {
             const amountInput = document.getElementById("buy-amount-eth");
             const statusDiv = document.getElementById("tx-status-output");
-            if (!amountInput || !statusDiv || !isConnected) return alert("Connect wallet node first!");
+            if (!amountInput || !statusDiv || !window.twIsConnected) return alert("Connect wallet node first!");
             const ethAmount = amountInput.value.trim();
 
             statusDiv.classList.remove("hidden");
-            statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
+            statusDiv.innerText = "⏳ Requesting signature from active account...";
+            
             try {
                 let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
                 if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
                 
-                const connector = window.walletKitModal.getWalletProvider();
-                const txHash = await connector.request({
-                    method: 'eth_sendTransaction',
-                    params: [{ from: userAddress, to: router, value: toSafeHexWei(ethAmount), data: "0x" }],
+                // Mengirim transaksi langsung lewat Thirdweb Wallet Account abstraction
+                const txResult = await window.twAccountInstance.sendTransaction({
+                    to: router,
+                    value: BigInt(Math.floor(parseFloat(ethAmount) * 1e18)),
+                    data: "0x"
                 });
-                statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
+
+                statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txResult.transactionHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
                 if (typeof confetti === "function") confetti();
-            } catch (err) { statusDiv.innerText = `❌ Error: ${err.message.substring(0,30)}`; }
+            } catch (err) { 
+                statusDiv.innerText = `❌ Error: ${err.message.substring(0,35)}`; 
+            }
         }
-        window.triggerWeb3Buy = triggerWeb3Buy;
+        window.triggerThirdwebSwap = triggerThirdwebSwap;
 
         async function deployNewB20Token(name, symbol) {
             if (!name || !symbol) return alert("Fill Token Name & Symbol data slots!");
-            if (!isConnected) return alert("Wallet tunnel is inactive!");
+            if (!window.twIsConnected) return alert("Wallet tunnel is inactive!");
             try {
-                alert(`🚀 Directing deployment matrix payload for: ${name.toUpperCase()}`);
+                alert(`🚀 Directing Thirdweb deployment matrix payload for: ${name.toUpperCase()}`);
                 const salt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
                 const payload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + salt.replace("0x",""); 
                 
-                const connector = window.walletKitModal.getWalletProvider();
-                const txHash = await connector.request({
-                    method: 'eth_sendTransaction',
-                    params: [{ from: userAddress, to: B20_FACTORY_ADDRESS, data: payload, value: "0x0" }],
+                const txResult = await window.twAccountInstance.sendTransaction({
+                    to: B20_FACTORY_ADDRESS,
+                    data: payload,
+                    value: 0n
                 });
-                alert(`🔥 Contract instantiated successfully!\nTx Hash: ${txHash}`);
+
+                alert(`🔥 Contract instantiated successfully!\nTx Hash: ${txResult.transactionHash}`);
                 if (typeof confetti === "function") confetti();
             } catch (err) { alert("❌ Aborted: " + err.message); }
         }
         window.deployNewB20Token = deployNewB20Token;
 
-        // Navigation Controller
         function navigate(targetTab) {
-            if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
+            if (!window.twIsConnected) return alert("Unlock terminal channel via Web3 payload!");
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             const targetEl = document.getElementById(`tab-${targetTab}`);
             if (targetEl) targetEl.classList.remove('hidden');
@@ -710,10 +702,10 @@
                 rose: { color: "#f43f5e", text: "Ruby Vein Pulse" }
             };
             if (configs[type]) { currentFrameColor = configs[type].color; frameNameGlobal = configs[type].text; }
-            if (currentFateGlobal && userAddress) {
+            if (currentFateGlobal && window.twUserAddress) {
                 let seed = 0;
-                for (let i = 0; i < userAddress.length; i++) seed += userAddress.charCodeAt(i);
-                drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, userAddress, seed);
+                for (let i = 0; i < window.twUserAddress.length; i++) seed += window.twUserAddress.charCodeAt(i);
+                drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, window.twUserAddress, seed);
             }
             alert(`✨ Configured layout: ${frameNameGlobal}!`);
             navigate('oracle');
@@ -770,14 +762,14 @@
 
         function renderLeaderboardData() {
             const container = document.getElementById("ranks-list-container");
-            if (!container || !userAddress) return;
+            if (!container || !window.twUserAddress) return;
             container.innerHTML = `
                 <div class="p-3 rounded-xl border border-slate-800 bg-slate-950/40 flex items-center justify-between text-xs font-mono">
                     <div class="text-left"><div>0x71C9...8B29</div><div class="text-[9px] text-amber-500">🐋 PLATINUM POSITION</div></div>
                     <div class="font-bold text-cyan-400 text-sm">99%</div>
                 </div>
                 <div class="p-3 rounded-xl border border-cyan-500 bg-cyan-950/20 flex items-center justify-between text-xs font-mono shadow-md">
-                    <div class="text-left"><div class="text-cyan-400">${userAddress.slice(0,6)}...${userAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
+                    <div class="text-left"><div class="text-cyan-400">${window.twUserAddress.slice(0,6)}...${window.twUserAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
                     <div class="font-bold text-cyan-400 text-sm">${userLuckScoreGlobal}%</div>
                 </div>
             `;
@@ -785,7 +777,7 @@
 
         function renderNativeForecasterHub() {
             const container = document.getElementById("polymarket-top-container"); 
-            if (!container || !isConnected) return;
+            if (!container || !window.twIsConnected) return;
             container.innerHTML = `
                 <div class="space-y-3.5 text-left mt-2 mb-2">
                     <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
@@ -796,7 +788,7 @@
                         <h4 class="text-xs font-bold text-slate-200">Acquire $FORECAST Directly</h4>
                         <div class="flex gap-2">
                             <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                            <button id="btn-action-presale" onclick="triggerWeb3Buy('${tokenContractAddress}', 'uniswap')" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
+                            <button id="btn-action-presale" onclick="triggerThirdwebSwap('${tokenContractAddress}', 'uniswap')" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
                         </div>
                         <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
                             📈 TRACK METRICS RECORD ON FLAUNCH.GG ➜
@@ -853,35 +845,30 @@
             renderTopTrendingBaseCoins();
             setInterval(renderTopTrendingBaseCoins, 30000); 
 
-            // Hubungkan tombol ke WalletConnect modal system
-            document.getElementById("connect-btn")?.addEventListener("click", toggleWalletConnection);
             document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
 
-            // Inisialisasi pendengar perubahan status WalletConnect AppKit
-            initWalletConnectTracking();
-
             document.getElementById("tip-btn")?.addEventListener("click", async () => {
-                if (!isConnected) return alert("Connect node first!");
+                if (!window.twIsConnected) return alert("Connect node first!");
                 try { 
-                    const connector = window.walletKitModal.getWalletProvider();
-                    const tx = await connector.request({ 
-                        method: 'eth_sendTransaction', 
-                        params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }] 
-                    }); 
-                    alert("💸 Sent! Tx: " + tx); 
+                    const txResult = await window.twAccountInstance.sendTransaction({
+                        to: DEVELOPER_WALLET,
+                        value: BigInt(Math.floor(0.001 * 1e18)),
+                        data: "0x"
+                    });
+                    alert("💸 Sent! Tx: " + txResult.transactionHash); 
                     if (typeof confetti === "function") confetti(); 
                 } catch (e) { alert("Aborted"); }
             });
 
             document.getElementById("mint-btn")?.addEventListener("click", async () => {
-                if (!isConnected) return alert("Connect node first!");
+                if (!window.twIsConnected) return alert("Connect node first!");
                 try { 
-                    const connector = window.walletKitModal.getWalletProvider();
-                    const tx = await connector.request({ 
-                        method: 'eth_sendTransaction', 
-                        params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }] 
-                    }); 
-                    alert("🪙 Mint request success! Tx: " + tx); 
+                    const txResult = await window.twAccountInstance.sendTransaction({
+                        to: nftContractAddress,
+                        value: 0n,
+                        data: "0x1249c5b8" // Mint function selector
+                    });
+                    alert("🪙 Mint request success! Tx: " + txResult.transactionHash); 
                     if (typeof confetti === "function") confetti(); 
                 } catch (e) { alert("Failed"); }
             });
