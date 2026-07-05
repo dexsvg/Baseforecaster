@@ -7,8 +7,40 @@
     <title>Base Forecaster - Professional Premium Edition</title>
     
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script type="module">
+        import { createAppKit } from 'https://esm.run/@reown/appkit@1.1.0'
+        import { mainnet, base } from 'https://esm.run/@reown/appkit/networks'
+        import { EthersAdapter } from 'https://esm.run/@reown/appkit-adapter-ethers'
+
+        // Silakan ganti Project ID ini dengan milik Anda dari cloud.walletconnect.com jika diperlukan
+        const projectId = '84a5697aa6088f3479b441f71df88775';
+
+        const metadata = {
+            name: 'Base Forecaster',
+            description: 'Professional Premium Terminal Edition',
+            url: window.location.origin,
+            icons: ['https://avatars.githubusercontent.com/u/37784886']
+        }
+
+        const modal = createAppKit({
+            adapters: [new EthersAdapter()],
+            networks: [base, mainnet],
+            metadata,
+            projectId,
+            features: {
+                analytics: true,
+                email: false,
+                socials: false
+            },
+            themeMode: 'dark'
+        })
+
+        window.walletKitModal = modal;
+    </script>
 </head>
     
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
@@ -63,8 +95,8 @@
         </div>
 
         <div id="wallet-section" class="mb-4">
-            <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
-                <span>🔮</span> Connect Web3 Wallet
+            <button id="connect-btn" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
+                <span>🔮</span> Connect Multi-Wallet (WalletConnect)
             </button>
         </div>
 
@@ -252,7 +284,7 @@
         const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
         const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
         const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
-        const BASE_CHAIN_ID = "0x2105"; 
+        const BASE_CHAIN_ID = 8453; // Numeric for WalletConnect Modal
 
         let userAddress = "";
         let isConnected = false;
@@ -287,110 +319,115 @@
             { name: "0.001$ USDC", type: "USDC", value: 0.001, weight: 5 }
         ];
 
-        function getActiveProvider() {
-            if (window.ethereum) {
-                if (window.ethereum.providers && window.ethereum.providers.length) {
-                    return window.ethereum.providers.find(p => p.isCoinbaseWallet || p.isOKXWallet) || window.ethereum.providers[0];
-                }
-                return window.ethereum;
-            }
-            if (window.okxwallet && window.okxwallet.ethereum) return window.okxwallet.ethereum;
-            return null;
+        // Safe Hex Parser Utilities
+        function toSafeHexWei(amountETH) {
+            return "0x" + Math.floor(parseFloat(amountETH) * 1e18).toString(16);
         }
 
         function updateBalanceUI() {
             appState.auraPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
-            
             const auraDisplayEl = document.getElementById("aura-points-display");
             const usdcDisplayEl = document.getElementById("usdc-balance-display");
-            
             if (auraDisplayEl) auraDisplayEl.textContent = `${appState.auraPoints} AP`;
             if (usdcDisplayEl) usdcDisplayEl.textContent = `$${appState.usdcBalance.toFixed(3)}`;
         }
 
-        async function checkAndSwitchNetwork() {
-            const provider = getActiveProvider();
-            if (!provider) return false;
-            try {
-                const currentChainId = await provider.request({ method: "eth_chainId" });
+        // ====================================================================
+        // WALLETCONNECT APPKIT STATE SYNC CORES
+        // ====================================================================
+        function initWalletConnectTracking() {
+            if (!window.walletKitModal) {
+                setTimeout(initWalletConnectTracking, 300);
+                return;
+            }
+
+            // Sync account connection status changes instantly
+            window.walletKitModal.subscribeAccount(state => {
+                if (state.isConnected && state.address) {
+                    userAddress = state.address;
+                    isConnected = true;
+                    
+                    if (!localStorage.getItem("premium_aura")) {
+                        localStorage.setItem("premium_aura", 75);
+                    }
+                    appState.usdcBalance = 0.005;
+
+                    updateWalletUI(userAddress);
+                    renderNativeForecasterHub();
+
+                    document.getElementById("locked-state-view").classList.add("hidden");
+                    document.getElementById("result-section").classList.remove("hidden");
+                    
+                    generateDestiny(userAddress);
+                    updateBalanceUI();
+                    checkWheelStatus();
+                    
+                    // Verify if network is correct (Chain ID: 8453 for Base Mainnet)
+                    const currentChainId = window.walletKitModal.getChainId();
+                    const badge = document.getElementById("network-warning-badge");
+                    if (currentChainId !== BASE_CHAIN_ID && badge) {
+                        badge.classList.remove("hidden");
+                        badge.onclick = async () => {
+                            await window.walletKitModal.switchNetwork({ id: BASE_CHAIN_ID });
+                        };
+                    } else if (badge) {
+                        badge.classList.add("hidden");
+                    }
+
+                } else {
+                    // Reset matrix node state on explicit disconnection
+                    userAddress = "";
+                    isConnected = false;
+                    const btn = document.getElementById("connect-btn");
+                    if (btn) btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+                    document.getElementById("locked-state-view").classList.remove("hidden");
+                    document.getElementById("result-section").classList.add("hidden");
+                }
+            });
+
+            // Tracking adjustments for network shifts
+            window.walletKitModal.subscribeNetwork(networkState => {
                 const badge = document.getElementById("network-warning-badge");
-                if (currentChainId !== BASE_CHAIN_ID) {
+                if (networkState.activeChain && networkState.activeChain.id !== BASE_CHAIN_ID) {
                     if (badge) {
                         badge.classList.remove("hidden");
                         badge.onclick = async () => {
-                            try {
-                                await provider.request({
-                                    method: "wallet_switchEthereumChain",
-                                    params: [{ chainId: BASE_CHAIN_ID }],
-                                });
-                                badge.classList.add("hidden");
-                            } catch (err) {
-                                if (err.code === 4902) {
-                                    await provider.request({
-                                        method: "wallet_addEthereumChain",
-                                        params: [{
-                                            chainId: BASE_CHAIN_ID,
-                                            chainName: "Base Mainnet",
-                                            nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-                                            rpcUrls: ["https://mainnet.base.org"],
-                                            blockExplorerUrls: ["https://basescan.org"]
-                                        }]
-                                    });
-                                }
-                            }
+                            await window.walletKitModal.switchNetwork({ id: BASE_CHAIN_ID });
                         };
                     }
-                    return false;
-                } else {
-                    if (badge) badge.classList.add("hidden");
-                    return true;
+                } else if (badge) {
+                    badge.classList.add("hidden");
                 }
-            } catch (e) { return false; }
+            });
         }
 
-        async function connectWallet() {
-            const provider = getActiveProvider();
-            if (!provider) return alert("❌ Web3 Node Client missing. Open via OKX/Coinbase wallet portal.");
-            try {
-                const accounts = await provider.request({ method: "eth_requestAccounts" });
-                userAddress = accounts[0];
-                isConnected = true;
-
-                await checkAndSwitchNetwork();
-
-                if (!localStorage.getItem("premium_aura")) {
-                    localStorage.setItem("premium_aura", 75);
-                }
-                appState.usdcBalance = 0.005;
-
-                updateWalletUI(userAddress);
-                renderNativeForecasterHub(); 
-
-                document.getElementById("locked-state-view").classList.add("hidden");
-                document.getElementById("result-section").classList.remove("hidden");
-                
-                generateDestiny(userAddress);
-                await renderTopTrendingBaseCoins(); 
-                
-                updateBalanceUI();
-                checkWheelStatus();
-                navigate('oracle'); 
-
-                if (provider.on) {
-                    provider.on("accountsChanged", (accs) => {
-                        if (accs.length === 0) { location.reload(); } 
-                        else { userAddress = accs[0]; updateWalletUI(userAddress); generateDestiny(userAddress); }
-                    });
-                    provider.on("chainChanged", () => { location.reload(); });
-                }
-            } catch (error) { alert("🔒 Bridge authentication denied: " + error.message); }
+        async function toggleWalletConnection() {
+            if (!window.walletKitModal) return alert("Initializing connection bridge layers... click again in 1s");
+            if (isConnected) {
+                await window.walletKitModal.disconnect();
+            } else {
+                await window.walletKitModal.open();
+            }
         }
 
         function updateWalletUI(address) {
             const btn = document.getElementById("connect-btn");
             if (!btn) return;
             btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
-            btn.className = "w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-3 rounded-2xl font-mono transition-all text-center block shadow-lg";
+        }
+
+        // ====================================================================
+        // ANTI MULTI-SPAM COOLDOWN LOGIC
+        // ====================================================================
+        function checkWheelStatus() {
+            const today = new Date().toDateString();
+            const lastSpin = localStorage.getItem("last_spin_date");
+            const btn = document.getElementById("btn-spin");
+            if (btn && lastSpin === today) {
+                btn.textContent = "🔒 SPUN TODAY (Come Back Tomorrow)";
+                btn.disabled = true;
+                btn.className = "w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl font-mono text-xs tracking-wider cursor-not-allowed shadow-none";
+            }
         }
 
         function pickRandomReward() {
@@ -404,21 +441,6 @@
             return activePool[0];
         }
 
-        // ====================================================================
-        // GATA LOCK LUCKY WHEEL SPIN (ANTI MULTI-SPAM COOLDOWN)
-        // ====================================================================
-        function checkWheelStatus() {
-            const today = new Date().toDateString();
-            const lastSpin = localStorage.getItem("last_spin_date");
-            const btn = document.getElementById("btn-spin");
-
-            if (btn && lastSpin === today) {
-                btn.textContent = "🔒 SPUN TODAY (Come Back Tomorrow)";
-                btn.disabled = true;
-                btn.className = "w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl font-mono text-xs tracking-wider cursor-not-allowed shadow-none";
-            }
-        }
-
         function spinTheWheel() {
             const btn = document.getElementById("btn-spin");
             const graphic = document.getElementById("wheel-graphic");
@@ -427,8 +449,7 @@
             if (!isConnected) return alert("🚨 Connect Web3 Wallet first!");
 
             const today = new Date().toDateString();
-            const lastSpin = localStorage.getItem("last_spin_date");
-            if (lastSpin === today) {
+            if (localStorage.getItem("last_spin_date") === today) {
                 alert("🔒 Limit execution reached: Reroll matrix slots only once per 24 hours!");
                 return;
             }
@@ -460,64 +481,47 @@
         }
 
         // ====================================================================
-        // REAL-TIME PREMIUM COINS STREAMING (MATCHING DISCOVER PROTOCOLS)
+        // DEXSCREENER LIVE TRENDING STREAMERS
         // ====================================================================
         async function renderTopTrendingBaseCoins() {
             const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
             if (!tickerWrapper) return;
-
-            // Target khusus koin premium di ekosistem Base (BRIAN, VIRTUAL, VVV, AERO)
             const targetTickers = ["BRIAN", "VIRTUAL", "VVV", "AERO", "BRETT", "TOSHI", "KEYCAT", "DEGEN"];
             
             try {
                 let tickerItems = [];
-                let count = 0;
-
-                // Tembak pencarian gabungan untuk mendapatkan data real-time koin tersebut di Base
                 const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=VIRTUAL%20AERO%20BRIAN");
-                if (!response.ok) throw new Error("DexScreener Traffic Blocked");
+                if (!response.ok) throw new Error("DexScreener API Offline");
                 const data = await response.json();
                 
                 if (data.pairs) {
-                    // Filter pasangan yang valid hanya di jaringan Base
                     const basePairs = data.pairs.filter(p => p.chainId === 'base' && p.baseToken);
                     const seenAddresses = new Set();
 
                     for (const pair of basePairs) {
                         const sym = pair.baseToken.symbol.toUpperCase();
                         const addr = pair.baseToken.address;
-
                         if (!targetTickers.includes(sym)) continue;
                         if (seenAddresses.has(addr.toLowerCase())) continue;
                         seenAddresses.add(addr.toLowerCase());
 
-                        count++;
                         const price = parseFloat(pair.priceUsd) || 0;
                         const change = parseFloat(pair.priceChange?.h24) || 0;
                         const fmtPrice = price < 0.001 ? price.toFixed(5) : (price < 1 ? price.toFixed(4) : price.toFixed(2));
-                        
                         const isPositive = change >= 0;
-                        const badgeColor = isPositive ? 'text-emerald-400' : 'text-rose-400';
-                        const borderGlow = isPositive ? 'border-emerald-950/60 hover:border-emerald-400' : 'border-rose-950/60 hover:border-rose-400';
-                        const arrowSymbol = isPositive ? '▲' : '▼';
 
                         tickerItems.push(`
-                            <button onclick="quickSelectToken('${addr}', '${sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderGlow} px-2.5 py-1 rounded-xl transition-all text-left shadow-inner">
+                            <button onclick="quickSelectToken('${addr}', '${sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${isPositive ? 'border-emerald-950 hover:border-emerald-400' : 'border-rose-950 hover:border-rose-400'} px-2.5 py-1 rounded-xl transition-all text-left shadow-inner">
                                 <span class="text-blue-500 font-bold text-[9px]">🔥 TRENDING</span>
                                 <span class="text-white font-extrabold font-mono text-[10px]">${sym}</span>
                                 <span class="text-slate-400 text-[10px]">$${fmtPrice}</span>
-                                <span class="${badgeColor} font-bold text-[9px]">${arrowSymbol} ${Math.abs(change).toFixed(2)}%</span>
+                                <span class="${isPositive ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${isPositive ? '▲' : '▼'} ${Math.abs(change).toFixed(2)}%</span>
                             </button>
                         `);
                     }
                 }
-
-                if (tickerItems.length > 0) {
-                    tickerWrapper.innerHTML = tickerItems.join('');
-                } else {
-                    // Fallback statis berpenampilan real jika API sibuk agar UI selalu presisi seperti Screenshot_2026-07-05-21-43-08-463_org.toshi.jpg
-                    executeDiscoverFallback(tickerWrapper);
-                }
+                if (tickerItems.length > 0) tickerWrapper.innerHTML = tickerItems.join('');
+                else executeDiscoverFallback(tickerWrapper);
             } catch (e) {
                 executeDiscoverFallback(tickerWrapper);
             }
@@ -525,27 +529,20 @@
 
         function executeDiscoverFallback(wrapper) {
             if (!wrapper) return;
-            // Manifest data koin presisi yang ditarik dari interface Discover punyamu
             const fallbackData = [
                 { sym: "BRIAN", addr: "0x430c144704fa4b0cb9014197e974e6284fbfbfad", price: "0.00271", change: "-24.09", up: false },
                 { sym: "VIRTUAL", addr: "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b", price: "0.5682", change: "0.51", up: true },
                 { sym: "VVV", addr: "0x789c144704fa4b0cb9014197e974e6284fbf4321", price: "11.86", change: "0.40", up: true },
                 { sym: "AERO", addr: "0x940181a94a35a4569e4529a3cdfb74e38fd98631", price: "0.5645", change: "0.02", up: true }
             ];
-
-            const nodes = fallbackData.map(coin => {
-                const badgeColor = coin.up ? 'text-emerald-400' : 'text-rose-400';
-                const borderGlow = coin.up ? 'border-emerald-950/60 hover:border-emerald-400' : 'border-rose-950/60 hover:border-rose-400';
-                return `
-                    <button onclick="quickSelectToken('${coin.addr}', '${coin.sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderGlow} px-2.5 py-1 rounded-xl transition-all text-left">
-                        <span class="text-blue-500 font-bold text-[9px]">🔥 TRENDING</span>
-                        <span class="text-white font-extrabold font-mono text-[10px]">${coin.sym}</span>
-                        <span class="text-slate-400 text-[10px]">$${coin.price}</span>
-                        <span class="${badgeColor} font-bold text-[9px]">${coin.up ? '▲' : '▼'} ${coin.change}%</span>
-                    </button>
-                `;
-            }).join('');
-            wrapper.innerHTML = nodes;
+            wrapper.innerHTML = fallbackData.map(coin => `
+                <button onclick="quickSelectToken('${coin.addr}', '${coin.sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${coin.up ? 'border-emerald-950 hover:border-emerald-400' : 'border-rose-950 hover:border-rose-400'} px-2.5 py-1 rounded-xl transition-all text-left">
+                    <span class="text-blue-500 font-bold text-[9px]">🔥 TRENDING</span>
+                    <span class="text-white font-extrabold font-mono text-[10px]">${coin.sym}</span>
+                    <span class="text-slate-400 text-[10px]">$${coin.price}</span>
+                    <span class="${coin.up ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${coin.up ? '▲' : '▼'} ${coin.change}%</span>
+                </button>
+            `).join('');
         }
 
         function quickSelectToken(address, symbol) {
@@ -554,6 +551,9 @@
         }
         window.quickSelectToken = quickSelectToken;
 
+        // ====================================================================
+        // TARGET SMART RADAR SCAN CHANNELS
+        // ====================================================================
         async function executeTokenScan() {
             const targetInput = document.getElementById("external-target-input");
             const resultDiv = document.getElementById("external-target-result");
@@ -580,6 +580,7 @@
                 const marketCap = bestPair.fdv ? Math.floor(bestPair.fdv).toLocaleString() : "N/A";
                 const liquidity = bestPair.liquidity?.usd ? Math.floor(bestPair.liquidity.usd).toLocaleString() : "N/A";
 
+                // Calculations Indicators
                 const volatilityFactor = Math.min(15, Math.max(3, Math.abs(priceChange) * 0.4));
                 const middleBand = priceUsd / (1 + (priceChange / 100));
                 const standardDeviation = middleBand * (volatilityFactor / 100);
@@ -630,8 +631,15 @@
         }
         window.executeTokenScan = executeTokenScan;
 
-        function toSafeHexWei(amountETH) {
-            return "0x" + Math.floor(parseFloat(amountETH) * 1e18).toString(16);
+        // ====================================================================
+        // EVM WEB3 TRANSACTION CORE VIA UNIVERSAL INJECTED PROVIDERS
+        // ====================================================================
+        async function getEthersSigner() {
+            if (!isConnected) throw new Error("Wallet not connected");
+            // Ambil provider dari modal WalletConnect AppKit yang aktif
+            const connector = window.walletKitModal.getWalletProvider();
+            if (!connector) throw new Error("No active node tunnel found");
+            return new ethers.providers.Web3Provider(connector).getSigner();
         }
 
         async function triggerWeb3Buy(tokenAddress, dexId) {
@@ -639,15 +647,15 @@
             const statusDiv = document.getElementById("tx-status-output");
             if (!amountInput || !statusDiv || !isConnected) return alert("Connect wallet node first!");
             const ethAmount = amountInput.value.trim();
-            const provider = getActiveProvider();
-            if (!provider) return;
 
             statusDiv.classList.remove("hidden");
             statusDiv.innerText = "⏳ Packaging cryptographic parameters...";
             try {
                 let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
                 if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
-                const txHash = await provider.request({
+                
+                const connector = window.walletKitModal.getWalletProvider();
+                const txHash = await connector.request({
                     method: 'eth_sendTransaction',
                     params: [{ from: userAddress, to: router, value: toSafeHexWei(ethAmount), data: "0x" }],
                 });
@@ -659,13 +667,14 @@
 
         async function deployNewB20Token(name, symbol) {
             if (!name || !symbol) return alert("Fill Token Name & Symbol data slots!");
-            const provider = getActiveProvider();
-            if (!provider || !isConnected) return alert("Wallet tunnel is inactive!");
+            if (!isConnected) return alert("Wallet tunnel is inactive!");
             try {
                 alert(`🚀 Directing deployment matrix payload for: ${name.toUpperCase()}`);
                 const salt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
                 const payload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + salt.replace("0x",""); 
-                const txHash = await provider.request({
+                
+                const connector = window.walletKitModal.getWalletProvider();
+                const txHash = await connector.request({
                     method: 'eth_sendTransaction',
                     params: [{ from: userAddress, to: B20_FACTORY_ADDRESS, data: payload, value: "0x0" }],
                 });
@@ -675,6 +684,7 @@
         }
         window.deployNewB20Token = deployNewB20Token;
 
+        // Navigation Controller
         function navigate(targetTab) {
             if (!isConnected) return alert("Unlock terminal channel via Web3 payload!");
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -786,7 +796,7 @@
                         <h4 class="text-xs font-bold text-slate-200">Acquire $FORECAST Directly</h4>
                         <div class="flex gap-2">
                             <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                            <button id="btn-action-presale" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
+                            <button id="btn-action-presale" onclick="triggerWeb3Buy('${tokenContractAddress}', 'uniswap')" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
                         </div>
                         <a href="${flaunchShareLink}" target="_blank" class="w-full block text-center p-2 bg-slate-900 border border-slate-800 text-[9px] font-mono text-cyan-400 font-bold rounded-xl">
                             📈 TRACK METRICS RECORD ON FLAUNCH.GG ➜
@@ -810,7 +820,6 @@
             const today = new Date().toDateString();
             const lastClaim = localStorage.getItem("last_claim_date");
             const btn = document.getElementById("daily-login-btn");
-
             if (btn && lastClaim === today) {
                 btn.textContent = "Claimed ✓";
                 btn.disabled = true;
@@ -820,22 +829,15 @@
 
         function handleDailyClaim() {
             const today = new Date().toDateString();
-            const lastClaim = localStorage.getItem("last_claim_date");
-
-            if (lastClaim === today) {
+            if (localStorage.getItem("last_claim_date") === today) {
                 alert("🔒 You have already claimed your daily rewards today! Come back tomorrow.");
                 return;
             }
-
             let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
-            let newPoints = currentPoints + 100;
-            
-            localStorage.setItem("premium_aura", newPoints);
+            localStorage.setItem("premium_aura", currentPoints + 100);
             localStorage.setItem("last_claim_date", today);
-            
             updateBalanceUI();
             checkDailyClaimStatus();
-
             if (typeof confetti === "function") confetti();
             alert("🎁 +100 Aura Points synchronized successfully!");
         }
@@ -851,17 +853,39 @@
             renderTopTrendingBaseCoins();
             setInterval(renderTopTrendingBaseCoins, 30000); 
 
-            document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
+            // Hubungkan tombol ke WalletConnect modal system
+            document.getElementById("connect-btn")?.addEventListener("click", toggleWalletConnection);
             document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
 
+            // Inisialisasi pendengar perubahan status WalletConnect AppKit
+            initWalletConnectTracking();
+
             document.getElementById("tip-btn")?.addEventListener("click", async () => {
-                const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
-                try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }] }); alert("💸 Sent! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Aborted"); }
+                if (!isConnected) return alert("Connect node first!");
+                try { 
+                    const connector = window.walletKitModal.getWalletProvider();
+                    const tx = await connector.request({ 
+                        method: 'eth_sendTransaction', 
+                        params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }] 
+                    }); 
+                    alert("💸 Sent! Tx: " + tx); 
+                    if (typeof confetti === "function") confetti(); 
+                } catch (e) { alert("Aborted"); }
             });
+
             document.getElementById("mint-btn")?.addEventListener("click", async () => {
-                const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
-                try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }] }); alert("🪙 Mint request success! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Failed"); }
+                if (!isConnected) return alert("Connect node first!");
+                try { 
+                    const connector = window.walletKitModal.getWalletProvider();
+                    const tx = await connector.request({ 
+                        method: 'eth_sendTransaction', 
+                        params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }] 
+                    }); 
+                    alert("🪙 Mint request success! Tx: " + tx); 
+                    if (typeof confetti === "function") confetti(); 
+                } catch (e) { alert("Failed"); }
             });
+
             document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
             
             document.getElementById("share-x-btn")?.addEventListener("click", () => {
