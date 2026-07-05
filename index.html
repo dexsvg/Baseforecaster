@@ -4,7 +4,7 @@
     <meta name="base:app_id" content="6a3d5ec5f2523513587e2ca0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Base Forecaster - Thirdweb Premium Edition</title>
+    <title>Base Forecaster - Ethers Premium Edition</title>
     
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
     
@@ -12,110 +12,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <script type="module">
-        import { createThirdwebClient } from "https://esm.sh/thirdweb@5.24.0";
-        import { createWallet } from "https://esm.sh/thirdweb@5.24.0/wallets";
-        import { base } from "https://esm.sh/thirdweb@5.24.0/chains";
-
-        // 1. Inisialisasi Thirdweb Client
-        const client = createThirdwebClient({ 
-            clientId: "b790757db120c8152bc6642d216fcb37" 
-        });
-
-        let activeWallet = null;
-
-        // 2. Fungsi Koneksi Global yang Terbuka ke Tombol HTML
-        window.connectThirdwebWallet = async function() {
-            const btn = document.getElementById("connect-btn");
-            try {
-                // Logika Disconnect
-                if (window.twIsConnected) {
-                    if (activeWallet) {
-                        await activeWallet.disconnect();
-                    }
-                    window.twIsConnected = false;
-                    window.twUserAddress = "";
-                    window.twAccountInstance = null;
-                    handleDisconnectUI();
-                    return;
-                }
-
-                btn.innerText = "⏳ Connecting Matrix...";
-
-                // 3. Pendekatan Kompatibilitas Tinggi untuk Thirdweb v5 ESM
-                // Kita coba instansiasi wallet universal terlebih dahulu
-                try {
-                    activeWallet = createWallet("io.metamask"); // Default fallback ID untuk injected provider universal
-                } catch (e) {
-                    activeWallet = createWallet("injected");
-                }
-                
-                // 4. Lakukan jabat tangan (handshake) koneksi ke Base Chain
-                // Jika user membuka dari dApp Browser (OKX/Coinbase), ini akan otomatis mengambil provider aktif
-                const account = await activeWallet.connect({ 
-                    client,
-                    chain: base
-                });
-
-                // Cek apakah akun berhasil didapatkan
-                if (!account || !account.address) {
-                    throw new Error("Address tidak ditemukan dari provider wallet.");
-                }
-
-                // 5. Set variabel global untuk sisa aplikasi Anda
-                window.twUserAddress = account.address;
-                window.twIsConnected = true;
-                window.twAccountInstance = account;
-
-                // Perbarui Tampilan UI ke mode Berhasil
-                handleConnectSuccess(window.twUserAddress);
-                
-            } catch (error) {
-                console.error("Detail Error Web3:", error);
-                
-                // ALTERNATIF TRADISIONAL (Jika SDK Thirdweb gagal mendeteksi objek window akibat isu muat CDN)
-                if (window.ethereum) {
-                    try {
-                        btn.innerText = "⏳ Direct RPC Connect...";
-                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                        if (accounts && accounts[0]) {
-                            window.twUserAddress = accounts[0];
-                            window.twIsConnected = true;
-                            
-                            // Mock minimal account instance untuk kecocokan sendTransaction bawaan kode Anda
-                            window.twAccountInstance = {
-                                address: accounts[0],
-                                sendTransaction: async (txData) => {
-                                    const txHash = await window.ethereum.request({
-                                        method: 'eth_sendTransaction',
-                                        params: [{
-                                            from: accounts[0],
-                                            to: txData.to,
-                                            value: txData.value ? '0x' + txData.value.toString(16) : '0x0',
-                                            data: txData.data || '0x'
-                                        }]
-                                    });
-                                    return { transactionHash: txHash };
-                                }
-                            };
-                            handleConnectSuccess(window.twUserAddress);
-                            return;
-                        }
-                    } catch (ethErr) {
-                        console.error("Direct provider error:", ethErr);
-                    }
-                }
-
-                // Kembalikan teks tombol jika semua jalur gagal
-                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
-                alert("Koneksi gagal terpicu!\n\nJika menggunakan HP: Web ini WAJIB dibuka dari dalam menu Browser/Discover di aplikasi Wallet (OKX / MetaMask / Coinbase Wallet). Jangan buka dari Chrome/Safari biasa.");
-            }
-        };
-    </script>
-
-    </script>
-
-    </script>
+    <!-- Ethers.js v6 (Stable Web3 Provider) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
 </head>
     
 <body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none">
@@ -134,7 +32,7 @@
                     BASE FORECASTER
                 </h1>
             </div>
-            <div id="network-warning-badge" class="hidden cursor-pointer bg-rose-500/20 border border-rose-500/40 px-3 py-1 rounded-full text-[9px] font-mono text-rose-400 animate-pulse mt-1">
+            <div id="network-warning-badge" onclick="switchToBaseNetwork()" class="hidden cursor-pointer bg-rose-500/20 border border-rose-500/40 px-3 py-1 rounded-full text-[9px] font-mono text-rose-400 animate-pulse mt-1">
                 ⚠️ WRONG NETWORK: Click to Switch to Base Mainnet
             </div>
         </div>
@@ -175,7 +73,7 @@
 
         <!-- Universal Web3 Connect Section -->
         <div id="wallet-section" class="mb-4">
-            <button id="connect-btn" onclick="connectThirdwebWallet()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
+            <button id="connect-btn" onclick="connectWallet()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
                 <span>🔮</span> Connect Web3 Wallet
             </button>
         </div>
@@ -380,11 +278,14 @@
         const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
         const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
         const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
+        const BASE_CHAIN_ID = "0x2105"; // 8453 (Base Mainnet) dalam format Hex
 
+        // State Global App
         window.twIsConnected = false;
         window.twUserAddress = "";
-        window.twAccountInstance = null;
-
+        
+        let provider = null;
+        let signer = null;
         let currentFateGlobal = null; 
         let currentFrameColor = "#f59e0b"; 
         let frameNameGlobal = "Gold Luck Destiny";
@@ -416,8 +317,104 @@
             { name: "0.001$ USDC", type: "USDC", value: 0.001, weight: 5 }
         ];
 
-        function toSafeHexWei(amountETH) {
-            return "0x" + Math.floor(parseFloat(amountETH) * 1e18).toString(16);
+        // ====================================================================
+        // ETHERS.JS WALLET CORE HANDLERS
+        // ====================================================================
+        async function connectWallet() {
+            const btn = document.getElementById("connect-btn");
+            
+            // JIKA STATUS SUDAH KONEK -> AKSI DISCONNECT
+            if (window.twIsConnected) {
+                window.twIsConnected = false;
+                window.twUserAddress = "";
+                provider = null;
+                signer = null;
+                handleDisconnectUI();
+                return;
+            }
+
+            // DETEKSI PROVIDER WEB3 (OKX Wallet, MetaMask, dll)
+            if (!window.ethereum) {
+                alert("🚨 Web3 Wallet Tidak Terdeteksi!\n\nJika menggunakan HP, silakan buka kembali website ini dari dalam Browser bawaan aplikasi OKX Wallet atau MetaMask Anda.");
+                return;
+            }
+
+            try {
+                btn.innerText = "⏳ Connecting...";
+                
+                // Minta izin akses akun ke dompet
+                const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                if (!accounts || accounts.length === 0) throw new Error("Akses ditolak oleh user.");
+
+                // Inisialisasi Ethers v6 Provider & Signer
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                
+                window.twUserAddress = accounts[0];
+                window.twIsConnected = true;
+
+                // Cek Jaringan (Harus Base Mainnet)
+                const network = await provider.getNetwork();
+                const chainIdHex = "0x" + network.chainId.toString(16);
+                
+                const badge = document.getElementById("network-warning-badge");
+                if (chainIdHex !== BASE_CHAIN_ID) {
+                    badge.classList.remove("hidden");
+                } else {
+                    badge.classList.add("hidden");
+                }
+
+                // Setup UI Berhasil Konek
+                handleConnectSuccess(window.twUserAddress);
+
+                // Pasang Event Listener otomatis jika user ganti wallet/network di extension
+                window.ethereum.on('accountsChanged', (newAccs) => {
+                    if(newAccs.length === 0) {
+                        window.twIsConnected = false;
+                        handleDisconnectUI();
+                    } else {
+                        window.twUserAddress = newAccs[0];
+                        handleConnectSuccess(newAccs[0]);
+                    }
+                });
+
+                window.ethereum.on('chainChanged', () => {
+                    window.location.reload();
+                });
+
+            } catch (error) {
+                console.error("Koneksi Error:", error);
+                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+                alert("Koneksi Dibatalkan: Hubungkan dompet Anda kembali.");
+            }
+        }
+
+        async function switchToBaseNetwork() {
+            if (!window.ethereum) return;
+            try {
+                await window.ethereum.request({
+                    method: "wallet_switchEthereumChain",
+                    params: [{ chainId: BASE_CHAIN_ID }],
+                });
+            } catch (switchError) {
+                // Jika network Base belum terdaftar di wallet user, minta wallet mendaftarkannya
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: "wallet_addEthereumChain",
+                            params: [{
+                                chainId: BASE_CHAIN_ID,
+                                chainName: "Base Mainnet",
+                                rpcUrls: ["https://mainnet.base.org"],
+                                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
+                                blockExplorerUrls: ["https://basescan.org"]
+                            }],
+                        });
+                    } catch (addError) {
+                        console.error("Gagal menambahkan Base network:", addError);
+                    }
+                }
+            }
         }
 
         function updateBalanceUI() {
@@ -428,9 +425,6 @@
             if (usdcDisplayEl) usdcDisplayEl.textContent = `$${appState.usdcBalance.toFixed(3)}`;
         }
 
-        // ====================================================================
-        // INTERFACE MODIFIERS FOR STATE LIFECYCLE
-        // ====================================================================
         function handleConnectSuccess(address) {
             const btn = document.getElementById("connect-btn");
             if (btn) btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
@@ -454,67 +448,59 @@
             if (btn) btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
             document.getElementById("locked-state-view").classList.remove("hidden");
             document.getElementById("result-section").classList.add("hidden");
+            document.getElementById("network-warning-badge").classList.add("hidden");
         }
 
-        function checkWheelStatus() {
-            const today = new Date().toDateString();
-            const lastSpin = localStorage.getItem("last_spin_date");
-            const btn = document.getElementById("btn-spin");
-            if (btn && lastSpin === today) {
-                btn.textContent = "🔒 SPUN TODAY (Come Back Tomorrow)";
-                btn.disabled = true;
-                btn.className = "w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl font-mono text-xs tracking-wider cursor-not-allowed shadow-none";
-            }
-        }
+        // ====================================================================
+        // INTERACTION & TRANSACTIONS VIA ETHERS
+        // ====================================================================
+        async function triggerThirdwebSwap(tokenAddress, dexId) {
+            const amountInput = document.getElementById("buy-amount-eth");
+            const statusDiv = document.getElementById("tx-status-output");
+            if (!amountInput || !statusDiv || !window.twIsConnected || !signer) return alert("Connect wallet node first!");
+            const ethAmount = amountInput.value.trim();
 
-        function pickRandomReward() {
-            const activePool = WHEEL_ITEMS.filter(item => item.weight > 0);
-            const totalWeight = activePool.reduce((sum, item) => sum + item.weight, 0);
-            let randomNum = Math.random() * totalWeight;
-            for (const item of activePool) {
-                if (randomNum < item.weight) return item;
-                randomNum -= item.weight;
-            }
-            return activePool[0];
-        }
-
-        function spinTheWheel() {
-            const btn = document.getElementById("btn-spin");
-            const graphic = document.getElementById("wheel-graphic");
-            const result = document.getElementById("spin-result");
-            if (!btn || !graphic || !result) return;
-            if (!window.twIsConnected) return alert("🚨 Connect Web3 Wallet first!");
-
-            const today = new Date().toDateString();
-            if (localStorage.getItem("last_spin_date") === today) {
-                alert("🔒 Limit execution reached: Reroll matrix slots only once per 24 hours!");
-                return;
-            }
-
-            btn.disabled = true;
-            result.classList.add("hidden");
-            graphic.classList.add("animate-spin");
-
-            const reward = pickRandomReward();
-
-            setTimeout(() => {
-                graphic.classList.remove("animate-spin");
-                if (reward.type === "AP") {
-                    let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
-                    localStorage.setItem("premium_aura", currentPoints + reward.value);
-                    result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>🎉 Safe! You received <span class="text-cyan-400 font-bold">${reward.name}</span>!`;
-                } else if (reward.type === "USDC") {
-                    appState.usdcBalance += reward.value;
-                    result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>💰 Boom! Balance updated by <span class="text-emerald-400 font-bold">${reward.name}</span>!`;
-                }
+            statusDiv.classList.remove("hidden");
+            statusDiv.innerText = "⏳ Requesting transaction signature...";
+            
+            try {
+                let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; // Uniswap
+                if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
                 
-                localStorage.setItem("last_spin_date", today);
-                updateBalanceUI();
-                checkWheelStatus();
-                
-                result.classList.remove("hidden");
+                // Transaksi kirim langsung via Ethers Signer
+                const txResponse = await signer.sendTransaction({
+                    to: router,
+                    value: ethers.parseEther(ethAmount),
+                    data: "0x"
+                });
+
+                statusDiv.innerText = "⏳ Waiting for block confirmation...";
+                await txResponse.wait();
+
+                statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txResponse.hash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
                 if (typeof confetti === "function") confetti();
-            }, 1500);
+            } catch (err) { 
+                statusDiv.innerText = `❌ Error: ${err.message.substring(0,35)}`; 
+            }
+        }
+
+        async function deployNewB20Token(name, symbol) {
+            if (!name || !symbol) return alert("Fill Token Name & Symbol data slots!");
+            if (!window.twIsConnected || !signer) return alert("Wallet tunnel is inactive!");
+            try {
+                alert(`🚀 Compiling B20 Token Factory payload via Ethers...`);
+                const salt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
+                const payload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + salt.replace("0x",""); 
+                
+                const txResponse = await signer.sendTransaction({
+                    to: B20_FACTORY_ADDRESS,
+                    data: payload
+                });
+
+                await txResponse.wait();
+                alert(`🔥 Contract instantiated successfully!\nTx Hash: ${txResponse.hash}`);
+                if (typeof confetti === "function") confetti();
+            } catch (err) { alert("❌ Aborted: " + err.message); }
         }
 
         // ====================================================================
@@ -586,7 +572,6 @@
             const targetInput = document.getElementById("external-target-input");
             if (targetInput) { targetInput.value = address; executeTokenScan(); targetInput.scrollIntoView({ behavior: 'smooth' }); }
         }
-        window.quickSelectToken = quickSelectToken;
 
         // ====================================================================
         // TARGET SMART RADAR SCAN CHANNELS
@@ -657,7 +642,7 @@
                         <div class="flex gap-2">
                             <input id="buy-amount-eth" type="number" step="0.001" value="0.01" class="w-1/3 bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1 text-xs font-mono text-white focus:outline-none" />
                             <button onclick="triggerThirdwebSwap('${bestPair.baseToken.address}', '${bestPair.dexId}')" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-1 rounded-xl transition-all">
-                                ⚡ Thirdweb Swap Node
+                                ⚡ Ethers Swap Node
                             </button>
                         </div>
                         <div id="tx-status-output" class="hidden mt-1 text-[9px] text-amber-500 text-center font-mono"></div>
@@ -665,58 +650,70 @@
                 `;
             } catch (e) { resultDiv.innerHTML = `<div class="p-3 bg-rose-950/40 border border-rose-500/30 rounded-xl text-[10px] font-mono text-rose-400">⚠️ Secure terminal parse failure.</div>`; }
         }
-        window.executeTokenScan = executeTokenScan;
 
         // ====================================================================
-        // THIRDWEB TRANSACTION EXECUTION LAYER
+        // UTILS, WHEEL, DYNAMIC CANVAS CARD, NAVIGATION
         // ====================================================================
-        async function triggerThirdwebSwap(tokenAddress, dexId) {
-            const amountInput = document.getElementById("buy-amount-eth");
-            const statusDiv = document.getElementById("tx-status-output");
-            if (!amountInput || !statusDiv || !window.twIsConnected) return alert("Connect wallet node first!");
-            const ethAmount = amountInput.value.trim();
-
-            statusDiv.classList.remove("hidden");
-            statusDiv.innerText = "⏳ Requesting signature from active account...";
-            
-            try {
-                let router = "0x2626664c2602818E568351633F6522EAC9D1217e"; 
-                if (dexId.toLowerCase() === 'aerodrome') router = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"; 
-                
-                // Mengirim transaksi langsung lewat Thirdweb Wallet Account abstraction
-                const txResult = await window.twAccountInstance.sendTransaction({
-                    to: router,
-                    value: BigInt(Math.floor(parseFloat(ethAmount) * 1e18)),
-                    data: "0x"
-                });
-
-                statusDiv.innerHTML = `✅ Transmitted! <a href='https://basescan.org/tx/${txResult.transactionHash}' target='_blank' class='text-cyan-400 underline'>Track Hex</a>`;
-                if (typeof confetti === "function") confetti();
-            } catch (err) { 
-                statusDiv.innerText = `❌ Error: ${err.message.substring(0,35)}`; 
+        function checkWheelStatus() {
+            const today = new Date().toDateString();
+            const lastSpin = localStorage.getItem("last_spin_date");
+            const btn = document.getElementById("btn-spin");
+            if (btn && lastSpin === today) {
+                btn.textContent = "🔒 SPUN TODAY (Come Back Tomorrow)";
+                btn.disabled = true;
+                btn.className = "w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl font-mono text-xs tracking-wider cursor-not-allowed shadow-none";
             }
         }
-        window.triggerThirdwebSwap = triggerThirdwebSwap;
 
-        async function deployNewB20Token(name, symbol) {
-            if (!name || !symbol) return alert("Fill Token Name & Symbol data slots!");
-            if (!window.twIsConnected) return alert("Wallet tunnel is inactive!");
-            try {
-                alert(`🚀 Directing Thirdweb deployment matrix payload for: ${name.toUpperCase()}`);
-                const salt = "0x" + Array.from({length: 32}, () => Math.floor(Math.random()*16).toString(16)).join("");
-                const payload = "0x0162c7210000000000000000000000000000000000000000000000000000000000000000" + salt.replace("0x",""); 
-                
-                const txResult = await window.twAccountInstance.sendTransaction({
-                    to: B20_FACTORY_ADDRESS,
-                    data: payload,
-                    value: 0n
-                });
-
-                alert(`🔥 Contract instantiated successfully!\nTx Hash: ${txResult.transactionHash}`);
-                if (typeof confetti === "function") confetti();
-            } catch (err) { alert("❌ Aborted: " + err.message); }
+        function pickRandomReward() {
+            const activePool = WHEEL_ITEMS.filter(item => item.weight > 0);
+            const totalWeight = activePool.reduce((sum, item) => sum + item.weight, 0);
+            let randomNum = Math.random() * totalWeight;
+            for (const item of activePool) {
+                if (randomNum < item.weight) return item;
+                randomNum -= item.weight;
+            }
+            return activePool[0];
         }
-        window.deployNewB20Token = deployNewB20Token;
+
+        function spinTheWheel() {
+            const btn = document.getElementById("btn-spin");
+            const graphic = document.getElementById("wheel-graphic");
+            const result = document.getElementById("spin-result");
+            if (!btn || !graphic || !result) return;
+            if (!window.twIsConnected) return alert("🚨 Connect Web3 Wallet first!");
+
+            const today = new Date().toDateString();
+            if (localStorage.getItem("last_spin_date") === today) {
+                alert("🔒 Limit execution reached: Reroll matrix slots only once per 24 hours!");
+                return;
+            }
+
+            btn.disabled = true;
+            result.classList.add("hidden");
+            graphic.classList.add("animate-spin");
+
+            const reward = pickRandomReward();
+
+            setTimeout(() => {
+                graphic.classList.remove("animate-spin");
+                if (reward.type === "AP") {
+                    let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+                    localStorage.setItem("premium_aura", currentPoints + reward.value);
+                    result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>🎉 Safe! You received <span class="text-cyan-400 font-bold">${reward.name}</span>!`;
+                } else if (reward.type === "USDC") {
+                    appState.usdcBalance += reward.value;
+                    result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>💰 Boom! Balance updated by <span class="text-emerald-400 font-bold">${reward.name}</span>!`;
+                }
+                
+                localStorage.setItem("last_spin_date", today);
+                updateBalanceUI();
+                checkWheelStatus();
+                
+                result.classList.remove("hidden");
+                if (typeof confetti === "function") confetti();
+            }, 1500);
+        }
 
         function navigate(targetTab) {
             if (!window.twIsConnected) return alert("Unlock terminal channel via Web3 payload!");
@@ -733,7 +730,6 @@
             if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
             if (targetTab === 'ranks') renderLeaderboardData();
         }
-        window.navigate = navigate;
 
         function applyGlow(type) {
             const configs = {
@@ -751,7 +747,6 @@
             alert(`✨ Configured layout: ${frameNameGlobal}!`);
             navigate('oracle');
         }
-        window.applyGlow = applyGlow;
 
         function generateDestiny(address) {
             let seed = 0;
@@ -889,27 +884,29 @@
             document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
 
             document.getElementById("tip-btn")?.addEventListener("click", async () => {
-                if (!window.twIsConnected) return alert("Connect node first!");
+                if (!window.twIsConnected || !signer) return alert("Connect node first!");
                 try { 
-                    const txResult = await window.twAccountInstance.sendTransaction({
+                    const txResponse = await signer.sendTransaction({
                         to: DEVELOPER_WALLET,
-                        value: BigInt(Math.floor(0.001 * 1e18)),
-                        data: "0x"
+                        value: ethers.parseEther("0.001")
                     });
-                    alert("💸 Sent! Tx: " + txResult.transactionHash); 
+                    alert("💸 Sent! Wait for block confirmation...");
+                    await txResponse.wait();
+                    alert("💸 Tx Confirmed: " + txResponse.hash);
                     if (typeof confetti === "function") confetti(); 
                 } catch (e) { alert("Aborted"); }
             });
 
             document.getElementById("mint-btn")?.addEventListener("click", async () => {
-                if (!window.twIsConnected) return alert("Connect node first!");
+                if (!window.twIsConnected || !signer) return alert("Connect node first!");
                 try { 
-                    const txResult = await window.twAccountInstance.sendTransaction({
+                    const txResponse = await signer.sendTransaction({
                         to: nftContractAddress,
-                        value: 0n,
                         data: "0x1249c5b8" // Mint function selector
                     });
-                    alert("🪙 Mint request success! Tx: " + txResult.transactionHash); 
+                    alert("🪙 Mint request transmitted! Waiting confirmation...");
+                    await txResponse.wait();
+                    alert("🪙 Mint Success! Tx: " + txResponse.hash);
                     if (typeof confetti === "function") confetti(); 
                 } catch (e) { alert("Failed"); }
             });
