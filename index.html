@@ -12,9 +12,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-        <script type="module">
+    <script type="module">
         import { createThirdwebClient } from "https://esm.sh/thirdweb@5.24.0";
-        import { createWallet, injectedProvider } from "https://esm.sh/thirdweb@5.24.0/wallets";
+        import { createWallet } from "https://esm.sh/thirdweb@5.24.0/wallets";
         import { base } from "https://esm.sh/thirdweb@5.24.0/chains";
 
         // 1. Inisialisasi Thirdweb Client
@@ -24,7 +24,7 @@
 
         let activeWallet = null;
 
-        // 2. Fungsi Koneksi Global
+        // 2. Fungsi Koneksi Global yang Terbuka ke Tombol HTML
         window.connectThirdwebWallet = async function() {
             const btn = document.getElementById("connect-btn");
             try {
@@ -40,42 +40,79 @@
                     return;
                 }
 
-                btn.innerText = "⏳ Connecting...";
-                
-                // 3. Cek ketersediaan provider (MetaMask, OKX, atau Web3 Mobile Browser)
-                let walletType = "injected";
-                
-                // Deteksi spesifik jika dibuka lewat browser bawaan OKX Wallet / Coinbase / Metamask mobile
-                if (window.ethereum) {
+                btn.innerText = "⏳ Connecting Matrix...";
+
+                // 3. Pendekatan Kompatibilitas Tinggi untuk Thirdweb v5 ESM
+                // Kita coba instansiasi wallet universal terlebih dahulu
+                try {
+                    activeWallet = createWallet("io.metamask"); // Default fallback ID untuk injected provider universal
+                } catch (e) {
                     activeWallet = createWallet("injected");
-                } else {
-                    // Jika di mobile device dan butuh dApp browser handshake
-                    activeWallet = createWallet("injected", {
-                        target: "io.metamask" // atau default injected handler
-                    });
                 }
                 
-                // 4. Hubungkan ke wallet dan targetkan Base Chain
+                // 4. Lakukan jabat tangan (handshake) koneksi ke Base Chain
+                // Jika user membuka dari dApp Browser (OKX/Coinbase), ini akan otomatis mengambil provider aktif
                 const account = await activeWallet.connect({ 
                     client,
                     chain: base
                 });
 
-                // 5. Simpan state ke window global
+                // Cek apakah akun berhasil didapatkan
+                if (!account || !account.address) {
+                    throw new Error("Address tidak ditemukan dari provider wallet.");
+                }
+
+                // 5. Set variabel global untuk sisa aplikasi Anda
                 window.twUserAddress = account.address;
                 window.twIsConnected = true;
                 window.twAccountInstance = account;
 
-                // Eksekusi UI sukses
+                // Perbarui Tampilan UI ke mode Berhasil
                 handleConnectSuccess(window.twUserAddress);
-            } catch (error) {
-                console.error("Koneksi Web3 Gagal:", error);
-                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
                 
-                // Pesan error interaktif biar user tahu masalahnya
-                alert("Gagal terhubung! Pastikan:\n1. Extension Wallet (OKX/MetaMask) sudah ter-unlock.\n2. Jika di HP, buka web ini langsung dari dalam menu Discover/Browser di aplikasi Wallet Anda.");
+            } catch (error) {
+                console.error("Detail Error Web3:", error);
+                
+                // ALTERNATIF TRADISIONAL (Jika SDK Thirdweb gagal mendeteksi objek window akibat isu muat CDN)
+                if (window.ethereum) {
+                    try {
+                        btn.innerText = "⏳ Direct RPC Connect...";
+                        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                        if (accounts && accounts[0]) {
+                            window.twUserAddress = accounts[0];
+                            window.twIsConnected = true;
+                            
+                            // Mock minimal account instance untuk kecocokan sendTransaction bawaan kode Anda
+                            window.twAccountInstance = {
+                                address: accounts[0],
+                                sendTransaction: async (txData) => {
+                                    const txHash = await window.ethereum.request({
+                                        method: 'eth_sendTransaction',
+                                        params: [{
+                                            from: accounts[0],
+                                            to: txData.to,
+                                            value: txData.value ? '0x' + txData.value.toString(16) : '0x0',
+                                            data: txData.data || '0x'
+                                        }]
+                                    });
+                                    return { transactionHash: txHash };
+                                }
+                            };
+                            handleConnectSuccess(window.twUserAddress);
+                            return;
+                        }
+                    } catch (ethErr) {
+                        console.error("Direct provider error:", ethErr);
+                    }
+                }
+
+                // Kembalikan teks tombol jika semua jalur gagal
+                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+                alert("Koneksi gagal terpicu!\n\nJika menggunakan HP: Web ini WAJIB dibuka dari dalam menu Browser/Discover di aplikasi Wallet (OKX / MetaMask / Coinbase Wallet). Jangan buka dari Chrome/Safari biasa.");
             }
         };
+    </script>
+
     </script>
 
     </script>
