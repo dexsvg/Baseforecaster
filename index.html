@@ -252,7 +252,7 @@
         const flaunchShareLink = "https://flaunch.gg/base/coins/0x052aE904DD28b5D840F7a25f77003E0f9597Fc69";
         const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
         const B20_FACTORY_ADDRESS = "0xB20f000000000000000000000000000000000000"; 
-        const BASE_CHAIN_ID = "0x2105"; // Chain ID Base Mainnet
+        const BASE_CHAIN_ID = "0x2105"; 
 
         let userAddress = "";
         let isConnected = false;
@@ -301,9 +301,15 @@
             return null;
         }
 
+        // ====================================================================
+        // UPDATE BALANCE UI (REAL-TIME DATA DARI LOCALSTORAGE)
+        // ====================================================================
         function updateBalanceUI() {
+            appState.auraPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+            
             const auraDisplayEl = document.getElementById("aura-points-display");
             const usdcDisplayEl = document.getElementById("usdc-balance-display");
+            
             if (auraDisplayEl) auraDisplayEl.textContent = `${appState.auraPoints} AP`;
             if (usdcDisplayEl) usdcDisplayEl.textContent = `$${appState.usdcBalance.toFixed(3)}`;
         }
@@ -358,7 +364,9 @@
 
                 await checkAndSwitchNetwork();
 
-                appState.auraPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+                if (!localStorage.getItem("premium_aura")) {
+                    localStorage.setItem("premium_aura", 75);
+                }
                 appState.usdcBalance = 0.005;
 
                 updateWalletUI(userAddress);
@@ -369,6 +377,7 @@
                 
                 generateDestiny(userAddress);
                 await renderTopTrendingBaseCoins(); 
+                
                 updateBalanceUI();
                 navigate('oracle'); 
 
@@ -416,12 +425,14 @@
             setTimeout(() => {
                 graphic.classList.remove("animate-spin");
                 if (reward.type === "AP") {
-                    appState.auraPoints += reward.value;
+                    let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+                    localStorage.setItem("premium_aura", currentPoints + reward.value);
                     result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>🎉 Safe! You received <span class="text-cyan-400 font-bold">${reward.name}</span>!`;
                 } else if (reward.type === "USDC") {
                     appState.usdcBalance += reward.value;
                     result.innerHTML = `<strong>🎰 SPIN LOG ALIGNMENT:</strong><br>💰 Boom! Balance updated by <span class="text-emerald-400 font-bold">${reward.name}</span>!`;
                 }
+                
                 updateBalanceUI();
                 result.classList.remove("hidden");
                 btn.disabled = false;
@@ -429,70 +440,103 @@
             }, 1500);
         }
 
+        // ====================================================================
+        // REAL-TIME TRENDING COINS (FIXED ANTI-DELAY & FILTER LOSS/PROFIT)
+        // ====================================================================
         async function renderTopTrendingBaseCoins() {
             const tickerWrapper = document.getElementById("live-ticker-inner-marquee");
+            if (!tickerWrapper) return;
+
             try {
-                const response = await fetch("https://api.geckoterminal.com/api/v2/networks/base/trending_pools?page=1");
-                if (!response.ok) throw new Error();
-                const json = await response.json();
-                const pools = json.data;
+                const response = await fetch("https://api.dexscreener.com/latest/dex/search?q=WETH");
+                if (!response.ok) throw new Error("DexScreener Hub Traffic Blocked");
+                
+                const data = await response.json();
+                if (!data.pairs) throw new Error("No Packets Found");
+
+                const basePairs = data.pairs
+                    .filter(p => p.chainId === 'base' && p.baseToken && p.priceChange)
+                    .sort((a, b) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0));
+
+                if (basePairs.length === 0) throw new Error("Empty Network Stream");
+
                 const tickerItems = [];
                 const seenAddresses = new Set();
                 let count = 0;
 
-                for (const pool of pools) {
+                for (const pair of basePairs) {
                     if (count >= 12) break;
-                    const attr = pool.attributes;
-                    const addr = pool.relationships?.base_token?.data?.id?.split('_')[1];
-                    if (!addr || seenAddresses.has(addr.toLowerCase())) continue;
-                    let sym = attr.name.split(/[\/\-]/)[0].trim();
-                    if (['weth', 'usdc', 'usdt', 'usd'].includes(sym.toLowerCase())) continue;
 
-                    const price = parseFloat(attr.token_price_usd) || 0;
-                    const change = parseFloat(attr.price_change_percentage?.h24 || 0);
-                    if (change <= 0 || price === 0) continue;
+                    const addr = pair.baseToken.address;
+                    const sym = pair.baseToken.symbol;
 
+                    if (['weth', 'usdc', 'usdt', 'usd', 'eth'].includes(sym.toLowerCase())) continue;
+                    if (seenAddresses.has(addr.toLowerCase())) continue;
+
+                    const price = parseFloat(pair.priceUsd) || 0;
+                    const change = parseFloat(pair.priceChange.h24) || 0;
                     const fmtPrice = price < 0.0001 ? price.toFixed(7) : (price < 0.01 ? price.toFixed(5) : price.toFixed(2));
+                    
+                    const isPositive = change >= 0;
+                    const badgeColor = isPositive ? 'text-emerald-400' : 'text-rose-400';
+                    const borderGlow = isPositive ? 'border-emerald-950/60 hover:border-emerald-400' : 'border-rose-950/60 hover:border-rose-400';
+                    const arrowSymbol = isPositive ? '▲' : '▼';
+
                     seenAddresses.add(addr.toLowerCase());
                     count++;
 
                     tickerItems.push(`
-                        <button onclick="quickSelectToken('${addr}', '${sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-emerald-950 px-2.5 py-1 rounded-xl hover:border-cyan-400 transition-all text-left">
-                            <span class="text-emerald-500 font-bold text-[9px]">#${count}</span>
+                        <button onclick="quickSelectToken('${addr}', '${sym}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border ${borderGlow} px-2.5 py-1 rounded-xl transition-all text-left shadow-inner">
+                            <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
                             <span class="text-white font-extrabold font-mono text-[10px]">${sym}</span>
                             <span class="text-slate-400 text-[10px]">$${fmtPrice}</span>
-                            <span class="text-emerald-400 font-bold text-[9px]">▲ ${change.toFixed(1)}%</span>
+                            <span class="${badgeColor} font-bold text-[9px]">${arrowSymbol} ${Math.abs(change).toFixed(1)}%</span>
                         </button>
                     `);
                 }
-                if (tickerWrapper && tickerItems.length >= 3) { tickerWrapper.innerHTML = tickerItems.join(''); return; }
-                throw new Error();
-            } catch (e) { executeDexScreenerFallback(tickerWrapper); }
+
+                if (tickerItems.length > 0) {
+                    tickerWrapper.innerHTML = tickerItems.join('');
+                    return;
+                }
+                throw new Error("Criteria Not Met");
+            } catch (e) {
+                executeDexScreenerFallback(tickerWrapper);
+            }
         }
 
         async function executeDexScreenerFallback(wrapper) {
             if (!wrapper) return;
             try {
-                const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=degen");
+                const res = await fetch("https://api.dexscreener.com/latest/dex/search?q=base");
                 const data = await res.json();
                 if (!data.pairs) return;
-                const filtered = data.pairs.filter(p => p.chainId === 'base' && p.priceChange?.h24 > 0);
+
+                const filtered = data.pairs.filter(p => p.chainId === 'base' && p.baseToken);
                 const tickerItems = [];
                 let count = 0;
+
                 for (const p of filtered) {
                     if (count >= 10) break;
                     count++;
+                    
+                    const price = parseFloat(p.priceUsd) || 0;
+                    const change = parseFloat(p.priceChange?.h24 || 0);
+                    const isPositive = change >= 0;
+
                     tickerItems.push(`
                         <button onclick="quickSelectToken('${p.baseToken.address}', '${p.baseToken.symbol}')" class="inline-flex items-center gap-1.5 mx-3 bg-slate-950 border border-slate-800 px-2.5 py-1 rounded-xl hover:border-cyan-400 text-left">
                             <span class="text-cyan-500 font-bold text-[9px]">#${count}</span>
                             <span class="text-white font-extrabold font-mono text-[10px]">${p.baseToken.symbol}</span>
-                            <span class="text-slate-400 text-[10px]">$${parseFloat(p.priceUsd).toFixed(4)}</span>
-                            <span class="text-emerald-400 font-bold text-[9px]">▲ ${p.priceChange.h24}%</span>
+                            <span class="text-slate-400 text-[10px]">$${price < 0.01 ? price.toFixed(5) : price.toFixed(2)}</span>
+                            <span class="${isPositive ? 'text-emerald-400' : 'text-rose-400'} font-bold text-[9px]">${isPositive ? '▲' : '▼'} ${Math.abs(change).toFixed(1)}%</span>
                         </button>
                     `);
                 }
                 wrapper.innerHTML = tickerItems.join('');
-            } catch (err) { wrapper.innerHTML = `<span class="text-slate-500 text-xs">Stream offline</span>`; }
+            } catch (err) {
+                wrapper.innerHTML = `<span class="text-slate-500 text-xs px-4 font-mono">📡 Reconnecting to Base Matrix Data...</span>`;
+            }
         }
 
         function quickSelectToken(address, symbol) {
@@ -754,7 +798,7 @@
         }
 
         // ====================================================================
-        // FUNGSI UTAMA CLAIM DAILY AP (VERSI AMAN SEKALI SEHARI)
+        // GATA LOCK DAILY CLAIM (ANTI-DOUBLE CLICK / REAL-TIME)
         // ====================================================================
         function checkDailyClaimStatus() {
             const today = new Date().toDateString();
@@ -777,8 +821,10 @@
                 return;
             }
 
-            appState.auraPoints += 100;
-            localStorage.setItem("premium_aura", appState.auraPoints);
+            let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 75;
+            let newPoints = currentPoints + 100;
+            
+            localStorage.setItem("premium_aura", newPoints);
             localStorage.setItem("last_claim_date", today);
             
             updateBalanceUI();
@@ -788,28 +834,29 @@
             alert("🎁 +100 Aura Points synchronized successfully!");
         }
 
+        // ====================================================================
+        // LIFECYCLE INITIALIZER ON LOAD
+        // ====================================================================
         document.addEventListener("DOMContentLoaded", () => {
-            // Cek status tombol langsung saat halaman pertama kali dibuka
+            // Sinkronisasi tombol dan angka langsung saat boot aplikasi
             checkDailyClaimStatus();
+            updateBalanceUI();
 
             renderTopTrendingBaseCoins();
+            // Jalankan polling update real-time coin setiap 30 detik tanpa interupsi
             setInterval(renderTopTrendingBaseCoins, 30000); 
 
             document.getElementById("connect-btn")?.addEventListener("click", connectWallet);
-            
-            // Pasang event listener ke tombol daily claim
             document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
 
             document.getElementById("tip-btn")?.addEventListener("click", async () => {
                 const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
                 try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: DEVELOPER_WALLET, value: toSafeHexWei("0.001"), data: "0x" }] }); alert("💸 Sent! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Aborted"); }
             });
-            
             document.getElementById("mint-btn")?.addEventListener("click", async () => {
                 const provider = getActiveProvider(); if (!provider || !isConnected) return alert("Connect node first!");
                 try { const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: nftContractAddress, value: toSafeHexWei("0.000"), data: "0x1249c5b8" }] }); alert("🪙 Mint request success! Tx: " + tx); if (typeof confetti === "function") confetti(); } catch (e) { alert("Failed"); }
             });
-            
             document.getElementById("external-target-btn")?.addEventListener("click", executeTokenScan);
             
             document.getElementById("share-x-btn")?.addEventListener("click", () => {
@@ -819,3 +866,5 @@
             document.getElementById("share-tg-btn")?.addEventListener("click", () => { window.open("https://t.me/BaseForecaster", '_blank'); });
         });
     </script>
+</body>
+</html>
