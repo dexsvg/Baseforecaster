@@ -12,24 +12,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Thirdweb SDK v5 ESM Loader -->
-    <script type="module">
+        <script type="module">
         import { createThirdwebClient } from "https://esm.sh/thirdweb@5.24.0";
-        import { createWallet } from "https://esm.sh/thirdweb@5.24.0/wallets";
+        import { createWallet, injectedProvider } from "https://esm.sh/thirdweb@5.24.0/wallets";
         import { base } from "https://esm.sh/thirdweb@5.24.0/chains";
 
-        // 1. Inisialisasi Thirdweb Client dengan Client ID Publik
+        // 1. Inisialisasi Thirdweb Client
         const client = createThirdwebClient({ 
             clientId: "b790757db120c8152bc6642d216fcb37" 
         });
 
         let activeWallet = null;
 
-        // 2. Daftarkan fungsi koneksi ke objek window global agar tombol onclick berfungsi
+        // 2. Fungsi Koneksi Global
         window.connectThirdwebWallet = async function() {
             const btn = document.getElementById("connect-btn");
             try {
-                // Logika Disconnect jika sudah terhubung
+                // Logika Disconnect
                 if (window.twIsConnected) {
                     if (activeWallet) {
                         await activeWallet.disconnect();
@@ -43,28 +42,42 @@
 
                 btn.innerText = "⏳ Connecting...";
                 
-                // 3. Deteksi otomatis dompet bawaan browser (MetaMask / OKX Wallet / Rabby)
-                activeWallet = createWallet("injected"); 
+                // 3. Cek ketersediaan provider (MetaMask, OKX, atau Web3 Mobile Browser)
+                let walletType = "injected";
                 
-                // 4. Picu koneksi ke jaringan Base
+                // Deteksi spesifik jika dibuka lewat browser bawaan OKX Wallet / Coinbase / Metamask mobile
+                if (window.ethereum) {
+                    activeWallet = createWallet("injected");
+                } else {
+                    // Jika di mobile device dan butuh dApp browser handshake
+                    activeWallet = createWallet("injected", {
+                        target: "io.metamask" // atau default injected handler
+                    });
+                }
+                
+                // 4. Hubungkan ke wallet dan targetkan Base Chain
                 const account = await activeWallet.connect({ 
                     client,
                     chain: base
                 });
 
-                // 5. Set variabel global untuk digunakan oleh modul lain (Presale, Mint, dll)
+                // 5. Simpan state ke window global
                 window.twUserAddress = account.address;
                 window.twIsConnected = true;
                 window.twAccountInstance = account;
 
-                // Eksekusi fungsi UI sukses bawaan web Anda
+                // Eksekusi UI sukses
                 handleConnectSuccess(window.twUserAddress);
             } catch (error) {
-                console.error("Connection error:", error);
+                console.error("Koneksi Web3 Gagal:", error);
                 btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
-                alert("Koneksi gagal: Pastikan ekstensi wallet Anda (MetaMask/OKX) sudah terbuka dan ter-unlock.");
+                
+                // Pesan error interaktif biar user tahu masalahnya
+                alert("Gagal terhubung! Pastikan:\n1. Extension Wallet (OKX/MetaMask) sudah ter-unlock.\n2. Jika di HP, buka web ini langsung dari dalam menu Discover/Browser di aplikasi Wallet Anda.");
             }
         };
+    </script>
+
     </script>
 </head>
     
