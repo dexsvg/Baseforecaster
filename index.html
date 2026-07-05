@@ -12,46 +12,60 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Thirdweb SDK v5 ESM Loader -->
+        <!-- Thirdweb SDK v5 ESM Loader -->
     <script type="module">
-        import { createThirdwebClient, getContract } from "https://esm.sh/thirdweb@5.24.0";
-        import { createWallet, walletConnect } from "https://esm.sh/thirdweb@5.24.0/wallets";
-        import { base, mainnet } from "https://esm.sh/thirdweb@5.24.0/chains";
+        import { createThirdwebClient } from "https://esm.sh/thirdweb@5.24.0";
+        import { createWallet } from "https://esm.sh/thirdweb@5.24.0/wallets";
+        import { base } from "https://esm.sh/thirdweb@5.24.0/chains";
 
-        // Inisialisasi Thirdweb Client (Menggunakan ClientID Publik Default)
+        // 1. Inisialisasi Thirdweb Client dengan Client ID Publik
         const client = createThirdwebClient({ 
             clientId: "b790757db120c8152bc6642d216fcb37" 
         });
 
-        // Daftar dompet yang didukung secara modular
-        const wallets = [
-            createWallet("io.metamask"),
-            createWallet("com.coinbase.wallet"),
-            createWallet("com.okex.wallet"),
-            walletConnect()
-        ];
-
         let activeWallet = null;
-        let activeAccount = null;
 
-        // Ekspos ke global window agar bisa diakses oleh fungsi vanila HTML di bawah
-        window.twClient = client;
-        window.twBaseChain = base;
-        window.twWallets = wallets;
-        
+        // 2. Daftarkan fungsi koneksi ke objek window global
         window.connectThirdwebWallet = async function() {
             const btn = document.getElementById("connect-btn");
             try {
+                // Logika Disconnect jika sudah terhubung
                 if (window.twIsConnected) {
-                    // Logika Disconnect
                     if (activeWallet) {
                         await activeWallet.disconnect();
                     }
                     window.twIsConnected = false;
                     window.twUserAddress = "";
+                    window.twAccountInstance = null;
                     handleDisconnectUI();
                     return;
                 }
+
+                btn.innerText = "⏳ Connecting...";
+                
+                // 3. Deteksi otomatis dompet bawaan browser (MetaMask / OKX Wallet / Rabby)
+                activeWallet = createWallet("injected"); 
+                
+                // 4. Picu koneksi ke jaringan Base
+                const account = await activeWallet.connect({ 
+                    client,
+                    chain: base
+                });
+
+                // 5. Set variabel global untuk digunakan oleh modul lain (Presale, Mint, dll)
+                window.twUserAddress = account.address;
+                window.twIsConnected = true;
+                window.twAccountInstance = account;
+
+                // Eksekusi fungsi UI sukses bawaan web Anda
+                handleConnectSuccess(window.twUserAddress);
+            } catch (error) {
+                console.error("Connection error:", error);
+                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
+                alert("Koneksi gagal: Pastikan ekstensi wallet Anda (MetaMask/OKX) sudah terbuka dan ter-unlock.");
+            }
+        };
+    </script>
 
                 btn.innerText = "⏳ Connecting...";
                 
