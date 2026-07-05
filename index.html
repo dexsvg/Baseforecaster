@@ -751,17 +751,39 @@
                     </div>
                 </div>
             `;
-            document.getElementById("btn-action-presale")?.addEventListener("click", async () => {
-                const provider = getActiveProvider();
-                if (!provider || !userAddress) return;
-                const eth = document.getElementById("presale-eth-input")?.value || "0.005";
-                try {
-                    const tx = await provider.request({ method: 'eth_sendTransaction', params: [{ from: userAddress, to: tokenContractAddress, value: toSafeHexWei(eth), data: "0x" }] });
-                    alert("🚀 Node Transfer success! Tx: " + tx);
-                } catch (err) { alert("Refused: " + err.message); }
-            });
-        }
+            document.getElementById("daily-login-btn")?.addEventListener("click", () => {
+    const today = new Date().toDateString(); // Mengambil string tanggal hari ini (ex: "Sun Jul 05 2026")
+    const lastClaim = localStorage.getItem("last_claim_date");
 
+    if (lastClaim === today) {
+        alert("🔒 You have already claimed your daily rewards today! Come back tomorrow.");
+        return;
+    }
+
+    // Eksekusi penambahan poin jika belum klaim hari ini
+    appState.auraPoints += 100;
+    localStorage.setItem("premium_aura", appState.auraPoints);
+    localStorage.setItem("last_claim_date", today); // Kunci tanggal hari ini
+    
+    updateBalanceUI();
+    checkDailyClaimStatus(); // Perbarui tampilan tombol jadi terkunci
+
+    if (typeof confetti === "function") confetti();
+    alert("🎁 +100 Aura Points synchronized successfully!");
+});
+
+// Fungsi tambahan untuk mengecek status tombol saat dompet terhubung atau halaman dimuat
+function checkDailyClaimStatus() {
+    const today = new Date().toDateString();
+    const lastClaim = localStorage.getItem("last_claim_date");
+    const btn = document.getElementById("daily-login-btn");
+
+    if (btn && lastClaim === today) {
+        btn.textContent = "Claimed ✓";
+        btn.disabled = true;
+        btn.className = "bg-slate-800 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded-xl cursor-not-allowed shadow-none";
+    }
+}
         document.addEventListener("DOMContentLoaded", () => {
             renderTopTrendingBaseCoins();
             setInterval(renderTopTrendingBaseCoins, 30000); 
