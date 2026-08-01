@@ -1,615 +1,550 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="base:app_id" content="6a3d5ec5f2523513587e2ca0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BaseForecaster - Web3 Portal</title>
+    <title>BaseForecaster - Advanced Web3 Terminal</title>
     
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoQgAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAUAAAAAAAAAAAAAAAAAAAAAAAD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD09PQD////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/29vYP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDu7u4P3t7eD9bW1g/v7+8P////AP///wD///8A////AP///wD///8A////AP///wD///8A////APRefg/W1tYP0NDQD9HR0Q/f398P////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP229g/Q0NAP////AP///wDR0dfP////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wDQ0NAP////AP///wD///8A0dHXz////AP///wD///8A////AP///wD///8A////AP///wD///8A8vLyD+7u7g/v7+8P9vb2D////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wA9PT0A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD///8A////AP///wD/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wA=" />
-    
-    <!-- Scripts -->
+    <!-- Tailwind CSS & Ethers.js & Confetti -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.1/ethers.umd.min.js"></script>
 
     <style>
-        /* ==========================================================================
-           CORE STYLE & GLOBAL RESET
-           ========================================================================== */
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
 
         :root {
-            --matrix-cyan: #00f3ff;
-        }
-
-        html, body {
-            -webkit-tap-highlight-color: transparent;
-            scroll-behavior: smooth;
+            --neon-blue: #00f0ff;
+            --neon-purple: #b026ff;
+            --dark-bg: #030712;
         }
 
         body {
-            font-family: 'Courier Prime', monospace !important;
-            background-color: #020205 !important;
-            padding-bottom: 80px; 
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--dark-bg);
+            color: #f3f4f6;
+            overflow-x: hidden;
         }
 
-        /* MATRIX THEME UTILITIES */
-        .matrix-grid-bg {
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Matrix Cyber Background Grid */
+        .cyber-grid {
             background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.04) 1px, transparent 1px);
-            background-size: 30px 30px;
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 35px 35px;
         }
 
-        .text-neon-matrix {
-            color: var(--matrix-cyan) !important;
-            text-shadow: 0 0 5px rgba(0, 243, 255, 0.6), 0 0 10px rgba(0, 243, 255, 0.4);
+        /* Neon Glow Effects */
+        .neon-glow-blue {
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+        .neon-glow-purple {
+            box-shadow: 0 0 20px rgba(176, 38, 255, 0.2);
+        }
+        .text-glow {
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
         }
 
-        .border-neon-matrix {
-            border-color: rgba(0, 243, 255, 0.4) !important;
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(10, 15, 30, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 240, 255, 0.15);
         }
 
-        /* ANIMATIONS */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
         }
-
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
+        ::-webkit-scrollbar-track {
+            background: #030712;
         }
-
-        @keyframes spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
         }
-
-        .animate-spin-slow {
-            animation: spin-slow 10s linear infinite;
-        }
-
-        /* DESTINY CANVAS CARD CONTAINER */
-        #destiny-card, .destiny-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 16px;
-            display: block;
-            margin: 0 auto;
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.7);
-            transition: all 0.3s ease;
-        }
-
-        #destiny-card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
-            z-index: 2;
-            pointer-events: none;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
         }
     </style>
 </head>
-    
-<body class="bg-slate-950 text-white font-sans flex flex-col items-center justify-start min-h-screen p-4 pb-28 relative overflow-x-hidden select-none matrix-grid-bg">
 
-    <!-- Ambient Glow Backgrounds -->
-    <div class="absolute top-[-10%] left-[-10%] w-[300px] h-[300px] bg-blue-600 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[300px] h-[300px] bg-indigo-500 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+<body class="cyber-grid min-h-screen flex flex-col items-center justify-between p-4 pb-28 relative">
 
-    <div class="max-w-md w-full bg-slate-900/80 border border-blue-500/30 rounded-3xl p-6 backdrop-blur-xl shadow-2xl shadow-blue-900/20 text-center z-10 my-4">
+    <!-- Ambient Background Glows -->
+    <div class="absolute top-0 left-1/4 w-[400px] h-[400px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+    <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full max-w-md z-10 space-y-4 my-2">
         
-        <!-- Header & Network Badge -->
-        <div class="flex flex-col items-center justify-center gap-1 mb-2">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 bg-cyan-400 rounded-full animate-ping"></div>
-                <h1 class="text-2xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-                    BASE FORECASTER
-                </h1>
-            </div>
-            <div id="network-warning-badge" onclick="switchToBaseNetwork()" class="hidden cursor-pointer bg-rose-500/20 border border-rose-500/40 px-3 py-1 rounded-full text-[9px] font-mono text-rose-400 animate-pulse mt-1">
-                ⚠️ WRONG NETWORK: Click to Switch to Base Mainnet
-            </div>
-        </div>
-
-        <!-- Live Streaming Ticker -->
-        <div class="w-full bg-slate-950/90 border border-slate-800/80 rounded-2xl p-1.5 mb-3 overflow-hidden">
-            <div class="flex items-center text-[8px] font-mono tracking-wider font-extrabold text-cyan-400/80 px-2 border-b border-slate-900 pb-1 mb-1 justify-between">
-                <span>🟢 REAL-TIME BASE TOP TRENDING</span>
-                <span class="text-slate-600 animate-pulse text-[7px]">Click Token to Import</span>
-            </div>
-            <marquee id="live-ticker-marquee" direction="left" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();" class="whitespace-nowrap cursor-pointer">
-                <div id="live-ticker-inner-marquee" class="inline-flex items-center">
-                    <span class="text-slate-500 text-[10px] font-mono px-4 animate-pulse">🔮 Connecting node to Base matrix stream...</span>
+        <!-- HEADER & BRANDING -->
+        <header class="glass-panel rounded-3xl p-5 relative overflow-hidden shadow-2xl">
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl"></div>
+            
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-3.5 h-3.5 bg-cyan-400 rounded-full animate-ping shadow-[0_0_12px_#00f0ff]"></div>
+                    <h1 class="text-xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-glow">
+                        BASE FORECASTER
+                    </h1>
                 </div>
-            </marquee>
-        </div>
-
-        <!-- Dashboard Points Panel -->
-        <div class="flex flex-col bg-slate-950/80 border border-slate-800 rounded-2xl p-3 mb-4 text-left space-y-2">
-            <div class="flex items-center justify-between">
-                <div class="font-mono text-[11px]">
-                    <span class="text-slate-400 block">🔮 Your Aura Balance:</span>
-                    <span id="aura-points-display" class="font-bold text-cyan-400 text-sm">0 AP</span>
-                </div>
-                <button id="daily-login-btn" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-[10px] font-bold px-3 py-1.5 rounded-xl transition-all shadow-md">
-                    Claim Daily AP
-                </button>
+                <span class="mono-font text-[10px] bg-cyan-950/80 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-full font-semibold">
+                    BASE MAINNET
+                </span>
             </div>
-            <div class="text-[11px] font-mono border-t border-slate-900 pt-1.5 flex justify-between items-center">
-                <span class="text-slate-400">💵 Your USDC Balance:</span>
-                <span id="usdc-balance-display" class="font-bold text-emerald-400 text-sm">$0.000</span>
+
+            <!-- NETWORK WARNING BADGE -->
+            <div id="network-warning" onclick="switchNetwork()" class="hidden cursor-pointer bg-rose-500/20 border border-rose-500/40 p-2 rounded-xl text-center mono-font text-[10px] text-rose-400 animate-pulse mb-3">
+                ⚠️ WRONG NETWORK DETECTED: Click to Switch to Base
             </div>
-        </div>
 
-        <div class="mb-4 inline-block bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-full text-[10px] font-mono text-amber-400">
-            🔥 Total Forecasts Claimed: <span id="mint-counter" class="font-bold text-white">1,482</span>
-        </div>
-
-        <!-- Universal Web3 Connect Section -->
-        <div id="wallet-section" class="mb-4">
-            <button id="connect-btn" onclick="connectWallet()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 transition-all duration-300 text-white font-bold py-3 px-6 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-md">
-                <span>🔮</span> Connect Web3 Wallet
+            <!-- WALLET CONNECT SECTION -->
+            <button id="connect-btn" onclick="toggleWallet()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold py-3 px-4 rounded-2xl shadow-lg transition-all active:scale-95 mono-font text-xs flex items-center justify-center gap-2">
+                <span>⚡</span> CONNECT WEB3 WALLET
             </button>
-        </div>
+        </header>
 
-        <!-- Locked View Screen -->
-        <div id="locked-state-view" class="py-10 px-4 border border-slate-800 border-dashed rounded-2xl space-y-3 bg-slate-950/40">
-            <div class="text-3xl animate-pulse">🔒</div>
-            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Terminal Locked</h4>
-            <p class="text-[10px] text-slate-500 max-w-xs mx-auto leading-relaxed">
-                Connect your secure wallet to synchronize on-chain metadata records, launch custom tokens, and view real-time calculations.
+
+        <!-- LOCKED STATE SCREEN -->
+        <div id="locked-view" class="glass-panel rounded-3xl p-8 text-center space-y-4 shadow-xl border-dashed">
+            <div class="text-4xl animate-bounce">🔮</div>
+            <h3 class="text-sm font-bold text-slate-300 tracking-wide uppercase">Terminal Locked</h3>
+            <p class="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Connect your Web3 wallet to activate neural forecasting algorithms, stake Aura points, and claim your decentralized rewards.
             </p>
         </div>
 
-        <!-- Main Dynamic Dashboard View Area -->
-        <div id="result-section" class="hidden text-center">
 
-            <!-- TAB 1: ORACLE ENGINE -->
-            <div id="tab-oracle" class="tab-content space-y-5">
-                <p class="text-slate-400 text-[11px] italic px-2 leading-relaxed">
-                    "The true fate of your portfolio isn’t in the candles—it’s written in your hexadecimal identity hash sequence."
-                </p>
+        <!-- UNLOCKED DASHBOARD VIEWS -->
+        <div id="unlocked-view" class="hidden space-y-4">
 
-                <!-- Canvas Card Renderer -->
-                <div class="flex flex-col items-center">
-                    <span id="card-glow-title" class="text-[11px] font-bold tracking-wider text-amber-400 uppercase mb-2 block animate-pulse">✨ Gold-Blue Destiny Matrix ✨</span>
-                    <div class="border-2 border-slate-800 p-1.5 bg-slate-950 rounded-2xl shadow-xl">
-                        <canvas id="destiny-card" width="350" height="500" class="w-full max-w-[280px] rounded-xl border border-blue-500/10 shadow-inner"></canvas>
-                    </div>
+            <!-- STATS TICKER BAR -->
+            <div class="glass-panel rounded-2xl p-4 flex items-center justify-between mono-font text-xs">
+                <div>
+                    <span class="text-slate-400 block text-[10px]">AURA BALANCE</span>
+                    <span id="stat-aura" class="text-cyan-400 font-bold text-sm">0 AP</span>
                 </div>
+                <div class="h-8 w-[1px] bg-slate-800"></div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">USDC REWARD</span>
+                    <span id="stat-usdc" class="text-emerald-400 font-bold text-sm">$0.00</span>
+                </div>
+                <div class="h-8 w-[1px] bg-slate-800"></div>
+                <div>
+                    <button onclick="claimDaily()" id="daily-btn" class="bg-purple-600/30 hover:bg-purple-600 border border-purple-500/40 text-purple-300 hover:text-white px-3 py-1.5 rounded-xl font-bold transition-all text-[11px]">
+                        Claim Daily
+                    </button>
+                </div>
+            </div>
 
-                <!-- Value Capture Gateways -->
-                <div class="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 text-center max-w-[295px] mx-auto">
-                    <p class="text-[10px] font-mono text-slate-400 italic mb-3">Interact With Contract Matrix 👇</p>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button id="tip-btn" class="bg-emerald-600/20 hover:bg-emerald-600 border border-emerald-500/20 text-emerald-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
+
+            <!-- TAB 1: ORACLE & TERMINAL -->
+            <div id="tab-terminal" class="tab-pane space-y-4">
+                
+                <!-- FORECAST CARD GENERATOR -->
+                <div class="glass-panel rounded-3xl p-5 text-center space-y-3 relative overflow-hidden">
+                    <h2 class="text-xs font-bold tracking-widest text-cyan-400 uppercase">✨ Neural Identity Matrix</h2>
+                    
+                    <div class="relative w-full max-w-[280px] mx-auto bg-slate-950 border border-cyan-500/30 rounded-2xl p-3 shadow-2xl">
+                        <canvas id="forecast-canvas" width="300" height="380" class="w-full rounded-xl"></canvas>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <button onclick="tipDeveloper()" class="bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 py-2.5 px-3 rounded-xl mono-font text-xs font-bold transition-all">
                             💸 Tip 0.001 ETH
                         </button>
-                        <button id="mint-btn" class="bg-amber-600/20 hover:bg-amber-600 border border-amber-500/20 text-amber-400 hover:text-white text-xs font-bold py-3 px-2 rounded-xl transition-all font-mono">
+                        <button onclick="mintIdentityNFT()" class="bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 py-2.5 px-3 rounded-xl mono-font text-xs font-bold transition-all">
                             🪙 Claim NFT
                         </button>
                     </div>
                 </div>
 
-                <!-- On-chain Seed Metrics -->
-                <div class="space-y-3 text-left">
-                    <div>
-                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mb-1">
-                            <span>Degen Luck Alignment:</span>
-                            <span id="luck-score" class="text-blue-400">0%</span>
-                        </div>
-                        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                            <div id="luck-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full w-0 transition-all duration-1000"></div>
-                        </div>
+                <!-- SWAP / PRESALE WIDGET -->
+                <div class="glass-panel rounded-3xl p-5 space-y-3">
+                    <div class="flex justify-between items-center text-xs mono-font">
+                        <span class="text-cyan-400 font-bold">⚡ FORECAST SWAP NODE</span>
+                        <span class="text-emerald-400 animate-pulse text-[10px]">● Contract Live</span>
                     </div>
-                    <div class="text-center text-[10px] text-slate-500 font-mono">
-                        Deterministic Seed Hex: <span id="seed-anchor" class="text-blue-400">#0000</span>
+                    <div class="space-y-2">
+                        <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-3 flex justify-between items-center">
+                            <input id="swap-amount" type="number" step="0.001" value="0.005" class="bg-transparent text-sm mono-font w-2/3 focus:outline-none text-white font-bold">
+                            <span class="mono-font text-xs text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded-lg">ETH</span>
+                        </div>
+                        <button onclick="executeSwap()" class="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 text-slate-950 font-extrabold py-3 rounded-xl mono-font text-xs shadow-lg transition-all">
+                            EXECUTE INSTANT SWAP
+                        </button>
                     </div>
                 </div>
 
-                <!-- Dynamic Agent Engine Wrapper Injection Point -->
-                <div id="polymarket-top-container" class="mt-4"></div>
             </div>
 
-            <!-- TAB 2: ROADMAP -->
-            <div id="tab-roadmap" class="tab-content hidden space-y-4 text-left px-2">
-                <h2 class="text-md font-bold uppercase tracking-wider text-emerald-400 text-center mb-4">🗺️ Project Roadmap</h2>
-                
-                <div class="relative border-l border-slate-700 ml-3 space-y-6 pb-4">
-                    <div class="relative pl-6">
-                        <div class="absolute -left-1.5 top-1.5 w-3 h-3 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981]"></div>
-                        <h3 class="text-xs font-bold text-white">Phase 1: Inception</h3>
-                        <p class="text-[10px] text-slate-400 mt-1">Smart Contract deployment di Base Network. Peluncuran Web3 Terminal & integrasi wallet dasar.</p>
-                    </div>
-                    <div class="relative pl-6">
-                        <div class="absolute -left-1.5 top-1.5 w-3 h-3 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_10px_#06b6d4]"></div>
-                        <h3 class="text-xs font-bold text-white">Phase 2: The BaseForecaster Ecosystem</h3>
-                        <p class="text-[10px] text-slate-400 mt-1">Implementasi Daily Claim, Degen Wheel, dan distribusi reward Aura Points untuk early adopters.</p>
-                    </div>
-                    <div class="relative pl-6">
-                        <div class="absolute -left-1.5 top-1.5 w-3 h-3 bg-slate-700 rounded-full border border-slate-500"></div>
-                        <h3 class="text-xs font-bold text-slate-400">Phase 3: Utility Expansion</h3>
-                        <p class="text-[10px] text-slate-500 mt-1">Peluncuran Dazed NFT Collection, staking dashboard, dan sistem governance berbasis token.</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- TAB 3: DEGEN SPIN WHEEL -->
-            <div id="tab-wheel" class="tab-content hidden space-y-5 text-center py-4">
-                <h2 class="text-md font-bold uppercase tracking-wider text-purple-400">🎡 Degen Lucky Wheel</h2>
-                <p class="text-xs text-slate-400">Spin the randomized index once every 24 hours to secure standard bonus Aura Points or luck multiplier rerolls.</p>
-                
-                <div class="relative w-52 h-52 mx-auto flex items-center justify-center">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl text-amber-400 animate-bounce z-30">▼</div>
+            <!-- TAB 2: STAKING VAULT -->
+            <div id="tab-stake" class="tab-pane hidden space-y-4">
+                <div class="glass-panel rounded-3xl p-5 text-center space-y-4">
+                    <div class="text-3xl">🏦</div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-purple-400">Aura Staking Vault</h2>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Stake your accumulated Aura Points to generate automated daily yields and multiplier rights inside the ecosystem.
+                    </p>
                     
-                    <div id="wheel-graphic" class="w-full h-full rounded-full border-4 border-purple-500 bg-slate-950 shadow-2xl relative overflow-hidden transition-transform duration-[1500ms] ease-out flex items-center justify-center">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                            <div class="absolute text-[10px] font-black font-mono text-cyan-400" style="transform: rotate(0deg) translateY(-70px);">10 AP</div>
-                            <div class="absolute text-[10px] font-black font-mono text-purple-400" style="transform: rotate(72deg) translateY(-70px);">20 AP</div>
-                            <div class="absolute text-[10px] font-black font-mono text-pink-400" style="transform: rotate(144deg) translateY(-70px);">50 AP</div>
-                            <div class="absolute text-[10px] font-black font-mono text-amber-400" style="transform: rotate(216deg) translateY(-70px);">100 AP</div>
-                            <div class="absolute text-[9px] font-black font-mono text-emerald-400" style="transform: rotate(288deg) translateY(-70px);">0.001$</div>
+                    <div class="bg-slate-950/80 border border-purple-500/20 rounded-2xl p-4 mono-font space-y-2">
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>Staked Balance:</span>
+                            <span id="staked-aura" class="text-purple-400 font-bold">0 AP</span>
                         </div>
-                        <div class="w-14 h-14 bg-gradient-to-br from-purple-900 to-slate-900 rounded-full border border-purple-400/40 z-20 flex items-center justify-center text-lg shadow-inner">
-                            🔮
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>Estimated APY:</span>
+                            <span class="text-emerald-400 font-bold">128.5%</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="stakeAura()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl mono-font text-xs shadow-md transition-all">
+                            STAKE AP
+                        </button>
+                        <button onclick="unstakeAura()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl mono-font text-xs transition-all">
+                            UNSTAKE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- TAB 3: LUCKY WHEEL -->
+            <div id="tab-wheel" class="tab-pane hidden space-y-4 text-center">
+                <div class="glass-panel rounded-3xl p-5 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-pink-400">🎡 Degen Lucky Wheel</h2>
+                    <p class="text-xs text-slate-400">Spin once every 24 hours to secure mystery AP bonuses or token multipliers.</p>
+                    
+                    <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl text-amber-400 z-20 animate-bounce">▼</div>
+                        <div id="wheel-box" class="w-full h-full rounded-full border-4 border-pink-500/50 bg-slate-950 flex items-center justify-center shadow-[0_0_25px_rgba(236,72,153,0.3)] transition-transform duration-[2000ms] ease-out">
+                            <span class="text-2xl">🔮</span>
+                        </div>
+                    </div>
+
+                    <button id="spin-btn" onclick="spinWheel()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 text-white font-bold py-3 rounded-xl mono-font text-xs shadow-lg transition-all">
+                        SPIN THE WHEEL
+                    </button>
+                    <div id="spin-result" class="hidden p-3 bg-slate-950 border border-pink-500/30 rounded-xl mono-font text-xs text-pink-300"></div>
+                </div>
+            </div>
+
+
+            <!-- TAB 4: ROADMAP & INFO -->
+            <div id="tab-roadmap" class="tab-pane hidden space-y-4 text-left">
+                <div class="glass-panel rounded-3xl p-5 space-y-4">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-emerald-400 text-center">🗺️ Protocol Roadmap</h2>
+                    
+                    <div class="space-y-4 border-l-2 border-slate-800 pl-4 ml-2">
+                        <div>
+                            <span class="text-[10px] mono-font text-emerald-400 font-bold">PHASE 1 (COMPLETED)</span>
+                            <h4 class="text-xs font-bold text-white">Smart Contract Deployment</h4>
+                            <p class="text-[11px] text-slate-400">Deployment kontrak utama pada Base Mainnet dengan integrasi wallet aman.</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] mono-font text-cyan-400 font-bold">PHASE 2 (ACTIVE)</span>
+                            <h4 class="text-xs font-bold text-white">Neural Terminal & Staking</h4>
+                            <p class="text-[11px] text-slate-400">Peluncuran sistem Aura Points, Daily Claim, dan Lucky Wheel ekosistem.</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] mono-font text-slate-500 font-bold">PHASE 3 (UPCOMING)</span>
+                            <h4 class="text-xs font-bold text-slate-400">DAO Governance & NFT Utility</h4>
+                            <p class="text-[11px] text-slate-500">Ekspansi utilitas token dan hak suara tata kelola komunitas.</p>
                         </div>
                     </div>
                 </div>
-
-                <button id="btn-spin" onclick="spinTheWheel()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl font-mono text-xs tracking-wider transition-all active:scale-95">
-                    🌀 SPIN THE WHEEL
-                </button>
-                <div id="spin-result" class="hidden p-3 bg-slate-950 border border-dashed border-purple-500/30 rounded-xl text-slate-200 font-mono text-xs"></div>
-            </div>
-
-            <!-- TAB 4: GLOBAL LEADERBOARD -->
-            <div id="tab-ranks" class="tab-content hidden space-y-4 text-center">
-                <h2 class="text-md font-bold uppercase tracking-wider text-yellow-500">🏆 Global Degen Leaderboard</h2>
-                <p class="text-xs text-slate-400">Public registry ranking on-chain wallet addresses holding top deterministic identity parameters.</p>
-                <div id="ranks-list-container" class="space-y-2 pt-2"></div>
             </div>
 
         </div>
 
-    </div>
+    </main>
 
-    <!-- Fixed Floating Navigation System -->
-    <div class="fixed bottom-0 left-0 right-0 h-20 bg-slate-950/90 backdrop-blur-xl border-t border-blue-900/40 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-2xl">
-        <button id="nav-oracle" onclick="navigate('oracle')" class="flex flex-col items-center text-blue-400 transition-all font-mono scale-105">
-            <span class="text-xl">🔮</span><span class="text-[10px] font-bold mt-0.5">Terminal</span>
-        </button>
-        <button id="nav-roadmap" onclick="navigate('roadmap')" class="flex flex-col items-center text-slate-500 hover:text-emerald-400 transition-all font-mono">
-            <span class="text-xl">🗺️</span><span class="text-[10px] font-bold mt-0.5">Roadmap</span>
-        </button>
-        <button id="nav-wheel" onclick="navigate('wheel')" class="flex flex-col items-center text-slate-500 hover:text-purple-400 transition-all font-mono">
-            <span class="text-xl">🎡</span><span class="text-[10px] font-bold mt-0.5">Wheel</span>
-        </button>
-        <button id="nav-ranks" onclick="navigate('ranks')" class="flex flex-col items-center text-slate-500 hover:text-yellow-400 transition-all font-mono">
-            <span class="text-xl">🏆</span><span class="text-[10px] font-bold mt-0.5">Ranks</span>
-        </button>
-    </div>
 
-    <!-- Logic Handlers Script Block -->
+    <!-- FIXED BOTTOM NAVIGATION BAR -->
+    <nav class="fixed bottom-0 left-0 right-0 h-20 glass-panel border-t border-cyan-500/20 flex justify-around items-center z-50 max-w-md mx-auto rounded-t-3xl shadow-2xl">
+        <button onclick="switchTab('terminal')" id="nav-terminal" class="nav-btn flex flex-col items-center text-cyan-400 transition-all font-bold">
+            <span class="text-xl">🔮</span>
+            <span class="text-[10px] mono-font mt-0.5">Terminal</span>
+        </button>
+        <button onclick="switchTab('stake')" id="nav-stake" class="nav-btn flex flex-col items-center text-slate-500 hover:text-purple-400 transition-all">
+            <span class="text-xl">🏦</span>
+            <span class="text-[10px] mono-font mt-0.5">Staking</span>
+        </button>
+        <button onclick="switchTab('wheel')" id="nav-wheel" class="nav-btn flex flex-col items-center text-slate-500 hover:text-pink-400 transition-all">
+            <span class="text-xl">🎡</span>
+            <span class="text-[10px] mono-font mt-0.5">Wheel</span>
+        </button>
+        <button onclick="switchTab('roadmap')" id="nav-roadmap" class="nav-btn flex flex-col items-center text-slate-500 hover:text-emerald-400 transition-all">
+            <span class="text-xl">🗺️</span>
+            <span class="text-[10px] mono-font mt-0.5">Roadmap</span>
+        </button>
+    </nav>
+
+
+    <!-- APP LOGIC & WEB3 HANDLER -->
     <script>
-        // Contract Addresses
-        const nftContractAddress = "0x263043098927A76cA8370363F6B815f34E716851"; 
-        const tokenContractAddress = "0x263043098927A76cA8370363F6B815f34E716851"; 
-        const flaunchShareLink = "https://flaunch.gg/base/coins/" + tokenContractAddress;
-        const DEVELOPER_WALLET = "0x14c2ae5921287822af1ae0ea83ca7a0e53954be8"; 
-        const BASE_CHAIN_ID = "0x2105"; // 8453 (Base Mainnet)
+        const CONTRACT_ADDRESS = "0x263043098927A76cA8370363F6B815f34E716851";
+        const BASE_CHAIN_ID = "0x2105"; // 8453
 
-        // State Global App
-        window.twIsConnected = false;
-        window.twUserAddress = "";
-        
+        let isConnected = false;
+        let userAddress = "";
         let provider = null;
         let signer = null;
-        let currentFateGlobal = null; 
-        let currentFrameColor = "#f59e0b"; 
-        let userLuckScoreGlobal = 50;
 
-        let appState = {
-            auraPoints: 0,
-            usdcBalance: 0.00
+        let appData = {
+            aura: parseInt(localStorage.getItem("bf_aura")) || 100,
+            usdc: 0.005,
+            staked: parseInt(localStorage.getItem("bf_staked")) || 0
         };
 
-        const fateLibrary = [
-            { fate: "THE WHALE ASCENDANT", emoji: "🐋", imagePath: "images1.jpeg", text: "Your wallet is a black hole for liquidity. You are destined to lead trends and exit safely before the rug.", score: 98 },
-            { fate: "THE BASE CHOSEN ONE", emoji: "🔵", imagePath: "images3.jpeg", text: "Base protocol nodes whisper your address. You are the architect of the next moon mission.", score: 99 }
-        ];
+        function updateUI() {
+            document.getElementById("stat-aura").innerText = `${appData.aura} AP`;
+            document.getElementById("stat-usdc").innerText = `$${appData.usdc.toFixed(3)}`;
+            document.getElementById("staked-aura").innerText = `${appData.staked} AP`;
+            localStorage.setItem("bf_aura", appData.aura);
+            localStorage.setItem("bf_staked", appData.staked);
+        }
 
-        const WHEEL_ITEMS = [
-            { name: "10 AP", type: "AP", value: 10, weight: 40 },
-            { name: "20 AP", type: "AP", value: 20, weight: 30 },
-            { name: "50 AP", type: "AP", value: 50, weight: 15 },
-            { name: "100 AP", type: "AP", value: 100, weight: 10 },
-            { name: "0.001$ USDC", type: "USDC", value: 0.001, weight: 5 }
-        ];
-
-        async function connectWallet() {
-            const btn = document.getElementById("connect-btn");
-            if (window.twIsConnected) {
-                window.twIsConnected = false;
-                window.twUserAddress = "";
+        async function toggleWallet() {
+            if (isConnected) {
+                isConnected = false;
+                userAddress = "";
                 provider = null;
                 signer = null;
-                handleDisconnectUI();
+                document.getElementById("connect-btn").innerHTML = "<span>⚡</span> CONNECT WEB3 WALLET";
+                document.getElementById("locked-view").classList.remove("hidden");
+                document.getElementById("unlocked-view").classList.add("hidden");
                 return;
             }
 
             if (!window.ethereum) {
-                alert("🚨 Web3 Wallet Tidak Terdeteksi!");
+                alert("🚨 Web3 Wallet (MetaMask / Coinbase / Rabby) tidak terdeteksi di browser ini!");
                 return;
             }
 
             try {
-                btn.innerText = "⏳ Connecting...";
+                const btn = document.getElementById("connect-btn");
+                btn.innerHTML = "⏳ Connecting Node...";
+                
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-                if (!accounts || accounts.length === 0) throw new Error("Akses ditolak oleh user.");
-
                 provider = new ethers.BrowserProvider(window.ethereum);
                 signer = await provider.getSigner();
-                window.twUserAddress = accounts[0];
-                window.twIsConnected = true;
+                userAddress = accounts[0];
+                isConnected = true;
 
                 const network = await provider.getNetwork();
-                const chainIdHex = "0x" + network.chainId.toString(16);
-                const badge = document.getElementById("network-warning-badge");
-                
-                if (chainIdHex !== BASE_CHAIN_ID) badge.classList.remove("hidden");
-                else badge.classList.add("hidden");
+                if ("0x" + network.chainId.toString(16) !== BASE_CHAIN_ID) {
+                    document.getElementById("network-warning").classList.remove("hidden");
+                }
 
-                handleConnectSuccess(window.twUserAddress);
-            } catch (error) {
-                btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
-                alert("Koneksi Dibatalkan.");
+                btn.innerHTML = `🟢 Node Active (${userAddress.slice(0, 4)}...${userAddress.slice(-4)})`;
+                document.getElementById("locked-view").classList.add("hidden");
+                document.getElementById("unlocked-view").classList.remove("hidden");
+
+                updateUI();
+                renderCanvasCard(userAddress);
+                checkDailyStatus();
+                checkWheelStatus();
+            } catch (err) {
+                document.getElementById("connect-btn").innerHTML = "<span>⚡</span> CONNECT WEB3 WALLET";
+                alert("Koneksi dibatalkan oleh pengguna.");
             }
         }
 
-        function updateBalanceUI() {
-            appState.auraPoints = parseInt(localStorage.getItem("premium_aura")) || 0;
-            const auraDisplayEl = document.getElementById("aura-points-display");
-            const usdcDisplayEl = document.getElementById("usdc-balance-display");
-            if (auraDisplayEl) auraDisplayEl.textContent = `${appState.auraPoints} AP`;
-            if (usdcDisplayEl) usdcDisplayEl.textContent = `$${appState.usdcBalance.toFixed(3)}`;
-        }
-
-        function handleConnectSuccess(address) {
-            const btn = document.getElementById("connect-btn");
-            if (btn) btn.innerHTML = `🔴 Disconnect Node (${address.slice(0, 4)}...${address.slice(-4)})`;
-            
-            if (!localStorage.getItem("premium_aura")) localStorage.setItem("premium_aura", 75);
-            appState.usdcBalance = 0.005;
-
-            renderNativeForecasterHub();
-            document.getElementById("locked-state-view").classList.add("hidden");
-            document.getElementById("result-section").classList.remove("hidden");
-            
-            generateDestiny(address);
-            updateBalanceUI();
-            checkWheelStatus();
-        }
-
-        function handleDisconnectUI() {
-            const btn = document.getElementById("connect-btn");
-            if (btn) btn.innerHTML = "<span>🔮</span> Connect Web3 Wallet";
-            document.getElementById("locked-state-view").classList.remove("hidden");
-            document.getElementById("result-section").classList.add("hidden");
-        }
-
-        async function triggerThirdwebSwap(tokenAddress, dexId) {
-            const amountInput = document.getElementById("presale-eth-input");
-            if (!amountInput || !window.twIsConnected || !signer) return alert("Connect wallet node first!");
-            const ethAmount = amountInput.value.trim();
+        async function switchNetwork() {
             try {
-                const txResponse = await signer.sendTransaction({
-                    to: tokenAddress,
-                    value: ethers.parseEther(ethAmount),
-                    data: "0x"
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: BASE_CHAIN_ID }],
                 });
-                await txResponse.wait();
-                alert(`✅ Transmitted! Tx Hash: ${txResponse.hash}`);
+                document.getElementById("network-warning").classList.add("hidden");
+            } catch (switchError) {
+                alert("Gagal memindahkan jaringan otomatis. Silakan pindah manual ke Base Mainnet di wallet Anda.");
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn flex flex-col items-center text-slate-500 hover:text-cyan-400 transition-all";
+            });
+            document.getElementById(`nav-${tabName}`).className = "nav-btn flex flex-col items-center text-cyan-400 transition-all font-bold scale-105";
+        }
+
+        function renderCanvasCard(address) {
+            const canvas = document.getElementById("forecast-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            
+            ctx.fillStyle = "#030712";
+            ctx.fillRect(0, 0, 300, 380);
+
+            // Neon Border
+            ctx.strokeStyle = "#00f0ff";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(10, 10, 280, 360);
+
+            // Title
+            ctx.fillStyle = "#00f0ff";
+            ctx.font = "bold 14px 'JetBrains Mono', monospace";
+            ctx.fillText("BASEFORECASTER NODE", 25, 45);
+
+            // Identity info
+            ctx.fillStyle = "#94a3b8";
+            ctx.font = "11px 'Space Grotesk', sans-serif";
+            ctx.fillText("Target Identity Hash:", 25, 85);
+            
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 12px 'JetBrains Mono', monospace";
+            ctx.fillText(`${address.slice(0, 12)}...${address.slice(-8)}`, 25, 105);
+
+            // Prediction status box
+            ctx.fillStyle = "rgba(0, 240, 255, 0.05)";
+            ctx.fillRect(25, 130, 250, 110);
+            ctx.strokeStyle = "rgba(0, 240, 255, 0.2)";
+            ctx.strokeRect(25, 130, 250, 110);
+
+            ctx.fillStyle = "#38bdf8";
+            ctx.font = "bold 12px 'JetBrains Mono', monospace";
+            ctx.fillText("STATUS: QUANTUM BULLISH", 40, 160);
+
+            ctx.fillStyle = "#cbd5e1";
+            ctx.font = "11px 'Space Grotesk', sans-serif";
+            ctx.fillText("Liquidity sync verified across", 40, 185);
+            ctx.fillText("Base mainnet validators.", 40, 202);
+
+            // Footer metadata
+            ctx.fillStyle = "#64748b";
+            ctx.font = "10px 'JetBrains Mono', monospace";
+            ctx.fillText(`CONTRACT: ${CONTRACT_ADDRESS.slice(0, 14)}...`, 25, 290);
+            ctx.fillText("NETWORK: BASE MAINNET", 25, 310);
+            ctx.fillText("VERIFIED SECURE NODE ✓", 25, 330);
+        }
+
+        async function claimDaily() {
+            const today = new Date().toDateString();
+            if (localStorage.getItem("bf_last_claim") === today) {
+                return alert("🔒 Anda sudah melakukan klaim harian hari ini. Kembali besok!");
+            }
+            appData.aura += 50;
+            localStorage.setItem("bf_last_claim", today);
+            updateUI();
+            if (typeof confetti === "function") confetti();
+            alert("🎉 Berhasil! +50 Aura Points ditambahkan.");
+        }
+
+        function checkDailyStatus() {
+            const today = new Date().toDateString();
+            const btn = document.getElementById("daily-btn");
+            if (localStorage.getItem("bf_last_claim") === today) {
+                btn.innerText = "Claimed ✓";
+                btn.disabled = true;
+                btn.className = "bg-slate-800 text-slate-500 px-3 py-1.5 rounded-xl font-bold text-[11px] cursor-not-allowed";
+            }
+        }
+
+        async function executeSwap() {
+            if (!isConnected || !signer) return alert("Hubungkan wallet terlebih dahulu!");
+            const amount = document.getElementById("swap-amount").value;
+            try {
+                const tx = await signer.sendTransaction({
+                    to: CONTRACT_ADDRESS,
+                    value: ethers.parseEther(amount)
+                });
+                await tx.wait();
+                alert(`✅ Transaksi Sukses! Hash: ${tx.hash}`);
                 if (typeof confetti === "function") confetti();
-            } catch (err) { alert(`❌ Error: ${err.message.substring(0,35)}`); }
+            } catch (err) {
+                alert("Transaksi dibatalkan atau gagal.");
+            }
+        }
+
+        async function tipDeveloper() {
+            if (!isConnected || !signer) return alert("Hubungkan wallet terlebih dahulu!");
+            try {
+                const tx = await signer.sendTransaction({
+                    to: CONTRACT_ADDRESS,
+                    value: ethers.parseEther("0.001")
+                });
+                await tx.wait();
+                alert("💸 Terima kasih atas tip Anda! Hash: " + tx.hash);
+                if (typeof confetti === "function") confetti();
+            } catch (err) {
+                alert("Tip dibatalkan.");
+            }
+        }
+
+        async function mintIdentityNFT() {
+            if (!isConnected || !signer) return alert("Hubungkan wallet terlebih dahulu!");
+            try {
+                const tx = await signer.sendTransaction({
+                    to: CONTRACT_ADDRESS,
+                    data: "0x1249c5b8"
+                });
+                await tx.wait();
+                alert("🪙 NFT Berhasil Diklaim! Hash: " + tx.hash);
+                if (typeof confetti === "function") confetti();
+            } catch (err) {
+                alert("Minting gagal atau dibatalkan.");
+            }
+        }
+
+        function stakeAura() {
+            if (appData.aura < 50) return alert("Aura Points tidak mencukupi (Minimal 50 AP).");
+            appData.aura -= 50;
+            appData.staked += 50;
+            updateUI();
+            alert("🏦 Berhasil stake 50 Aura Points ke dalam Vault.");
+        }
+
+        function unstakeAura() {
+            if (appData.staked <= 0) return alert("Tidak ada AP yang sedang di-stake.");
+            appData.aura += appData.staked;
+            appData.staked = 0;
+            updateUI();
+            alert("🔓 Berhasil unstake seluruh Aura Points.");
+        }
+
+        function spinWheel() {
+            const today = new Date().toDateString();
+            if (localStorage.getItem("bf_wheel_spin") === today) {
+                return alert("🎡 Roda keberuntungan sudah diputar hari ini. Coba lagi besok!");
+            }
+            
+            const wheelBox = document.getElementById("wheel-box");
+            wheelBox.style.transform = `rotate(${Math.floor(Math.random() * 720) + 1080}deg)`;
+            
+            setTimeout(() => {
+                const reward = Math.floor(Math.random() * 100) + 20;
+                appData.aura += reward;
+                localStorage.setItem("bf_wheel_spin", today);
+                updateUI();
+                
+                const resEl = document.getElementById("spin-result");
+                resEl.innerHTML = `🎁 Selamat! Anda memenangkan <span class="text-white font-bold">+${reward} AP</span>!`;
+                resEl.classList.remove("hidden");
+                if (typeof confetti === "function") confetti();
+            }, 2000);
         }
 
         function checkWheelStatus() {
             const today = new Date().toDateString();
-            const lastSpin = localStorage.getItem("last_spin_date");
-            const btn = document.getElementById("btn-spin");
-            if (btn && lastSpin === today) {
-                btn.textContent = "🔒 SPUN TODAY";
+            if (localStorage.getItem("bf_wheel_spin") === today) {
+                const btn = document.getElementById("spin-btn");
+                btn.innerText = "SPUN TODAY 🔒";
                 btn.disabled = true;
-                btn.className = "w-full py-3 bg-slate-800 text-slate-500 font-bold rounded-xl font-mono text-xs tracking-wider cursor-not-allowed shadow-none";
+                btn.className = "w-full bg-slate-800 text-slate-500 font-bold py-3 rounded-xl mono-font text-xs cursor-not-allowed";
             }
         }
-
-        function spinTheWheel() {
-            const btn = document.getElementById("btn-spin");
-            const graphic = document.getElementById("wheel-graphic");
-            const result = document.getElementById("spin-result");
-            if (!window.twIsConnected) return alert("🚨 Connect Web3 Wallet first!");
-
-            const today = new Date().toDateString();
-            if (localStorage.getItem("last_spin_date") === today) return alert("Reroll once per 24 hours!");
-
-            btn.disabled = true;
-            result.classList.add("hidden");
-            graphic.classList.add("animate-spin");
-
-            setTimeout(() => {
-                graphic.classList.remove("animate-spin");
-                let reward = WHEEL_ITEMS[Math.floor(Math.random() * WHEEL_ITEMS.length)];
-                
-                if (reward.type === "AP") {
-                    let currentPoints = parseInt(localStorage.getItem("premium_aura")) || 0;
-                    localStorage.setItem("premium_aura", currentPoints + reward.value);
-                    result.innerHTML = `🎉 Safe! You received <span class="text-cyan-400">${reward.name}</span>!`;
-                }
-                
-                localStorage.setItem("last_spin_date", today);
-                updateBalanceUI();
-                checkWheelStatus();
-                result.classList.remove("hidden");
-                if (typeof confetti === "function") confetti();
-            }, 1500);
-        }
-
-        function navigate(targetTab) {
-            if (!window.twIsConnected && targetTab !== 'roadmap') return alert("Unlock terminal channel via Web3 payload!");
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            const targetEl = document.getElementById(`tab-${targetTab}`);
-            if (targetEl) targetEl.classList.remove('hidden');
-
-            const menuColors = { oracle: 'text-blue-400', roadmap: 'text-emerald-400', wheel: 'text-purple-400', ranks: 'text-yellow-400' };
-            Object.keys(menuColors).forEach(k => {
-                const btn = document.getElementById(`nav-${k}`);
-                if (btn) btn.className = `flex flex-col items-center text-slate-500 hover:${menuColors[k]} transition-all font-mono`;
-            });
-            const activeBtn = document.getElementById(`nav-${targetTab}`);
-            if (activeBtn) activeBtn.className = `flex flex-col items-center ${menuColors[targetTab]} transition-all font-mono scale-105 font-bold`;
-            if (targetTab === 'ranks') renderLeaderboardData();
-        }
-
-        function generateDestiny(address) {
-            let seed = 0;
-            const clean = address.toLowerCase().replace("0x", "");
-            for (let i = 0; i < clean.length; i++) seed += clean.charCodeAt(i);
-            currentFateGlobal = fateLibrary[seed % fateLibrary.length];
-            userLuckScoreGlobal = Math.min(100, Math.max(15, (seed % 85) + 15)); 
-            
-            if (document.getElementById("luck-score")) document.getElementById("luck-score").innerText = `${userLuckScoreGlobal}%`;
-            if (document.getElementById("luck-bar")) document.getElementById("luck-bar").style.width = `${userLuckScoreGlobal}%`;
-            if (document.getElementById("seed-anchor")) document.getElementById("seed-anchor").innerText = `0x${seed.toString(16).toUpperCase()}`;
-
-            drawDestinyCard(currentFateGlobal, userLuckScoreGlobal, address, seed);
-        }
-
-        function drawDestinyCard(fateObj, score, address, seed) {
-            const canvas = document.getElementById("destiny-card");
-            if (!canvas) return;
-            const ctx = canvas.getContext("2d");
-            ctx.clearRect(0, 0, 350, 500);
-            
-            ctx.fillStyle = "#0f172a"; 
-            ctx.fillRect(0, 0, 350, 500);
-            
-            ctx.textAlign = "center"; 
-            ctx.font = "bold 20px 'Courier New', monospace"; 
-            ctx.fillStyle = "#ffffff";
-            ctx.fillText(fateObj.fate, 175, 210);
-
-            ctx.fillStyle = "rgba(15, 23, 42, 0.9)"; ctx.fillRect(25, 390, 300, 75);
-            ctx.lineWidth = 1; ctx.strokeStyle = currentFrameColor; ctx.strokeRect(25, 390, 300, 75);
-            ctx.textAlign = "left"; ctx.font = "10px monospace"; ctx.fillStyle = "#ffffff";
-            ctx.fillText(`ID  : ${address.slice(0,10)}...`, 40, 412);
-            ctx.fillText(`LUCK: ${score}% ALIGNED`, 40, 430);
-            ctx.fillText(`SEED: #00${seed}`, 40, 448);
-            ctx.lineWidth = 6; ctx.strokeStyle = currentFrameColor; ctx.strokeRect(10, 10, 330, 480);
-        }
-
-        function renderLeaderboardData() {
-            const container = document.getElementById("ranks-list-container");
-            if (!container || !window.twUserAddress) return;
-            container.innerHTML = `
-                <div class="p-3 rounded-xl border border-cyan-500 bg-cyan-950/20 flex items-center justify-between text-xs font-mono shadow-md">
-                    <div class="text-left"><div class="text-cyan-400">${window.twUserAddress.slice(0,6)}...${window.twUserAddress.slice(-4)} (YOU)</div><div class="text-[9px] text-slate-500">CORE SYSTEM LAYER</div></div>
-                    <div class="font-bold text-cyan-400 text-sm">${userLuckScoreGlobal}%</div>
-                </div>
-            `;
-        }
-
-        function renderNativeForecasterHub() {
-            const container = document.getElementById("polymarket-top-container"); 
-            if (!container || !window.twIsConnected) return;
-            container.innerHTML = `
-                <div class="space-y-3.5 text-left mt-2 mb-2">
-                    <div class="bg-slate-950/80 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
-                        <div class="flex justify-between items-center text-[10px]">
-                            <span class="bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded font-mono font-bold">⚡ BLOCKCHAIN NODE AGENT</span>
-                            <span class="text-emerald-400 font-mono animate-pulse">● Curve Synced</span>
-                        </div>
-                        <h4 class="text-xs font-bold text-slate-200">Acquire Forecast Token Directly</h4>
-                        <div class="flex gap-2">
-                            <input id="presale-eth-input" type="number" step="0.001" value="0.005" class="w-2/3 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none">
-                            <button id="btn-action-presale" onclick="triggerThirdwebSwap('${tokenContractAddress}', 'uniswap')" class="w-1/3 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-extrabold rounded-xl text-[11px] font-mono shadow-md">SWAP NOW</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function checkDailyClaimStatus() {
-            const today = new Date().toDateString();
-            const lastClaim = localStorage.getItem("last_claim_date");
-            const btn = document.getElementById("daily-login-btn");
-            if (btn && lastClaim === today) {
-                btn.textContent = "Claimed ✓";
-                btn.disabled = true;
-                btn.className = "bg-slate-800 text-slate-500 text-[10px] font-bold px-3 py-1.5 rounded-xl cursor-not-allowed shadow-none";
-            }
-        }
-
-        function handleDailyClaim() {
-            const today = new Date().toDateString();
-            if (localStorage.getItem("last_claim_date") === today) {
-                alert("🔒 You have already claimed your daily rewards today! Come back tomorrow.");
-                return;
-            }
-            
-            // Fix Accumulation logic (no NaN issues)
-            let currentPoints = parseInt(localStorage.getItem("premium_aura"));
-            if (isNaN(currentPoints)) currentPoints = 0; 
-            
-            localStorage.setItem("premium_aura", currentPoints + 100);
-            localStorage.setItem("last_claim_date", today);
-            
-            updateBalanceUI();
-            checkDailyClaimStatus();
-            if (typeof confetti === "function") confetti();
-            alert("🎁 +100 Aura Points synchronized successfully!");
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            checkDailyClaimStatus();
-            checkWheelStatus();
-            updateBalanceUI();
-
-            document.getElementById("daily-login-btn")?.addEventListener("click", handleDailyClaim);
-
-            document.getElementById("tip-btn")?.addEventListener("click", async () => {
-                if (!window.twIsConnected || !signer) return alert("Connect node first!");
-                try { 
-                    const txResponse = await signer.sendTransaction({
-                        to: DEVELOPER_WALLET,
-                        value: ethers.parseEther("0.001")
-                    });
-                    await txResponse.wait();
-                    alert("💸 Tx Confirmed: " + txResponse.hash);
-                    if (typeof confetti === "function") confetti(); 
-                } catch (e) { alert("Aborted"); }
-            });
-
-            document.getElementById("mint-btn")?.addEventListener("click", async () => {
-                if (!window.twIsConnected || !signer) return alert("Connect node first!");
-                try { 
-                    const txResponse = await signer.sendTransaction({
-                        to: nftContractAddress,
-                        data: "0x1249c5b8" 
-                    });
-                    await txResponse.wait();
-                    alert("🪙 Mint Success! Tx: " + txResponse.hash);
-                    if (typeof confetti === "function") confetti(); 
-                } catch (e) { alert("Failed"); }
-            });
-        });
     </script>
 </body>
 </html>
